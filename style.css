@@ -1,0 +1,62 @@
+/* Globální nastavení */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #333;
+    color: #333222;
+}
+
+/**/
+
+/* Hlavička */
+header {
+    background: #144773;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+}
+
+/* Navigace */
+nav {
+    background: #033663;
+    padding: 10px 30px; /* Přidáno více místa po stranách */
+    display: flex;             /* Aktivuje flexbox rozvržení */
+    justify-content: space-between; /* Odtlačí prvky na opačné konce */
+    align-items: center;       /* Vyrovná jméno a odkazy na střed výšky */
+}
+
+.logo {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    margin-left: 20px; /* Mezera mezi jednotlivými odkazy */
+}
+
+/* Hlavní obsah */
+main {
+    padding: 20px;
+}
+
+.karta {
+    max-width: 800px;
+    margin: 0 auto;
+    color: white;
+    background: #242424;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Patička */
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
