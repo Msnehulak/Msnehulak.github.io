@@ -1,4 +1,3 @@
-/* Globální nastavení */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -8,23 +7,19 @@ body {
     color: #333222;
 }
 
-/**/
-
-/* Hlavička */
 header {
-    background: #144773;
+    background: #336;
     color: white;
     padding: 10px 0;
     text-align: center;
 }
 
-/* Navigace */
 nav {
     background: #033663;
-    padding: 10px 30px; /* Přidáno více místa po stranách */
-    display: flex;             /* Aktivuje flexbox rozvržení */
-    justify-content: space-between; /* Odtlačí prvky na opačné konce */
-    align-items: center;       /* Vyrovná jméno a odkazy na střed výšky */
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .logo {
