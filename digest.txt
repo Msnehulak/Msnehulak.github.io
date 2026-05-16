@@ -1,14 +1,158 @@
 Directory structure:
 └── Snehulak.tv/
     ├── README.md
+    ├── blog_update.py
+    ├── blogs.html
+    ├── blogs.json
     ├── index.html
-    ├── pepe.html
+    ├── projects.html
     └── style.css
 
 ================================================
 FILE: README.md
 ================================================
 Helo World
+
+
+```
+{
+    "title": "title",
+    "content": "content"
+}
+```
+
+
+
+================================================
+FILE: blog_update.py
+================================================
+import json
+from re import I
+
+class UpdateBlog:
+    def __init__(self) -> None:
+        self.load_json()
+
+        self.start = """
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnehulakTV_'s site</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">SnehulakTV_</div>
+        <div class="odkazy">
+            <a href="/index.html">Home</a>
+            <a href="/projects.html">Projects</a>
+            <a href="/blogs.html">blogs</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>My Blogs</h1>
+    </header>
+"""
+
+    def load_json(self):
+        with open("blogs.json", "r", encoding='utf-8') as f:
+            self.json_blog = json.load(f)
+
+    def update(self):
+        blog = ""
+        blog += self.start
+        for i in self.json_blog:
+            blog += f"""
+    <main>
+        <section class="karta">
+            <h2>{i["title"]}</h2>
+            <p>{i["content"]}</p> 
+        </section>
+    </main>
+"""
+        blog += "</body>"
+
+        self.write_html(blog)
+
+        print(blog)
+    
+    @staticmethod
+    def write_html(blog):
+        with open("blogs.html", "w") as file:
+            file.write(blog)
+
+
+    def main(self):
+        print(self.json_blog)
+        self.update()
+
+if __name__ == "__main__":
+    app = UpdateBlog()
+    app.main()
+
+
+
+================================================
+FILE: blogs.html
+================================================
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnehulakTV_'s site</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">SnehulakTV_</div>
+        <div class="odkazy">
+            <a href="/index.html">Home</a>
+            <a href="/projects.html">Projects</a>
+            <a href="/blogs.html">blogs</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>My Blogs</h1>
+    </header>
+
+    <main>
+        <section class="karta">
+            <h2>My first blog</h2>
+            <p>This is my first blog. I am happy.</p> 
+        </section>
+    </main>
+
+    <main>
+        <section class="karta">
+            <h2>My second blog</h2>
+            <p>This is my second blog. I am sad.</p> 
+        </section>
+    </main>
+</body>
+
+
+================================================
+FILE: blogs.json
+================================================
+[
+    {
+    "title": "My first blog",
+    "content": "This is my first blog. I am happy."
+    }, {
+    "title": "My second blog",
+    "content": "This is my second blog. I am sad."
+    }
+
+
+]
 
 
 
@@ -20,42 +164,38 @@ FILE: index.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV's site</title>
+    <title>SnehulakTV_'s site</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <nav>
-        <div class="logo">Moje Jméno</div>
+        <div class="logo">SnehulakTV_</div>
         <div class="odkazy">
-            <a href="#">Domů</a>
-            <a href="#">O mně</a>
-            <a href="#">Kontakt</a>
+            <a href="/index.html">Home</a>
+            <a href="/projects.html">Projects</a>
+            <a href="/blogs.html">blogs</a>
         </div>
     </nav>
 
     <header>
-        <h1>Vítejte na mém webu.</h1>
+        <h1>Welcome on my site :}</h1>
     </header>
 
     <main>
         <section class="karta">
-            <h2>O tomto projektu</h2>
-            <p>Jako programátor oceníš, že rozdělení do souborů zlepšuje udržovatelnost kódu (stejně jako principy v jiných jazycích).</p>
+            <h2>About me</h2>
+            <p>I am lazy so nothing is heare.</p>
             
             <ul>
-                <li><strong>HTML:</strong> Definuje "Co" na stránce je.</li>
-                <li><strong>CSS:</strong> Definuje "Jak" to vypadá.</li>
-            </ul>
-            
-            <p>Tato struktura je čistá a připravená pro další rozšiřování.</p>
-            
-            <a href="#" class="tlacitko">Zjistit více</a>
+                <li>some thing 1</li>
+                <li>seme thing 2</li>
+            </ul> 
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2026 Moje První Webová Stránka</p>
+        <p>&copy; 2026 SnehulakTV_</p>
     </footer>
 
 </body>
@@ -64,13 +204,47 @@ FILE: index.html
 
 
 ================================================
-FILE: pepe.html
+FILE: projects.html
 ================================================
 <!DOCTYPE html>
-<html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnehulakTV_'s site</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-  <h1>daw</h1>
-  <p>jsjfsgvx</p>
+
+    <nav>
+        <div class="logo">SnehulakTV_</div>
+        <div class="odkazy">
+            <a href="/index.html">Home</a>
+            <a href="/projects.html">Projects</a>
+            <a href="/blogs.html">blogs</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>My projects</h1>
+    </header>
+
+    <main>
+        <section class="karta">
+            <h2>About me</h2>
+            <p>I am lazy so nothing is heare.</p>
+            
+            <ul>
+                <li>some thing 1</li>
+                <li>seme thing 2</li>
+            </ul> 
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 SnehulakTV_</p>
+    </footer>
+
 </body>
 </html>
 
@@ -79,7 +253,6 @@ FILE: pepe.html
 ================================================
 FILE: style.css
 ================================================
-/* Globální nastavení */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
@@ -89,27 +262,31 @@ body {
     color: #333222;
 }
 
-/**/
-
-/* Hlavička */
 header {
-    background: #144773;
+    background: #336;
     color: white;
     padding: 10px 0;
     text-align: center;
 }
 
-/* Navigace */
 nav {
     background: #033663;
-    padding: 10px;
-    text-align: center;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 1.2rem;
 }
 
 nav a {
     color: #ecf0f1;
     text-decoration: none;
-    margin: 0 10px;
+    margin-left: 20px; /* Mezera mezi jednotlivými odkazy */
 }
 
 /* Hlavní obsah */
@@ -120,25 +297,11 @@ main {
 .karta {
     max-width: 800px;
     margin: 0 auto;
-    background: #888777;
+    color: white;
+    background: #242424;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-/* Prvky */
-.tlacitko {
-    display: inline-block;
-    background: #007bff;
-    color: white;
-    padding: 12px 24px;
-    text-decoration: none;
-    border-radius: 6px;
-    transition: background 0.3s ease;
-}
-
-.tlacitko:hover {
-    background: #0056b3;
 }
 
 /* Patička */
