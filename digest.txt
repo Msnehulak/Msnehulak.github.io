@@ -1,12 +1,16 @@
 Directory structure:
-└── Snehulak.tv/
+└── web/
     ├── README.md
-    ├── blog_update.py
     ├── blogs.html
-    ├── blogs.json
     ├── index.html
     ├── projects.html
-    └── style.css
+    ├── style.css
+    ├── worker.py
+    ├── data/
+    │   ├── blogs.json
+    │   └── links.json
+    └── r/
+        └── wb.html
 
 ================================================
 FILE: README.md
@@ -20,79 +24,6 @@ Helo World
     "content": "content"
 }
 ```
-
-
-
-================================================
-FILE: blog_update.py
-================================================
-import json
-from re import I
-
-class UpdateBlog:
-    def __init__(self) -> None:
-        self.load_json()
-
-        self.start = """
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV_'s site</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <nav>
-        <div class="logo">SnehulakTV_</div>
-        <div class="odkazy">
-            <a href="/index.html">Home</a>
-            <a href="/projects.html">Projects</a>
-            <a href="/blogs.html">blogs</a>
-        </div>
-    </nav>
-
-    <header>
-        <h1>My Blogs</h1>
-    </header>
-"""
-
-    def load_json(self):
-        with open("blogs.json", "r", encoding='utf-8') as f:
-            self.json_blog = json.load(f)
-
-    def update(self):
-        blog = ""
-        blog += self.start
-        for i in self.json_blog:
-            blog += f"""
-    <main>
-        <section class="karta">
-            <h2>{i["title"]}</h2>
-            <p>{i["content"]}</p> 
-        </section>
-    </main>
-"""
-        blog += "</body>"
-
-        self.write_html(blog)
-
-        print(blog)
-    
-    @staticmethod
-    def write_html(blog):
-        with open("blogs.html", "w") as file:
-            file.write(blog)
-
-
-    def main(self):
-        print(self.json_blog)
-        self.update()
-
-if __name__ == "__main__":
-    app = UpdateBlog()
-    app.main()
 
 
 
@@ -113,9 +44,9 @@ FILE: blogs.html
     <nav>
         <div class="logo">SnehulakTV_</div>
         <div class="odkazy">
-            <a href="/index.html">Home</a>
-            <a href="/projects.html">Projects</a>
-            <a href="/blogs.html">blogs</a>
+            <a href="https://msnehulak.github.io/">Home</a>
+            <a href="https://msnehulak.github.io/projects.html">Projects</a>
+            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
         </div>
     </nav>
 
@@ -123,37 +54,20 @@ FILE: blogs.html
         <h1>My Blogs</h1>
     </header>
 
-    <main>
+        <main>
         <section class="karta">
             <h2>My first blog</h2>
             <p>This is my first blog. I am happy.</p> 
         </section>
-    </main>
-
-    <main>
+        </main>
+            
+        <main>
         <section class="karta">
             <h2>My second blog</h2>
             <p>This is my second blog. I am sad.</p> 
         </section>
-    </main>
-</body>
-
-
-================================================
-FILE: blogs.json
-================================================
-[
-    {
-    "title": "My first blog",
-    "content": "This is my first blog. I am happy."
-    }, {
-    "title": "My second blog",
-    "content": "This is my second blog. I am sad."
-    }
-
-
-]
-
+        </main>
+            </body>
 
 
 ================================================
@@ -172,9 +86,9 @@ FILE: index.html
     <nav>
         <div class="logo">SnehulakTV_</div>
         <div class="odkazy">
-            <a href="/index.html">Home</a>
-            <a href="/projects.html">Projects</a>
-            <a href="/blogs.html">blogs</a>
+            <a href="https://msnehulak.github.io/">Home</a>
+            <a href="https://msnehulak.github.io/projects.html">Projects</a>
+            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
         </div>
     </nav>
 
@@ -185,11 +99,14 @@ FILE: index.html
     <main>
         <section class="karta">
             <h2>About me</h2>
-            <p>I am lazy so nothing is heare.</p>
+            <p>
+            Hi <br>
+            I'm Max.
+            </p>
             
             <ul>
-                <li>some thing 1</li>
-                <li>seme thing 2</li>
+                <li>something 1</li>
+                <li>something 2</li>
             </ul> 
         </section>
     </main>
@@ -219,9 +136,9 @@ FILE: projects.html
     <nav>
         <div class="logo">SnehulakTV_</div>
         <div class="odkazy">
-            <a href="/index.html">Home</a>
-            <a href="/projects.html">Projects</a>
-            <a href="/blogs.html">blogs</a>
+            <a href="https://msnehulak.github.io/">Home</a>
+            <a href="https://msnehulak.github.io/projects.html">Projects</a>
+            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
         </div>
     </nav>
 
@@ -231,13 +148,6 @@ FILE: projects.html
 
     <main>
         <section class="karta">
-            <h2>About me</h2>
-            <p>I am lazy so nothing is heare.</p>
-            
-            <ul>
-                <li>some thing 1</li>
-                <li>seme thing 2</li>
-            </ul> 
         </section>
     </main>
 
@@ -310,5 +220,185 @@ footer {
     padding: 20px;
     color: #666;
 }
+
+
+
+================================================
+FILE: worker.py
+================================================
+import json
+
+class Blog:
+    def __init__(self):
+        self.worker = Worker()
+        self.json_blog_path = "data/blogs.json" 
+        self.blog_path = "blogs.html"
+        self.start = """
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnehulakTV_'s site</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="logo">SnehulakTV_</div>
+        <div class="odkazy">
+            <a href="https://msnehulak.github.io/">Home</a>
+            <a href="https://msnehulak.github.io/projects.html">Projects</a>
+            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
+        </div>
+    </nav>
+
+    <header>
+        <h1>My Blogs</h1>
+    </header>
+"""
+
+    def main(self):
+        self.json_blog = self.worker.load_json(self.json_blog_path)
+        self.update()
+        self.worker.write_html(self.blog_path, self.blog)
+
+
+    def update(self):
+        blog = ""
+        blog += self.start
+        for i in self.json_blog:
+            blog += f"""
+        <main>
+        <section class="karta">
+            <h2>{i["title"]}</h2>
+            <p>{i["content"]}</p> 
+        </section>
+        </main>
+            """
+            print(f"Blog {i["title"]} was add.")
+        blog += "</body>"
+
+        self.blog = blog 
+
+class Redirect:
+    def __init__(self):
+        self.worker = Worker()
+        self.json_links_path = "data/links.json"
+        self.links_folder = "r/"
+
+    @staticmethod
+    def create_html(link, name):
+        return f"""<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content=0; url="{link}">
+    <title>Přesměrování na {name}</title>
+</head>
+<body>
+    <p>Pokud nebudete automaticky přesměrováni na '{name}', klikněte na <a href="{link}">tento odkaz</a>.</p>
+</body>
+</html>
+"""
+
+    def main(self):
+        self.links = self.worker.load_json(self.json_links_path)
+            
+        for i in self.links:
+            html = self.create_html(i["link"], i["name"])
+            path = self.links_folder + i["r"] + ".html"
+            self.worker.write_html(path, html)
+
+            print(f"Redirect '{i["name"]}' with link '{i["link"]}' was create as {i["r"]}.")
+
+class Worker:
+    def __init__(self) -> None:
+        pass
+
+    def set_up(self): 
+        self.app_blog = Blog()
+        self.app_redirect = Redirect()
+
+    def start_blog(self):
+        self.app_blog.main()
+
+    def start_redirect(self):
+        self.app_redirect.main()
+
+    @staticmethod
+    def load_json(path):
+        with open(path, "r", encoding='utf-8') as f:
+            return json.load(f)
+
+    @staticmethod
+    def write_html(path, content):
+        with open(path, "w") as file:
+            file.write(content)
+
+if __name__ == "__main__":
+    app = Worker()
+    app.set_up()
+
+    while True:
+        uinp = input("/Web.manager/")
+        if uinp.startswith("run"):
+            if uinp.endswith("blog"):
+                app.start_blog()
+            elif uinp.endswith("redirect") or uinp.endswith("re"):
+                app.start_redirect()
+            elif uinp.endswith("all"):
+                app.start_redirect()
+                app.start_blog()
+            else:
+                print("ERROR: I don't know what to run")
+
+
+
+
+================================================
+FILE: data/blogs.json
+================================================
+[
+    {
+    "title": "My first blog",
+    "content": "This is my first blog. I am happy."
+    }, {
+    "title": "My second blog",
+    "content": "This is my second blog. I am sad."
+    }
+
+
+]
+
+
+
+================================================
+FILE: data/links.json
+================================================
+[
+    {
+        "link": "https://msnehulak.github.io/",
+        "name": "Web",
+        "r": "wb"
+    }
+]
+
+
+
+================================================
+FILE: r/wb.html
+================================================
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content=0; url="https://msnehulak.github.io/">
+    <title>Přesměrování na Web</title>
+</head>
+<body>
+    <p>Pokud nebudete automaticky přesměrováni na 'Web', klikněte na <a href="https://msnehulak.github.io/">tento odkaz</a>.</p>
+</body>
+</html>
 
 
