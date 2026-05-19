@@ -53,7 +53,7 @@ class Blog:
         <section class="karta">
             <div class="hlavicka-blogu">
                 <h2>{i["title"]}</h2>
-                <span class="cas-blogu">{datetime.fromisoformat(i["time"]).strftime("%d.%m.%Y %H:%M")}</span>
+                <span class="cas-blogu">{datetime.fromisoformat(i["time"].replace("Z", "+00:00")).strftime("%d.%m.%Y %H:%M")}</span>
             </div>
             <p>{i["content"]}</p> 
         </section>
