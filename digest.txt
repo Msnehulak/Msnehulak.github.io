@@ -9,11 +9,16 @@ Directory structure:
     ├── data/
     │   ├── blogs.json
     │   └── links.json
-    └── r/
-        ├── favsong/
-        │   └── index.html
-        └── wb/
-            └── index.html
+    ├── r/
+    │   ├── favsong/
+    │   │   └── index.html
+    │   └── wb/
+    │       └── index.html
+    └── .github/
+        ├── ISSUE_TEMPLATE/
+        │   └── add_redirect.yml
+        └── workflows/
+            └── issue_worker.yml
 
 ================================================
 FILE: README.md
@@ -59,15 +64,19 @@ FILE: blogs.html
     <main>
 
         <section class="karta">
-            <h2>My first blog</h2>
-            <p>Time: 10.2.2000 16:00:00</p>
+            <div class="hlavicka-blogu">
+                <h2>My first blog</h2>
+                <span class="cas-blogu">10.02.2000 16:00</span>
+            </div>
             <p>This is my first blog. I am happy.</p> 
         </section>
         <br>
             
         <section class="karta">
-            <h2>My second blog</h2>
-            <p>Time: 10.2.2000 16:00:00</p>
+            <div class="hlavicka-blogu">
+                <h2>My second blog</h2>
+                <span class="cas-blogu">10.02.2000 16:00</span>
+            </div>
             <p>This is my second blog. I am sad.</p> 
         </section>
         <br>
@@ -228,6 +237,27 @@ footer {
     color: #666;
 }
 
+/* Styly pro nenápadné zobrazení času */
+.hlavicka-blogu {
+    display: flex;
+    justify-content: space-between; /* Nadpis vlevo, čas vpravo */
+    align-items: baseline;          /* Zarovnání na spodní linku textu */
+    border-bottom: 1px solid #444;  /* Jemná linka pod nadpisem */
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+}
+
+.hlavicka-blogu h2 {
+    margin: 0;                      /* Reset okrajů nadpisu */
+}
+
+.cas-blogu {
+    font-size: 0.85rem;             /* Menší písmo než běžný text */
+    color: #888;                    /* Nenápadná šedá barva */
+    font-style: italic;             /* Kurzíva, aby se odlišil */
+    font-weight: 300;               /* Tenčí řez písma */
+}
+
 
 
 ================================================
@@ -286,8 +316,10 @@ class Blog:
         for i in self.json_blog:
             blog += f"""
         <section class="karta">
-            <h2>{i["title"]}</h2>
-            <p>Time: {datetime.fromisoformat(i["time"]).strftime("%-d.%-m.%Y %H:%M:%S")}</p>
+            <div class="hlavicka-blogu">
+                <h2>{i["title"]}</h2>
+                <span class="cas-blogu">{datetime.fromisoformat(i["time"]).strftime("%d.%m.%Y %H:%M")}</span>
+            </div>
             <p>{i["content"]}</p> 
         </section>
         <br>
@@ -303,7 +335,7 @@ class Redirect:
         self.worker = Worker()
         self.json_links_path = "data/links.json"
         self.links_folder = "r/"
-
+        self.links = self.worker.load_json(self.json_links_path)
     @staticmethod
     def create_html(link, name):
         return f"""<!DOCTYPE HTML>
@@ -318,9 +350,7 @@ class Redirect:
 </body>
 </html>
 """
-    def main(self):
-        self.links = self.worker.load_json(self.json_links_path)
-            
+    def main(self):            
         for i in self.links:
             html = self.create_html(i["link"], i["name"])
             
@@ -334,6 +364,12 @@ class Redirect:
 
             print(f"Redirect '{i['name']}' was created under clean URL: /r/{i['r']}/")
 
+    def add_redirect(self, link="https://www.google.com", name = "Google", r="g"):
+        links = self.links
+        links.append({"link": link, "name": name, "r": r})
+        self.worker.write_json("data/links.json", links)
+        print(f"Link {name} ({link}) is add as '{r}'")
+
 class Worker:
     def __init__(self) -> None:
         pass
@@ -342,16 +378,27 @@ class Worker:
         self.app_blog = Blog()
         self.app_redirect = Redirect()
 
-    def start_blog(self):
+    def blog_start(self):
         self.app_blog.main()
 
-    def start_redirect(self):
+    def redirect_start(self):
         self.app_redirect.main()
+
+    def redirect_add(self):
+        ulink = input("link:")
+        uname = input("Name:")
+        ur = input("Redirect:")
+        self.app_redirect.add_redirect(link=ulink, name=uname, r=ur)
 
     @staticmethod
     def load_json(path):
         with open(path, "r", encoding='utf-8') as f:
             return json.load(f)
+
+    @staticmethod
+    def write_json(path, data):
+        with open(path, "w", encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
 
     @staticmethod
     def write_html(path, content):
@@ -366,15 +413,17 @@ if __name__ == "__main__":
         uinp = input("/Web.manager/").strip()
         if uinp.startswith("run"):
             if uinp.endswith("blog"):
-                app.start_blog()
+                app.blog_start()
             elif uinp.endswith("redirect") or uinp.endswith("re"):
-                app.start_redirect()
+                app.redirect_start()
             elif uinp.endswith("all"):
-                app.start_redirect()
-                app.start_blog()
+                app.redirect_start()
+                app.blog_start()
             else:
                 print("ERROR: I don't know what to run")
-
+        elif uinp.startswith("add"):
+            if uinp.endswith("redirect") or uinp.endswith("re"):
+                app.redirect_add()
 
 
 
@@ -447,5 +496,96 @@ FILE: r/wb/index.html
     <p>Pokud nebudete automaticky přesměrováni na 'Web', klikněte na <a href="https://msnehulak.github.io/">tento odkaz</a>.</p>
 </body>
 </html>
+
+
+
+================================================
+FILE: .github/ISSUE_TEMPLATE/add_redirect.yml
+================================================
+name: Add redirect/shortner
+description: add new redirect/shortner to https://msnehulak.github.io/r/
+labels:
+- issue_worker
+body:
+- type: input
+  id: link
+  attributes:
+    label: web link
+    description: Link to the web
+    placeholder: https://msnehulak.github.io/
+  validations:
+    required: true
+
+- type: input
+  id: name
+  attributes:
+    label: Name of redirect
+    description: Name of redirect
+    placeholder: Youtube, Discord
+  validations:
+    required: true
+
+- type: input
+  id: redirect 
+  attributes:
+    label: Redirect
+    description: what is going to be after r/XX
+    placeholder: yt, dc
+  validations:
+    required: true
+
+
+
+
+================================================
+FILE: .github/workflows/issue_worker.yml
+================================================
+name: Auto Create PR from Issue
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  create-pr:
+    # Workflow se spustí pouze tehdy, pokud má Issue správný nadpis nebo label
+    # Doporučuji v novém formuláři (yaml) nastavit fixní label, např. "new-character"
+    if: contains(github.event.issue.labels.*.name, 'issue_worker')
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      # 1. Klonování repozitáře
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Nastavení Pythonu
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # 3. Spuštění parsovacího skriptu s předáním textu z Issue
+      - name: Parse Issue and Generate JSON
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python worker.py
+
+      # 4. Vytvoření Pull Requestu pomocí hotové akce
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: Issue Worker commit #${{ github.event.issue.number }}"
+          branch: "issue_worker/issue-${{ github.event.issue.number }}"
+          title: "Worker start form Issue #${{ github.event.issue.number }}"
+          body: |
+            This pull requests is automated form issue forms
+          labels: |
+            automated-pr
+            data-update
 
 

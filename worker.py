@@ -1,7 +1,7 @@
 from datetime import datetime
 import json
 import os
-
+import re
 
 HTML_FOOTER = """<footer>
     <p>&copy; 2026 SnehulakTV_</p>
@@ -70,7 +70,7 @@ class Redirect:
         self.worker = Worker()
         self.json_links_path = "data/links.json"
         self.links_folder = "r/"
-
+        self.links = self.worker.load_json(self.json_links_path)
     @staticmethod
     def create_html(link, name):
         return f"""<!DOCTYPE HTML>
@@ -85,9 +85,7 @@ class Redirect:
 </body>
 </html>
 """
-    def main(self):
-        self.links = self.worker.load_json(self.json_links_path)
-            
+    def main(self):            
         for i in self.links:
             html = self.create_html(i["link"], i["name"])
             
@@ -101,6 +99,12 @@ class Redirect:
 
             print(f"Redirect '{i['name']}' was created under clean URL: /r/{i['r']}/")
 
+    def add_redirect(self, link="https://www.google.com", name = "Google", r="g"):
+        links = self.links
+        links.append({"link": link, "name": name, "r": r})
+        self.worker.write_json("data/links.json", links)
+        print(f"Link {name} ({link}) is add as '{r}'")
+
 class Worker:
     def __init__(self) -> None:
         pass
@@ -109,11 +113,17 @@ class Worker:
         self.app_blog = Blog()
         self.app_redirect = Redirect()
 
-    def start_blog(self):
+    def blog_start(self):
         self.app_blog.main()
 
-    def start_redirect(self):
+    def redirect_start(self):
         self.app_redirect.main()
+
+    def redirect_add(self):
+        ulink = input("link:")
+        uname = input("Name:")
+        ur = input("Redirect:")
+        self.app_redirect.add_redirect(link=ulink, name=uname, r=ur)
 
     @staticmethod
     def load_json(path):
@@ -121,24 +131,66 @@ class Worker:
             return json.load(f)
 
     @staticmethod
+    def write_json(path, data):
+        with open(path, "w", encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    @staticmethod
     def write_html(path, content):
         with open(path, "w", encoding='utf-8') as file:
             file.write(content)
 
+def clear_data(issue_body):
+    data = {}
+    sections = re.split(r'###\s+', issue_body)
+   
+    for section in sections:
+        if not section.strip():
+            continue
+        lines = section.split('\n', 1)
+        key = lines[0].strip().lower().replace(" ", "_")
+        value = lines[1].strip() if len(lines) > 1 else ""
+
+        data[key] = value.strip()
+        
+    return data
+
 if __name__ == "__main__":
     app = Worker()
     app.set_up()
+    
+    if "ISSUE_BODY" in os.environ:
+        print("Running in automated mode (GitHub Action)...")
+        body = os.environ["ISSUE_BODY"]
+        parsed_data = clear_data(body)
+        
+        link = parsed_data.get("web_link")
+        name = parsed_data.get("name_of_redirect")
+        r = parsed_data.get("redirect")
+        
+        if link and name and r:
+            app.app_redirect.add_redirect(link=link, name=name, r=r)
+            app.redirect_start()
+            app.blog_start()
+            print("SUCCESS: Automation finished successfully.")
+        else:
+            print("ERROR: Could not parse all required fields from Issue Body.")
+            print(f"Parsed data: {parsed_data}")
+            exit(1)
 
-    while True:
-        uinp = input("/Web.manager/").strip()
-        if uinp.startswith("run"):
-            if uinp.endswith("blog"):
-                app.start_blog()
-            elif uinp.endswith("redirect") or uinp.endswith("re"):
-                app.start_redirect()
-            elif uinp.endswith("all"):
-                app.start_redirect()
-                app.start_blog()
-            else:
-                print("ERROR: I don't know what to run")
-
+    else:
+        while True:
+            uinp = input("/Web.manager/").strip()
+            if uinp.startswith("run"):
+                if uinp.endswith("blog"):
+                    app.blog_start()
+                elif uinp.endswith("redirect") or uinp.endswith("re"):
+                    app.redirect_start()
+                elif uinp.endswith("all"):
+                    app.redirect_start()
+                    app.blog_start()
+                else:
+                    print("ERROR: I don't know what to run")
+            elif uinp.startswith("add"):
+                if uinp.endswith("redirect") or uinp.endswith("re"):
+                    app.redirect_add()
