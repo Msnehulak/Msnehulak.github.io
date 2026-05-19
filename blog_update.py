@@ -18,9 +18,9 @@ class UpdateBlog:
     <nav>
         <div class="logo">SnehulakTV_</div>
         <div class="odkazy">
-            <a href="https://msnehulak.github.io/Snehulak.tv/">Home</a>
-            <a href="https://msnehulak.github.io/Snehulak.tv/blogs.html">Projects</a>
-            <a href="https://msnehulak.github.io/Snehulak.tv/blogs.html">blogs</a>
+            <a href="https://msnehulak.github.io/">Home</a>
+            <a href="https://msnehulak.github.io/blogs.html">Projects</a>
+            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
         </div>
     </nav>
 
