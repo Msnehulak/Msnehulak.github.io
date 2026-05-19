@@ -49,7 +49,7 @@ class Blog:
         </section>
         </main>
             """
-            print(f"Blog {i["title"]} was add.")
+            print(f"Blog {i['title']} was add.")
         blog += "</body>"
 
         self.blog = blog 
@@ -66,7 +66,7 @@ class Redirect:
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content=0; url="{link}">
+    <meta http-equiv="refresh" content="0; url={link}">
     <title>Přesměrování na {name}</title>
 </head>
 <body>
@@ -111,7 +111,7 @@ class Worker:
 
     @staticmethod
     def write_html(path, content):
-        with open(path, "w") as file:
+        with open(path, "w", encoding='utf-8') as file:
             file.write(content)
 
 if __name__ == "__main__":

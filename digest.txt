@@ -10,7 +10,10 @@ Directory structure:
     │   ├── blogs.json
     │   └── links.json
     └── r/
-        └── wb.html
+        ├── favsong/
+        │   └── index.html
+        └── wb/
+            └── index.html
 
 ================================================
 FILE: README.md
@@ -227,6 +230,7 @@ footer {
 FILE: worker.py
 ================================================
 import json
+import os
 
 class Blog:
     def __init__(self):
@@ -293,7 +297,7 @@ class Redirect:
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content=0; url="{link}">
+    <meta http-equiv="refresh" content="0; url={link}">
     <title>Přesměrování na {name}</title>
 </head>
 <body>
@@ -301,16 +305,21 @@ class Redirect:
 </body>
 </html>
 """
-
     def main(self):
         self.links = self.worker.load_json(self.json_links_path)
             
         for i in self.links:
             html = self.create_html(i["link"], i["name"])
-            path = self.links_folder + i["r"] + ".html"
+            
+            target_folder = os.path.join(self.links_folder, i["r"])
+            
+            if not os.path.exists(target_folder):
+                os.makedirs(target_folder)
+
+            path = os.path.join(target_folder, "index.html")
             self.worker.write_html(path, html)
 
-            print(f"Redirect '{i["name"]}' with link '{i["link"]}' was create as {i["r"]}.")
+            print(f"Redirect '{i['name']}' was created under clean URL: /r/{i['r']}/")
 
 class Worker:
     def __init__(self) -> None:
@@ -381,19 +390,41 @@ FILE: data/links.json
         "link": "https://msnehulak.github.io/",
         "name": "Web",
         "r": "wb"
+    },
+    {
+        "link": "https://youtu.be/H4jRi4E-dvA",
+        "name": "Favorite Song",
+        "r": "favsong"
     }
 ]
 
 
 
 ================================================
-FILE: r/wb.html
+FILE: r/favsong/index.html
 ================================================
 <!DOCTYPE HTML>
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content=0; url="https://msnehulak.github.io/">
+    <meta http-equiv="refresh" content="0; url=https://youtu.be/H4jRi4E-dvA">
+    <title>Přesměrování na Favorite Song</title>
+</head>
+<body>
+    <p>Pokud nebudete automaticky přesměrováni na 'Favorite Song', klikněte na <a href="https://youtu.be/H4jRi4E-dvA">tento odkaz</a>.</p>
+</body>
+</html>
+
+
+
+================================================
+FILE: r/wb/index.html
+================================================
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=https://msnehulak.github.io/">
     <title>Přesměrování na Web</title>
 </head>
 <body>
