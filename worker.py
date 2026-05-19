@@ -1,5 +1,12 @@
+from datetime import datetime
 import json
 import os
+
+
+HTML_FOOTER = """<footer>
+    <p>&copy; 2026 SnehulakTV_</p>
+</footer>
+"""
 
 class Blog:
     def __init__(self):
@@ -29,6 +36,7 @@ class Blog:
     <header>
         <h1>My Blogs</h1>
     </header>
+    <main>
 """
 
     def main(self):
@@ -42,15 +50,18 @@ class Blog:
         blog += self.start
         for i in self.json_blog:
             blog += f"""
-        <main>
         <section class="karta">
-            <h2>{i["title"]}</h2>
+            <div class="hlavicka-blogu">
+                <h2>{i["title"]}</h2>
+                <span class="cas-blogu">{datetime.fromisoformat(i["time"]).strftime("%d.%m.%Y %H:%M")}</span>
+            </div>
             <p>{i["content"]}</p> 
         </section>
-        </main>
+        <br>
             """
             print(f"Blog {i['title']} was add.")
-        blog += "</body>"
+        blog += HTML_FOOTER
+        blog += "</main></body></html>"
 
         self.blog = blog 
 
@@ -119,7 +130,7 @@ if __name__ == "__main__":
     app.set_up()
 
     while True:
-        uinp = input("/Web.manager/")
+        uinp = input("/Web.manager/").strip()
         if uinp.startswith("run"):
             if uinp.endswith("blog"):
                 app.start_blog()

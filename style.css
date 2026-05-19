@@ -55,3 +55,24 @@ footer {
     padding: 20px;
     color: #666;
 }
+
+/* Styly pro nenápadné zobrazení času */
+.hlavicka-blogu {
+    display: flex;
+    justify-content: space-between; /* Nadpis vlevo, čas vpravo */
+    align-items: baseline;          /* Zarovnání na spodní linku textu */
+    border-bottom: 1px solid #444;  /* Jemná linka pod nadpisem */
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+}
+
+.hlavicka-blogu h2 {
+    margin: 0;                      /* Reset okrajů nadpisu */
+}
+
+.cas-blogu {
+    font-size: 0.85rem;             /* Menší písmo než běžný text */
+    color: #888;                    /* Nenápadná šedá barva */
+    font-style: italic;             /* Kurzíva, aby se odlišil */
+    font-weight: 300;               /* Tenčí řez písma */
+}

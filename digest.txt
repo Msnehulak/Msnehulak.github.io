@@ -56,21 +56,25 @@ FILE: blogs.html
     <header>
         <h1>My Blogs</h1>
     </header>
+    <main>
 
-        <main>
         <section class="karta">
             <h2>My first blog</h2>
+            <p>Time: 10.2.2000 16:00:00</p>
             <p>This is my first blog. I am happy.</p> 
         </section>
-        </main>
+        <br>
             
-        <main>
         <section class="karta">
             <h2>My second blog</h2>
+            <p>Time: 10.2.2000 16:00:00</p>
             <p>This is my second blog. I am sad.</p> 
         </section>
-        </main>
-            </body>
+        <br>
+            <footer>
+    <p>&copy; 2026 SnehulakTV_</p>
+</footer>
+</main></body></html>
 
 
 ================================================
@@ -229,8 +233,15 @@ footer {
 ================================================
 FILE: worker.py
 ================================================
+from datetime import datetime
 import json
 import os
+
+
+HTML_FOOTER = """<footer>
+    <p>&copy; 2026 SnehulakTV_</p>
+</footer>
+"""
 
 class Blog:
     def __init__(self):
@@ -260,6 +271,7 @@ class Blog:
     <header>
         <h1>My Blogs</h1>
     </header>
+    <main>
 """
 
     def main(self):
@@ -273,15 +285,16 @@ class Blog:
         blog += self.start
         for i in self.json_blog:
             blog += f"""
-        <main>
         <section class="karta">
             <h2>{i["title"]}</h2>
+            <p>Time: {datetime.fromisoformat(i["time"]).strftime("%-d.%-m.%Y %H:%M:%S")}</p>
             <p>{i["content"]}</p> 
         </section>
-        </main>
+        <br>
             """
-            print(f"Blog {i["title"]} was add.")
-        blog += "</body>"
+            print(f"Blog {i['title']} was add.")
+        blog += HTML_FOOTER
+        blog += "</main></body></html>"
 
         self.blog = blog 
 
@@ -342,7 +355,7 @@ class Worker:
 
     @staticmethod
     def write_html(path, content):
-        with open(path, "w") as file:
+        with open(path, "w", encoding='utf-8') as file:
             file.write(content)
 
 if __name__ == "__main__":
@@ -350,7 +363,7 @@ if __name__ == "__main__":
     app.set_up()
 
     while True:
-        uinp = input("/Web.manager/")
+        uinp = input("/Web.manager/").strip()
         if uinp.startswith("run"):
             if uinp.endswith("blog"):
                 app.start_blog()
@@ -371,10 +384,13 @@ FILE: data/blogs.json
 [
     {
     "title": "My first blog",
-    "content": "This is my first blog. I am happy."
-    }, {
+    "content": "This is my first blog. I am happy.",
+    "time": "2000-02-10T16:00:00Z"
+    },
+    {
     "title": "My second blog",
-    "content": "This is my second blog. I am sad."
+    "content": "This is my second blog. I am sad.",
+    "time": "2000-02-10T16:00:00Z"
     }
 
 
