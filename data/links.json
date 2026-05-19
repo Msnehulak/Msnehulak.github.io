@@ -8,5 +8,10 @@
         "link": "https://youtu.be/H4jRi4E-dvA",
         "name": "Favorite Song",
         "r": "favsong"
+    },
+    {
+        "link": "https://steamcommunity.com/profiles/76561199435612424/",
+        "name": "Steam Profile",
+        "r": "steam"
     }
 ]
