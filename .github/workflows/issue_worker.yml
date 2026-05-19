@@ -41,7 +41,10 @@ jobs:
           branch: "issue_worker/issue-${{ github.event.issue.number }}"
           title: "Worker start form Issue #${{ github.event.issue.number }}"
           body: |
-            This pull requests is automated form issue forms
+            This pull requests is automated generated form issue forms.
+
+            Issue body:
+            ${{ github.event.issue.body }}
           labels: |
             automated-pr
             data-update

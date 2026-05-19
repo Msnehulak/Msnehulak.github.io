@@ -6,7 +6,7 @@ body:
 - type: input
   id: link
   attributes:
-    label: web link
+    label: Web link
     description: Link to the web
     placeholder: https://msnehulak.github.io/
   validations:

@@ -12,6 +12,10 @@ Directory structure:
     ├── r/
     │   ├── favsong/
     │   │   └── index.html
+    │   ├── steam/
+    │   │   └── index.html
+    │   ├── szn/
+    │   │   └── index.html
     │   └── wb/
     │       └── index.html
     └── .github/
@@ -266,12 +270,30 @@ FILE: worker.py
 from datetime import datetime
 import json
 import os
-
+import re
+import html
 
 HTML_FOOTER = """<footer>
     <p>&copy; 2026 SnehulakTV_</p>
 </footer>
 """
+
+LIMITS = {
+    "redirect": {
+        "r": {
+            "symbols": ["..", "/", "\\", " ", '"', "'", "&", "?", "#", "%", ";", "|", "<", ">", ":", "*"],
+            "lenght": 50
+        },
+        "name": {
+            "symbols": ["<", ">", "javascript:"],
+            "lenght": 50
+        },
+        "link": {
+            "symbols": ["<", ">", "javascript:", "\n", "\r", "`", "(", ")"],
+            "lenght": 100 
+        }
+    }
+}
 
 class Blog:
     def __init__(self):
@@ -318,7 +340,7 @@ class Blog:
         <section class="karta">
             <div class="hlavicka-blogu">
                 <h2>{i["title"]}</h2>
-                <span class="cas-blogu">{datetime.fromisoformat(i["time"]).strftime("%d.%m.%Y %H:%M")}</span>
+                <span class="cas-blogu">{datetime.fromisoformat(i["time"].replace("Z", "+00:00")).strftime("%d.%m.%Y %H:%M")}</span>
             </div>
             <p>{i["content"]}</p> 
         </section>
@@ -336,6 +358,7 @@ class Redirect:
         self.json_links_path = "data/links.json"
         self.links_folder = "r/"
         self.links = self.worker.load_json(self.json_links_path)
+
     @staticmethod
     def create_html(link, name):
         return f"""<!DOCTYPE HTML>
@@ -350,6 +373,7 @@ class Redirect:
 </body>
 </html>
 """
+
     def main(self):            
         for i in self.links:
             html = self.create_html(i["link"], i["name"])
@@ -377,6 +401,7 @@ class Worker:
     def set_up(self): 
         self.app_blog = Blog()
         self.app_redirect = Redirect()
+        self.app_issue_worker = IssueWorker()
 
     def blog_start(self):
         self.app_blog.main()
@@ -405,25 +430,133 @@ class Worker:
         with open(path, "w", encoding='utf-8') as file:
             file.write(content)
 
+class IssueWorker():
+    def __init__(self) -> None:
+        self.worker = Worker()
+        self.app_blog = Blog()
+        self.app_redirect = Redirect()
+
+    def validate_redirect(self, link, name, r):
+            # Redirect
+        r_limit = LIMITS["redirect"]["r"]
+        for symbol in r_limit["symbols"]:
+            if symbol in r.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(r) > r_limit["lenght"]:
+            print(f"ERROR: redirect is over character limit of {r_limit['lenght']}")
+            exit(1)
+        r = html.escape(r)
+
+            # Name
+        name_limit = LIMITS["redirect"]["name"]
+        for symbol in name_limit["symbols"]:
+            if symbol in name.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(name) > name_limit["lenght"]:
+            print(f"ERROR: name is over character limit of {name_limit['lenght']}")
+            exit(1)
+        name = html.escape(name)
+
+            # Link
+        https_check = not link.lower().startswith("https://")
+        http_check = not link.lower().startswith("http://")
+        if https_check and http_check:
+            print("ERROR: pless use https or http link.")
+            exit(1)
+        link_limit = LIMITS["redirect"]["link"]
+        for symbol in link_limit["symbols"]:
+            if symbol in link.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(link) > link_limit["lenght"]:
+            print(f"ERROR: web is over character limit of {link_limit['lenght']}")
+            exit(1)
+        link = html.escape(link)
+
+    def clear_data(self):
+        def find_type(data: str):
+            counts = {
+                "web_link": data.count("### Web link"),
+                "redirect_name": data.count("### Name of redirect"),
+                "redirect": data.count("### Redirect")
+            }   
+            web_link = counts["web_link"] == 1
+            redirect_name = counts["redirect_name"] == 1 
+            redirect = counts["redirect"] == 1
+
+            if web_link and redirect_name and redirect:
+                return "redirect"
+            else:
+                print("ERROR: Unknown issue form format!!")
+                exit(1)
+    
+        def format_data(body: str):
+            data = {}
+            sections = re.split(r'###\s+', body)
+            
+            for section in sections:
+                if not section.strip():
+                    continue
+                lines = section.split('\n', 1)
+                key = lines[0].strip().lower().replace(" ", "_")
+                value = lines[1].strip() if len(lines) > 1 else ""
+                data[key] = value.strip()
+            return data
+       
+        self.type = find_type(self.row_body)
+        self.issue_body = format_data(self.row_body)
+
+    def main(self):
+        print("Running in automated mode (GitHub Action)...")
+        self.row_body = os.environ["ISSUE_BODY"]
+        self.clear_data()
+
+        if self.type == "redirect":
+            data = self.issue_body
+
+            link = data.get("web_link")
+            name = data.get("name_of_redirect")
+            r = data.get("redirect")
+            
+            self.validate_redirect(link, name, r)
+
+            name = html.escape(name)
+            r = html.escape(r)
+
+            if link and name and r:
+                self.app_redirect.add_redirect(link=link, name=name, r=r)
+                self.app_redirect.main()
+                print("SUCCESS: Automation finished successfully.")
+            else:
+                print("ERROR: Could not parse all required fields from Issue Body.")
+                print(f"Parsed data: {data}")
+                exit(1)
+
+
 if __name__ == "__main__":
     app = Worker()
     app.set_up()
-
-    while True:
-        uinp = input("/Web.manager/").strip()
-        if uinp.startswith("run"):
-            if uinp.endswith("blog"):
-                app.blog_start()
-            elif uinp.endswith("redirect") or uinp.endswith("re"):
-                app.redirect_start()
-            elif uinp.endswith("all"):
-                app.redirect_start()
-                app.blog_start()
-            else:
-                print("ERROR: I don't know what to run")
-        elif uinp.startswith("add"):
-            if uinp.endswith("redirect") or uinp.endswith("re"):
-                app.redirect_add()
+    
+    if "ISSUE_BODY" in os.environ:
+        app.app_issue_worker.main()
+    else:
+        while True:
+            uinp = input("/Web.manager/").strip()
+            if uinp.startswith("run"):
+                if uinp.endswith("blog"):
+                    app.blog_start()
+                elif uinp.endswith("redirect") or uinp.endswith("re"):
+                    app.redirect_start()
+                elif uinp.endswith("all"):
+                    app.redirect_start()
+                    app.blog_start()
+                else:
+                    print("ERROR: I don't know what to run")
+            elif uinp.startswith("add"):
+                if uinp.endswith("redirect") or uinp.endswith("re"):
+                    app.redirect_add()
 
 
 
@@ -460,6 +593,11 @@ FILE: data/links.json
         "link": "https://youtu.be/H4jRi4E-dvA",
         "name": "Favorite Song",
         "r": "favsong"
+    },
+    {
+        "link": "https://steamcommunity.com/profiles/76561199435612424/",
+        "name": "Steam Profile",
+        "r": "steam"
     }
 ]
 
@@ -477,6 +615,40 @@ FILE: r/favsong/index.html
 </head>
 <body>
     <p>Pokud nebudete automaticky přesměrováni na 'Favorite Song', klikněte na <a href="https://youtu.be/H4jRi4E-dvA">tento odkaz</a>.</p>
+</body>
+</html>
+
+
+
+================================================
+FILE: r/steam/index.html
+================================================
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=https://steamcommunity.com/profiles/76561199435612424/">
+    <title>Přesměrování na Steam Profile</title>
+</head>
+<body>
+    <p>Pokud nebudete automaticky přesměrováni na 'Steam Profile', klikněte na <a href="https://steamcommunity.com/profiles/76561199435612424/">tento odkaz</a>.</p>
+</body>
+</html>
+
+
+
+================================================
+FILE: r/szn/index.html
+================================================
+<!DOCTYPE HTML>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=https://seznam.cz">
+    <title>Přesměrování na Seznam</title>
+</head>
+<body>
+    <p>Pokud nebudete automaticky přesměrováni na 'Seznam', klikněte na <a href="https://seznam.cz">tento odkaz</a>.</p>
 </body>
 </html>
 
@@ -510,7 +682,7 @@ body:
 - type: input
   id: link
   attributes:
-    label: web link
+    label: Web link
     description: Link to the web
     placeholder: https://msnehulak.github.io/
   validations:
@@ -583,7 +755,10 @@ jobs:
           branch: "issue_worker/issue-${{ github.event.issue.number }}"
           title: "Worker start form Issue #${{ github.event.issue.number }}"
           body: |
-            This pull requests is automated form issue forms
+            This pull requests is automated generated form issue forms.
+
+            Issue body:
+            ${{ github.event.issue.body }}
           labels: |
             automated-pr
             data-update

@@ -2,11 +2,29 @@ from datetime import datetime
 import json
 import os
 import re
+import html
 
 HTML_FOOTER = """<footer>
     <p>&copy; 2026 SnehulakTV_</p>
 </footer>
 """
+
+LIMITS = {
+    "redirect": {
+        "r": {
+            "symbols": ["..", "/", "\\", " ", '"', "'", "&", "?", "#", "%", ";", "|", "<", ">", ":", "*"],
+            "lenght": 50
+        },
+        "name": {
+            "symbols": ["<", ">", "javascript:"],
+            "lenght": 50
+        },
+        "link": {
+            "symbols": ["<", ">", "javascript:", "\n", "\r", "`", "(", ")"],
+            "lenght": 100 
+        }
+    }
+}
 
 class Blog:
     def __init__(self):
@@ -71,6 +89,7 @@ class Redirect:
         self.json_links_path = "data/links.json"
         self.links_folder = "r/"
         self.links = self.worker.load_json(self.json_links_path)
+
     @staticmethod
     def create_html(link, name):
         return f"""<!DOCTYPE HTML>
@@ -85,6 +104,7 @@ class Redirect:
 </body>
 </html>
 """
+
     def main(self):            
         for i in self.links:
             html = self.create_html(i["link"], i["name"])
@@ -112,6 +132,7 @@ class Worker:
     def set_up(self): 
         self.app_blog = Blog()
         self.app_redirect = Redirect()
+        self.app_issue_worker = IssueWorker()
 
     def blog_start(self):
         self.app_blog.main()
@@ -140,44 +161,117 @@ class Worker:
         with open(path, "w", encoding='utf-8') as file:
             file.write(content)
 
-def clear_data(issue_body):
-    data = {}
-    sections = re.split(r'###\s+', issue_body)
-   
-    for section in sections:
-        if not section.strip():
-            continue
-        lines = section.split('\n', 1)
-        key = lines[0].strip().lower().replace(" ", "_")
-        value = lines[1].strip() if len(lines) > 1 else ""
+class IssueWorker():
+    def __init__(self) -> None:
+        self.worker = Worker()
+        self.app_blog = Blog()
+        self.app_redirect = Redirect()
 
-        data[key] = value.strip()
-        
-    return data
+    def validate_redirect(self, link, name, r):
+            # Redirect
+        r_limit = LIMITS["redirect"]["r"]
+        for symbol in r_limit["symbols"]:
+            if symbol in r.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(r) > r_limit["lenght"]:
+            print(f"ERROR: redirect is over character limit of {r_limit['lenght']}")
+            exit(1)
+        r = html.escape(r)
+
+            # Name
+        name_limit = LIMITS["redirect"]["name"]
+        for symbol in name_limit["symbols"]:
+            if symbol in name.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(name) > name_limit["lenght"]:
+            print(f"ERROR: name is over character limit of {name_limit['lenght']}")
+            exit(1)
+        name = html.escape(name)
+
+            # Link
+        https_check = not link.lower().startswith("https://")
+        http_check = not link.lower().startswith("http://")
+        if https_check and http_check:
+            print("ERROR: pless use https or http link.")
+            exit(1)
+        link_limit = LIMITS["redirect"]["link"]
+        for symbol in link_limit["symbols"]:
+            if symbol in link.lower():
+                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
+                exit(1)
+        if len(link) > link_limit["lenght"]:
+            print(f"ERROR: web is over character limit of {link_limit['lenght']}")
+            exit(1)
+        link = html.escape(link)
+
+    def clear_data(self):
+        def find_type(data: str):
+            counts = {
+                "web_link": data.count("### Web link"),
+                "redirect_name": data.count("### Name of redirect"),
+                "redirect": data.count("### Redirect")
+            }   
+            web_link = counts["web_link"] == 1
+            redirect_name = counts["redirect_name"] == 1 
+            redirect = counts["redirect"] == 1
+
+            if web_link and redirect_name and redirect:
+                return "redirect"
+            else:
+                print("ERROR: Unknown issue form format!!")
+                exit(1)
+    
+        def format_data(body: str):
+            data = {}
+            sections = re.split(r'###\s+', body)
+            
+            for section in sections:
+                if not section.strip():
+                    continue
+                lines = section.split('\n', 1)
+                key = lines[0].strip().lower().replace(" ", "_")
+                value = lines[1].strip() if len(lines) > 1 else ""
+                data[key] = value.strip()
+            return data
+       
+        self.type = find_type(self.row_body)
+        self.issue_body = format_data(self.row_body)
+
+    def main(self):
+        print("Running in automated mode (GitHub Action)...")
+        self.row_body = os.environ["ISSUE_BODY"]
+        self.clear_data()
+
+        if self.type == "redirect":
+            data = self.issue_body
+
+            link = data.get("web_link")
+            name = data.get("name_of_redirect")
+            r = data.get("redirect")
+            
+            self.validate_redirect(link, name, r)
+
+            name = html.escape(name)
+            r = html.escape(r)
+
+            if link and name and r:
+                self.app_redirect.add_redirect(link=link, name=name, r=r)
+                self.app_redirect.main()
+                print("SUCCESS: Automation finished successfully.")
+            else:
+                print("ERROR: Could not parse all required fields from Issue Body.")
+                print(f"Parsed data: {data}")
+                exit(1)
+
 
 if __name__ == "__main__":
     app = Worker()
     app.set_up()
     
     if "ISSUE_BODY" in os.environ:
-        print("Running in automated mode (GitHub Action)...")
-        body = os.environ["ISSUE_BODY"]
-        parsed_data = clear_data(body)
-        
-        link = parsed_data.get("web_link")
-        name = parsed_data.get("name_of_redirect")
-        r = parsed_data.get("redirect")
-        
-        if link and name and r:
-            app.app_redirect.add_redirect(link=link, name=name, r=r)
-            app.redirect_start()
-            app.blog_start()
-            print("SUCCESS: Automation finished successfully.")
-        else:
-            print("ERROR: Could not parse all required fields from Issue Body.")
-            print(f"Parsed data: {parsed_data}")
-            exit(1)
-
+        app.app_issue_worker.main()
     else:
         while True:
             uinp = input("/Web.manager/").strip()
