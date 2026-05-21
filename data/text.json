@@ -1,0 +1,16 @@
+{
+    "redirect": {
+        "nl_msg": {
+            "cs": "když stánka nefunguje klikněte",
+            "en": "empty"
+        },
+        "nl_click": {
+            "cs": "zde",
+            "en": "heare"
+        }
+    },
+    "home_page": {
+        "head": "SnehulaksTV's Web"
+    }
+
+}

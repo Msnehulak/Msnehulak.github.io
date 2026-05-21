@@ -1,0 +1,21 @@
+{
+    "logo": {
+        "text": "SnehulakTV",
+        "ing": ""
+    },
+    "links": [
+        {
+            "name": "Home",
+            "link": "index.html"
+        },
+        {
+            "name": "Blog",
+            "link": "blogs.html"
+        },
+        {
+            "name": "Projects",
+            "link": "projects.html"
+        }
+    ]
+}
+
