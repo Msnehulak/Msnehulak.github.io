@@ -1,5 +1,6 @@
 import sweb
 import re
+import markdown
 
 HTML_END = "</html>"
 
@@ -8,7 +9,7 @@ class WebBuilder:
                  add_start = True, 
                  add_nav = True,
                  ):
-        self.web = ""
+        self.content = ""
         if add_start: self.add_start()
         if add_nav: self.add_nav()
 
@@ -36,7 +37,7 @@ class WebBuilder:
 </head>
 <body>
 """
-        self.web += web_start
+        self.content += web_start
 
     def add_nav(self):
         data = sweb.load_json("nav")
@@ -52,7 +53,7 @@ class WebBuilder:
 {links}    </div>
 </nav>
 """
-        self.web += nav_html
+        self.content += nav_html
     
     def add_footer(self):
         start_year = sweb.data.copy_right_year[0]
@@ -66,7 +67,7 @@ class WebBuilder:
     <p>&copy; {year} SnehulakTV_</p>
 </footer>
 """
-        self.web += footer
+        self.content += footer
 
     def add_head(self, text):
         header = f"""
@@ -74,32 +75,56 @@ class WebBuilder:
     <h1>{text}</h1>
 </header>
 """
-        self.web += header
-        
-    
-    def add_text(self, text: str):
-        """
-        add text to web.
+        self.content += header
+            
+    def add_html(self, html):
+        self.content += html
 
-        use ::link(example.com): example::link:: to add link
-        """
-        link_pattern = r"::link\((.*?)\):\s*(.*?)::link::"
-        
-        safe_text = re.sub(link_pattern, r'<a href="\1">\2</a>', text)
-        
-        self.web += safe_text
+    def add_markdown(self, md):
+        html = markdown.markdown(md)
+        self.content += html
 
     def build(self, add_footer = True):
         if add_footer: self.add_footer()
-        self.web += "</body>" + HTML_END
+        self.content += "</body>" + HTML_END
 
     def get_web(self, print_web = False):
-        if not self.web.endswith(HTML_END): self.web += HTML_END
-        if print_web: print(self.web)
-        return self.web
+        if not self.content.endswith(HTML_END): self.content += HTML_END
+        if print_web: print(self.content)
+        return self.content
 
     def save_web(self, name: str):
-        if not self.web.endswith(HTML_END): self.web += HTML_END
-        sweb.save_html(name, self.web)
+        if not self.content.endswith(HTML_END): self.content += HTML_END
+        sweb.save_html(name, self.content)
+
+class Frame:
+    def __init__(self) -> None:
+        self.content = '<section class="karta">'
+        self.html_oc = {
+                "main": [0, 0],
+                "section": [1, 0]
+        }
+
+        self.WB = WebBuilder()
+ 
+    def add_markdown(self, md):
+        html = markdown.markdown(md)
+        self.content += html
+ 
+    def move_main(self):
+        self.html_oc["main"][0] = 1
+        self.content = "<main>" + self.content
+
+    def _chceck_close_html(self):
+        i = self.html_oc
+        if not i["section"][0] == i["section"][1]:
+            self.content += "</section>"
+        if not i["main"][0] == i["main"][1]:
+            self.content += "</main>"
+
+    def get_frame(self, print_frame = False):
+        self._chceck_close_html()
+        if print_frame: print(self.content)
+        return self.content
 
 

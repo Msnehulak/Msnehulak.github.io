@@ -24,6 +24,16 @@ def save_html(file: str, content: str):
     with open(path, "w", encoding='utf-8') as f:
         f.write(content)
 
+def save_json(file: str, content: str):
+    end = ".json"
+    if not file.endswith(end):
+        file += end
+    
+    content = json.dumps(content)
+    path = BASE_DIR / "data" / file
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
+
 def load_json(file: str):
     end = ".json"
     if not file.endswith(end):

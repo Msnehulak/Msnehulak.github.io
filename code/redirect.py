@@ -14,7 +14,7 @@ class Redirect:
         bld.add_start(load_css=False, redirect=link, title=name)
         msg = self.text["nl_msg"]["cs"]
         click = self.text["nl_click"]["cs"]
-        bld.add_text(f"{msg} ::link({link}):{click}::link::")
+        bld.add_markdown(f"{msg} [{click}]({link})")
         bld.build(add_footer=True)
         return bld.get_web()
 
