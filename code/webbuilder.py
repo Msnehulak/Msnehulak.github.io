@@ -64,7 +64,7 @@ class WebBuilder:
             year = f"{start_year} - {end_year}"
         footer = f"""
 <footer>
-    <p>&copy; {year} SnehulakTV_</p>
+    <p>&copy; {year} SnehulakTV</p>
 </footer>
 """
         self.content += footer
@@ -115,7 +115,7 @@ class Frame:
         self.html_oc["main"][0] = 1
         self.content = "<main>" + self.content
 
-    def _chceck_close_html(self):
+    def _chck_close_html(self):
         i = self.html_oc
         if not i["section"][0] == i["section"][1]:
             self.content += "</section>"
@@ -123,7 +123,7 @@ class Frame:
             self.content += "</main>"
 
     def get_frame(self, print_frame = False):
-        self._chceck_close_html()
+        self._chck_close_html()
         if print_frame: print(self.content)
         return self.content
 

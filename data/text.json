@@ -1,12 +1,12 @@
 {
     "redirect": {
         "nl_msg": {
-            "cs": "když stánka nefunguje klikněte",
+            "cs": "když stránka nefunguje klikněte",
             "en": "empty"
         },
         "nl_click": {
             "cs": "zde",
-            "en": "heare"
+            "en": "here"
         }
     },
     "home_page": {

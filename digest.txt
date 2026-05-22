@@ -28,6 +28,7 @@ Directory structure:
         ├── ISSUE_TEMPLATE/
         │   └── add_redirect.yml
         └── workflows/
+            ├── deploy.yml
             └── issue_worker.yml
 
 ================================================
@@ -649,6 +650,7 @@ FILE: web/r/favsong/index.html
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Favorite Song</title>
     
+    <meta http-equiv="refresh" content="0; url=https://youtu.be/H4jRi4E-dvA">
 </head>
 <body>
 <p>když stánka nefunguje klikněte <a href="https://youtu.be/H4jRi4E-dvA">zde</a></p>
@@ -656,7 +658,6 @@ FILE: web/r/favsong/index.html
     <p>&copy; 2026 - 2028 SnehulakTV_</p>
 </footer>
 </body></html>
-
 
 
 ================================================
@@ -734,6 +735,50 @@ body:
   validations:
     required: true
 
+
+
+
+================================================
+FILE: .github/workflows/deploy.yml
+================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # Spustí se pokaždé, když se sloučí změny do větve main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # KLÍČOVÝ KROK: Tady GitHubu řekneš, že má vzít pouze složku web
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
 
 
