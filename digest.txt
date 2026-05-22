@@ -1,23 +1,29 @@
 Directory structure:
 └── web/
     ├── README.md
-    ├── blogs.html
-    ├── index.html
-    ├── projects.html
-    ├── style.css
-    ├── worker.py
+    ├── log.txt
+    ├── code/
+    │   ├── builder.py
+    │   ├── issueworker.py
+    │   ├── redirect.py
+    │   ├── sweb.py
+    │   └── webbuilder.py
     ├── data/
     │   ├── blogs.json
-    │   └── links.json
-    ├── r/
-    │   ├── favsong/
-    │   │   └── index.html
-    │   ├── steam/
-    │   │   └── index.html
-    │   ├── szn/
-    │   │   └── index.html
-    │   └── wb/
-    │       └── index.html
+    │   ├── links.json
+    │   ├── nav.json
+    │   └── text.json
+    ├── web/
+    │   ├── index.html
+    │   ├── projects.html
+    │   ├── style.css
+    │   └── r/
+    │       ├── favsong/
+    │       │   └── index.html
+    │       ├── steam/
+    │       │   └── index.html
+    │       └── wb/
+    │           └── index.html
     └── .github/
         ├── ISSUE_TEMPLATE/
         │   └── add_redirect.yml
@@ -40,148 +46,512 @@ Helo World
 
 
 ================================================
-FILE: blogs.html
+FILE: log.txt
 ================================================
+ERROR[2026-05-22 18:31:32.083034]: No ISSUE BODY!!
 
-<!DOCTYPE html>
-<html lang="cs">
+
+================================================
+FILE: code/builder.py
+================================================
+import webbuilder as wb
+import sweb
+
+def projects_page():
+    text = sweb.data.texts["projects"]
+    bld = wb.WebBuilder()
+    bld.add_head(text["head"])
+
+    abutf = wb.Frame()
+    abutf.add_markdown(text["text"])
+    abutf.move_main()
+    bld.add_html(abutf.get_frame()) 
+
+    bld.build()
+    bld.save_web("projects")
+    print("projects web is saved")
+
+def home_page():
+    text = sweb.data.texts["home_page"]
+    bld = wb.WebBuilder()
+    bld.add_head(text["head"])
+
+    abutf = wb.Frame()
+    abutf.add_markdown(text["text"])
+    abutf.move_main()
+    bld.add_html(abutf.get_frame()) 
+
+    bld.build()
+    bld.save_web("index")
+
+projects_page()
+home_page()
+
+
+
+
+
+
+
+================================================
+FILE: code/issueworker.py
+================================================
+import sys
+import sweb
+import os
+import re
+import redirect as rd
+
+class IssueWorker:
+    def __init__(self):
+        self.form_type = None
+        self.app_rd = rd.Redirect()
+
+    def find_form_type(self):
+        i = self.row_body
+        c = {
+                "rn": i.count("### Name of redirect"),
+                "wl": i.count("### Web link"),
+                "r": i.count("### Redirect")
+        }
+
+        if c["rn"] == c["wl"] == c["r"] == 1:
+            self.form_type = "add_redirect"
+
+    def format_data(self):
+        data = {}
+        sections = re.split(r'###\s+', self.row_body)
+        
+        for section in sections:
+            if not section.strip():
+                continue
+            lines = section.split('\n', 1)
+            key = lines[0].strip().lower().replace(" ", "_")
+            value = lines[1].strip() if len(lines) > 1 else ""
+            data[key] = value.strip()
+        
+        self.body = data
+
+    def main(self):
+        self.row_body = os.environ["ISSUE_BODY"]
+        
+        self.find_form_type()
+        if self.form_type is None:
+            print("invalid format")
+            sys.exit(1)
+        self.format_data()
+
+        if self.form_type == "add_redirect":
+            link = self.body["web_link"]
+            name = self.body["name_of_redirect"]
+            r = self.body["redirect"]
+            self.app_rd.add_redirect(link=link, name=name, r=r)
+            self.app_rd.main()
+
+if __name__ == "__main__":
+    if "ISSUE_BODY" in os.environ:
+        app = IssueWorker()
+        app.main()
+    else:
+        sweb.log_error("No ISSUE BODY!!")
+ 
+
+
+
+
+================================================
+FILE: code/redirect.py
+================================================
+import sweb
+import webbuilder as wb
+import os
+from pathlib import Path
+
+class Redirect:
+    def __init__(self) -> None:
+        self.links = sweb.load_json("links")
+        self.text = sweb.data.texts["redirect"]
+        self.links_folder = sweb.BASE_DIR / "web" / "r"
+
+    def create_html(self, link, name):
+        bld = wb.WebBuilder(add_nav=False, add_start=False)
+        bld.add_start(load_css=False, redirect=link, title=name)
+        msg = self.text["nl_msg"]["cs"]
+        click = self.text["nl_click"]["cs"]
+        bld.add_markdown(f"{msg} [{click}]({link})")
+        bld.build(add_footer=True)
+        return bld.get_web()
+
+    def main(self):            
+        for i in self.links:
+            html_content = self.create_html(i["link"], i["name"])
+            
+            target_folder = self.links_folder / i["r"]
+            target_folder.mkdir(parents=True, exist_ok=True)
+
+            # Uložení index.html do dané složky
+            path = target_folder / "index.html"
+            with open(path, "w", encoding='utf-8') as f:
+                f.write(html_content)
+
+            print(f"Redirect '{i['name']}' at /r/{i['r']}/")
+
+    def add_redirect(self, 
+                link="https://www.google.com", 
+                name = "Google", r="g"):
+        self.links.append({"link": link, "name": name, "r": r})
+        sweb.save_json("links", self.links)
+        print(f"Link {name} ({link}) is add as '{r}'")
+
+if __name__ == "__main__":
+    app = Redirect()
+    app.main()
+
+
+
+================================================
+FILE: code/sweb.py
+================================================
+from datetime import datetime
+from pathlib import Path
+import json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+class Data:
+    def __init__(self) -> None:
+        self.copy_right_year = [2026, 2028]
+        self.texts = load_json("text")
+
+def log_error(text):
+    error = f"ERROR[{datetime.now()}]: {text}"
+    print(error)
+    with open(BASE_DIR / "log.txt", "a", encoding="utf-8") as f:
+        f.write(error)
+
+def save_html(file: str, content: str):
+    end = ".html"
+    if not file.endswith(end):
+        file += end
+    
+    path = BASE_DIR / "web" / file
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
+
+def save_json(file: str, content: str):
+    end = ".json"
+    if not file.endswith(end):
+        file += end
+    
+    content = json.dumps(content)
+    path = BASE_DIR / "data" / file
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
+
+def load_json(file: str):
+    end = ".json"
+    if not file.endswith(end):
+        file += end
+
+    path = BASE_DIR / "data" / file
+    with open(path, "r", encoding='utf-8') as f:
+        return json.load(f)
+
+data = Data()
+
+
+
+================================================
+FILE: code/webbuilder.py
+================================================
+import sweb
+import re
+import markdown
+
+HTML_END = "</html>"
+
+class WebBuilder:
+    def __init__(self, 
+                 add_start = True, 
+                 add_nav = True,
+                 ):
+        self.content = ""
+        if add_start: self.add_start()
+        if add_nav: self.add_nav()
+
+    def add_start(self, 
+                  lang = "cs", 
+                  title = "title", 
+                  load_css = True, 
+                  redirect = ""):
+        if load_css:
+            css = '<link rel="stylesheet" href="style.css">'
+        else: css = ''
+
+        if redirect == "": r = ""
+        else:
+            r = f'<meta http-equiv="refresh" content="0; url={redirect}">'
+        
+        web_start = f"""<!DOCTYPE html>
+<html lang={lang}>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV_'s site</title>
-    <link rel="stylesheet" href="style.css">
+    <title>{title}</title>
+    {css}
+    {r}
 </head>
 <body>
+"""
+        self.content += web_start
 
-    <nav>
-        <div class="logo">SnehulakTV_</div>
-        <div class="odkazy">
-            <a href="https://msnehulak.github.io/">Home</a>
-            <a href="https://msnehulak.github.io/projects.html">Projects</a>
-            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
-        </div>
-    </nav>
+    def add_nav(self):
+        data = sweb.load_json("nav")
+    
+        links = ""
+        for i in data["links"]:
+            links += f'        <a href="{i["link"]}">{i["name"]}</a>\n'
 
-    <header>
-        <h1>My Blogs</h1>
-    </header>
-    <main>
-
-        <section class="karta">
-            <div class="hlavicka-blogu">
-                <h2>My first blog</h2>
-                <span class="cas-blogu">10.02.2000 16:00</span>
-            </div>
-            <p>This is my first blog. I am happy.</p> 
-        </section>
-        <br>
-            
-        <section class="karta">
-            <div class="hlavicka-blogu">
-                <h2>My second blog</h2>
-                <span class="cas-blogu">10.02.2000 16:00</span>
-            </div>
-            <p>This is my second blog. I am sad.</p> 
-        </section>
-        <br>
-            <footer>
-    <p>&copy; 2026 SnehulakTV_</p>
+        nav_html = f"""
+<nav>
+    <div class="logo">{data["logo"]["text"]}</div>
+    <div class="odkazy">
+{links}    </div>
+</nav>
+"""
+        self.content += nav_html
+    
+    def add_footer(self):
+        start_year = sweb.data.copy_right_year[0]
+        end_year = sweb.data.copy_right_year[-1]
+        if start_year == end_year:
+            year = start_year
+        else:
+            year = f"{start_year} - {end_year}"
+        footer = f"""
+<footer>
+    <p>&copy; {year} SnehulakTV_</p>
 </footer>
-</main></body></html>
+"""
+        self.content += footer
 
-
-================================================
-FILE: index.html
-================================================
-<!DOCTYPE html>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV_'s site</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <nav>
-        <div class="logo">SnehulakTV_</div>
-        <div class="odkazy">
-            <a href="https://msnehulak.github.io/">Home</a>
-            <a href="https://msnehulak.github.io/projects.html">Projects</a>
-            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
-        </div>
-    </nav>
-
-    <header>
-        <h1>Welcome on my site :}</h1>
-    </header>
-
-    <main>
-        <section class="karta">
-            <h2>About me</h2>
-            <p>
-            Hi <br>
-            I'm Max.
-            </p>
+    def add_head(self, text):
+        header = f"""
+<header>
+    <h1>{text}</h1>
+</header>
+"""
+        self.content += header
             
-            <ul>
-                <li>something 1</li>
-                <li>something 2</li>
-            </ul> 
-        </section>
-    </main>
+    def add_html(self, html):
+        self.content += html
 
-    <footer>
-        <p>&copy; 2026 SnehulakTV_</p>
-    </footer>
+    def add_markdown(self, md):
+        html = markdown.markdown(md)
+        self.content += html
 
-</body>
-</html>
+    def build(self, add_footer = True):
+        if add_footer: self.add_footer()
+        self.content += "</body>" + HTML_END
+
+    def get_web(self, print_web = False):
+        if not self.content.endswith(HTML_END): self.content += HTML_END
+        if print_web: print(self.content)
+        return self.content
+
+    def save_web(self, name: str):
+        if not self.content.endswith(HTML_END): self.content += HTML_END
+        sweb.save_html(name, self.content)
+
+class Frame:
+    def __init__(self) -> None:
+        self.content = '<section class="karta">'
+        self.html_oc = {
+                "main": [0, 0],
+                "section": [1, 0]
+        }
+
+        self.WB = WebBuilder()
+ 
+    def add_markdown(self, md):
+        html = markdown.markdown(md)
+        self.content += html
+ 
+    def move_main(self):
+        self.html_oc["main"][0] = 1
+        self.content = "<main>" + self.content
+
+    def _chceck_close_html(self):
+        i = self.html_oc
+        if not i["section"][0] == i["section"][1]:
+            self.content += "</section>"
+        if not i["main"][0] == i["main"][1]:
+            self.content += "</main>"
+
+    def get_frame(self, print_frame = False):
+        self._chceck_close_html()
+        if print_frame: print(self.content)
+        return self.content
+
+
 
 
 
 ================================================
-FILE: projects.html
+FILE: data/blogs.json
+================================================
+[
+    {
+    "title": "My first blog",
+    "content": "This is my first blog. I am happy.",
+    "time": "2000-02-10T16:00:00Z"
+    },
+    {
+    "title": "My second blog",
+    "content": "This is my second blog. I am sad.",
+    "time": "2000-02-10T16:00:00Z"
+    }
+
+
+]
+
+
+
+================================================
+FILE: data/links.json
+================================================
+[{"link": "https://msnehulak.github.io/", "name": "Web", "r": "wb"}, {"link": "https://youtu.be/H4jRi4E-dvA", "name": "Favorite Song", "r": "favsong"}, {"link": "https://steamcommunity.com/profiles/76561199435612424/", "name": "Steam Profile", "r": "steam"}]
+
+
+
+================================================
+FILE: data/nav.json
+================================================
+{
+    "logo": {
+        "text": "SnehulakTV",
+        "ing": ""
+    },
+    "links": [
+        {
+            "name": "Home",
+            "link": "index.html"
+        },
+        {
+            "name": "Blog",
+            "link": "blogs.html"
+        },
+        {
+            "name": "Projects",
+            "link": "projects.html"
+        }
+    ]
+}
+
+
+
+
+================================================
+FILE: data/text.json
+================================================
+{
+    "redirect": {
+        "nl_msg": {
+            "cs": "když stánka nefunguje klikněte",
+            "en": "empty"
+        },
+        "nl_click": {
+            "cs": "zde",
+            "en": "heare"
+        }
+    },
+    "home_page": {
+        "head": "SnehulaksTV's Web",
+        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2"
+    },
+    "projects": {
+        "head": "My Projects",
+        "text": "# My web \n My web is this web."
+    }
+
+}
+
+
+
+================================================
+FILE: web/index.html
 ================================================
 <!DOCTYPE html>
-<html lang="cs">
+<html lang=cs>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV_'s site</title>
+    <title>title</title>
     <link rel="stylesheet" href="style.css">
+    
 </head>
 <body>
 
-    <nav>
-        <div class="logo">SnehulakTV_</div>
-        <div class="odkazy">
-            <a href="https://msnehulak.github.io/">Home</a>
-            <a href="https://msnehulak.github.io/projects.html">Projects</a>
-            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
-        </div>
-    </nav>
+<nav>
+    <div class="logo">SnehulakTV</div>
+    <div class="odkazy">
+        <a href="index.html">Home</a>
+        <a href="blogs.html">Blog</a>
+        <a href="projects.html">Projects</a>
+    </div>
+</nav>
 
-    <header>
-        <h1>My projects</h1>
-    </header>
-
-    <main>
-        <section class="karta">
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2026 SnehulakTV_</p>
-    </footer>
-
-</body>
-</html>
-
+<header>
+    <h1>SnehulaksTV's Web</h1>
+</header>
+<main><section class="karta"><h1>About me</h1>
+<p>My name is Max.</p>
+<ul>
+<li>something 1</li>
+<li>something 2</li>
+</ul></section></main>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+</footer>
+</body></html>
 
 
 ================================================
-FILE: style.css
+FILE: web/projects.html
+================================================
+<!DOCTYPE html>
+<html lang=cs>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>title</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<nav>
+    <div class="logo">SnehulakTV</div>
+    <div class="odkazy">
+        <a href="index.html">Home</a>
+        <a href="blogs.html">Blog</a>
+        <a href="projects.html">Projects</a>
+    </div>
+</nav>
+
+<header>
+    <h1>My Projects</h1>
+</header>
+<main><section class="karta"><h1>My web</h1>
+<p>My web is this web.</p></section></main>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+</footer>
+</body></html>
+
+
+================================================
+FILE: web/style.css
 ================================================
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -189,7 +559,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #333;
-    color: #333222;
+    color: #f1f1f1;
 }
 
 header {
@@ -217,6 +587,11 @@ nav a {
     color: #ecf0f1;
     text-decoration: none;
     margin-left: 20px; /* Mezera mezi jednotlivými odkazy */
+}
+
+nav a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
 }
 
 /* Hlavní obsah */
@@ -265,410 +640,63 @@ footer {
 
 
 ================================================
-FILE: worker.py
+FILE: web/r/favsong/index.html
 ================================================
-from datetime import datetime
-import json
-import os
-import re
-import html
-
-HTML_FOOTER = """<footer>
-    <p>&copy; 2026 SnehulakTV_</p>
-</footer>
-"""
-
-LIMITS = {
-    "redirect": {
-        "r": {
-            "symbols": ["..", "/", "\\", " ", '"', "'", "&", "?", "#", "%", ";", "|", "<", ">", ":", "*"],
-            "lenght": 50
-        },
-        "name": {
-            "symbols": ["<", ">", "javascript:"],
-            "lenght": 50
-        },
-        "link": {
-            "symbols": ["<", ">", "javascript:", "\n", "\r", "`", "(", ")"],
-            "lenght": 100 
-        }
-    }
-}
-
-class Blog:
-    def __init__(self):
-        self.worker = Worker()
-        self.json_blog_path = "data/blogs.json" 
-        self.blog_path = "blogs.html"
-        self.start = """
 <!DOCTYPE html>
-<html lang="cs">
+<html lang=cs>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SnehulakTV_'s site</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-    <nav>
-        <div class="logo">SnehulakTV_</div>
-        <div class="odkazy">
-            <a href="https://msnehulak.github.io/">Home</a>
-            <a href="https://msnehulak.github.io/projects.html">Projects</a>
-            <a href="https://msnehulak.github.io/blogs.html">blogs</a>
-        </div>
-    </nav>
-
-    <header>
-        <h1>My Blogs</h1>
-    </header>
-    <main>
-"""
-
-    def main(self):
-        self.json_blog = self.worker.load_json(self.json_blog_path)
-        self.update()
-        self.worker.write_html(self.blog_path, self.blog)
-
-
-    def update(self):
-        blog = ""
-        blog += self.start
-        for i in self.json_blog:
-            blog += f"""
-        <section class="karta">
-            <div class="hlavicka-blogu">
-                <h2>{i["title"]}</h2>
-                <span class="cas-blogu">{datetime.fromisoformat(i["time"].replace("Z", "+00:00")).strftime("%d.%m.%Y %H:%M")}</span>
-            </div>
-            <p>{i["content"]}</p> 
-        </section>
-        <br>
-            """
-            print(f"Blog {i['title']} was add.")
-        blog += HTML_FOOTER
-        blog += "</main></body></html>"
-
-        self.blog = blog 
-
-class Redirect:
-    def __init__(self):
-        self.worker = Worker()
-        self.json_links_path = "data/links.json"
-        self.links_folder = "r/"
-        self.links = self.worker.load_json(self.json_links_path)
-
-    @staticmethod
-    def create_html(link, name):
-        return f"""<!DOCTYPE HTML>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url={link}">
-    <title>Přesměrování na {name}</title>
-</head>
-<body>
-    <p>Pokud nebudete automaticky přesměrováni na '{name}', klikněte na <a href="{link}">tento odkaz</a>.</p>
-</body>
-</html>
-"""
-
-    def main(self):            
-        for i in self.links:
-            html = self.create_html(i["link"], i["name"])
-            
-            target_folder = os.path.join(self.links_folder, i["r"])
-            
-            if not os.path.exists(target_folder):
-                os.makedirs(target_folder)
-
-            path = os.path.join(target_folder, "index.html")
-            self.worker.write_html(path, html)
-
-            print(f"Redirect '{i['name']}' was created under clean URL: /r/{i['r']}/")
-
-    def add_redirect(self, link="https://www.google.com", name = "Google", r="g"):
-        links = self.links
-        links.append({"link": link, "name": name, "r": r})
-        self.worker.write_json("data/links.json", links)
-        print(f"Link {name} ({link}) is add as '{r}'")
-
-class Worker:
-    def __init__(self) -> None:
-        pass
-
-    def set_up(self): 
-        self.app_blog = Blog()
-        self.app_redirect = Redirect()
-        self.app_issue_worker = IssueWorker()
-
-    def blog_start(self):
-        self.app_blog.main()
-
-    def redirect_start(self):
-        self.app_redirect.main()
-
-    def redirect_add(self):
-        ulink = input("link:")
-        uname = input("Name:")
-        ur = input("Redirect:")
-        self.app_redirect.add_redirect(link=ulink, name=uname, r=ur)
-
-    @staticmethod
-    def load_json(path):
-        with open(path, "r", encoding='utf-8') as f:
-            return json.load(f)
-
-    @staticmethod
-    def write_json(path, data):
-        with open(path, "w", encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=4)
-
-    @staticmethod
-    def write_html(path, content):
-        with open(path, "w", encoding='utf-8') as file:
-            file.write(content)
-
-class IssueWorker():
-    def __init__(self) -> None:
-        self.worker = Worker()
-        self.app_blog = Blog()
-        self.app_redirect = Redirect()
-
-    def validate_redirect(self, link, name, r):
-            # Redirect
-        r_limit = LIMITS["redirect"]["r"]
-        for symbol in r_limit["symbols"]:
-            if symbol in r.lower():
-                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
-                exit(1)
-        if len(r) > r_limit["lenght"]:
-            print(f"ERROR: redirect is over character limit of {r_limit['lenght']}")
-            exit(1)
-        r = html.escape(r)
-
-            # Name
-        name_limit = LIMITS["redirect"]["name"]
-        for symbol in name_limit["symbols"]:
-            if symbol in name.lower():
-                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
-                exit(1)
-        if len(name) > name_limit["lenght"]:
-            print(f"ERROR: name is over character limit of {name_limit['lenght']}")
-            exit(1)
-        name = html.escape(name)
-
-            # Link
-        https_check = not link.lower().startswith("https://")
-        http_check = not link.lower().startswith("http://")
-        if https_check and http_check:
-            print("ERROR: pless use https or http link.")
-            exit(1)
-        link_limit = LIMITS["redirect"]["link"]
-        for symbol in link_limit["symbols"]:
-            if symbol in link.lower():
-                print(f"ERROR: plese remove |{symbol}|. This is block symbol") 
-                exit(1)
-        if len(link) > link_limit["lenght"]:
-            print(f"ERROR: web is over character limit of {link_limit['lenght']}")
-            exit(1)
-        link = html.escape(link)
-
-    def clear_data(self):
-        def find_type(data: str):
-            counts = {
-                "web_link": data.count("### Web link"),
-                "redirect_name": data.count("### Name of redirect"),
-                "redirect": data.count("### Redirect")
-            }   
-            web_link = counts["web_link"] == 1
-            redirect_name = counts["redirect_name"] == 1 
-            redirect = counts["redirect"] == 1
-
-            if web_link and redirect_name and redirect:
-                return "redirect"
-            else:
-                print("ERROR: Unknown issue form format!!")
-                exit(1)
+    <title>Favorite Song</title>
     
-        def format_data(body: str):
-            data = {}
-            sections = re.split(r'###\s+', body)
-            
-            for section in sections:
-                if not section.strip():
-                    continue
-                lines = section.split('\n', 1)
-                key = lines[0].strip().lower().replace(" ", "_")
-                value = lines[1].strip() if len(lines) > 1 else ""
-                data[key] = value.strip()
-            return data
-       
-        self.type = find_type(self.row_body)
-        self.issue_body = format_data(self.row_body)
-
-    def main(self):
-        print("Running in automated mode (GitHub Action)...")
-        self.row_body = os.environ["ISSUE_BODY"]
-        self.clear_data()
-
-        if self.type == "redirect":
-            data = self.issue_body
-
-            link = data.get("web_link")
-            name = data.get("name_of_redirect")
-            r = data.get("redirect")
-            
-            self.validate_redirect(link, name, r)
-
-            name = html.escape(name)
-            r = html.escape(r)
-
-            if link and name and r:
-                self.app_redirect.add_redirect(link=link, name=name, r=r)
-                self.app_redirect.main()
-                print("SUCCESS: Automation finished successfully.")
-            else:
-                print("ERROR: Could not parse all required fields from Issue Body.")
-                print(f"Parsed data: {data}")
-                exit(1)
-
-
-if __name__ == "__main__":
-    app = Worker()
-    app.set_up()
-    
-    if "ISSUE_BODY" in os.environ:
-        app.app_issue_worker.main()
-    else:
-        while True:
-            uinp = input("/Web.manager/").strip()
-            if uinp.startswith("run"):
-                if uinp.endswith("blog"):
-                    app.blog_start()
-                elif uinp.endswith("redirect") or uinp.endswith("re"):
-                    app.redirect_start()
-                elif uinp.endswith("all"):
-                    app.redirect_start()
-                    app.blog_start()
-                else:
-                    print("ERROR: I don't know what to run")
-            elif uinp.startswith("add"):
-                if uinp.endswith("redirect") or uinp.endswith("re"):
-                    app.redirect_add()
-
-
-
-================================================
-FILE: data/blogs.json
-================================================
-[
-    {
-    "title": "My first blog",
-    "content": "This is my first blog. I am happy.",
-    "time": "2000-02-10T16:00:00Z"
-    },
-    {
-    "title": "My second blog",
-    "content": "This is my second blog. I am sad.",
-    "time": "2000-02-10T16:00:00Z"
-    }
-
-
-]
-
-
-
-================================================
-FILE: data/links.json
-================================================
-[
-    {
-        "link": "https://msnehulak.github.io/",
-        "name": "Web",
-        "r": "wb"
-    },
-    {
-        "link": "https://youtu.be/H4jRi4E-dvA",
-        "name": "Favorite Song",
-        "r": "favsong"
-    },
-    {
-        "link": "https://steamcommunity.com/profiles/76561199435612424/",
-        "name": "Steam Profile",
-        "r": "steam"
-    }
-]
-
-
-
-================================================
-FILE: r/favsong/index.html
-================================================
-<!DOCTYPE HTML>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=https://youtu.be/H4jRi4E-dvA">
-    <title>Přesměrování na Favorite Song</title>
 </head>
 <body>
-    <p>Pokud nebudete automaticky přesměrováni na 'Favorite Song', klikněte na <a href="https://youtu.be/H4jRi4E-dvA">tento odkaz</a>.</p>
-</body>
-</html>
+<p>když stánka nefunguje klikněte <a href="https://youtu.be/H4jRi4E-dvA">zde</a></p>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+</footer>
+</body></html>
 
 
 
 ================================================
-FILE: r/steam/index.html
+FILE: web/r/steam/index.html
 ================================================
-<!DOCTYPE HTML>
-<html lang="cs">
+<!DOCTYPE html>
+<html lang=cs>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steam Profile</title>
+    
     <meta http-equiv="refresh" content="0; url=https://steamcommunity.com/profiles/76561199435612424/">
-    <title>Přesměrování na Steam Profile</title>
 </head>
 <body>
-    <p>Pokud nebudete automaticky přesměrováni na 'Steam Profile', klikněte na <a href="https://steamcommunity.com/profiles/76561199435612424/">tento odkaz</a>.</p>
-</body>
-</html>
-
+<p>když stánka nefunguje klikněte <a href="https://steamcommunity.com/profiles/76561199435612424/">zde</a></p>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+</footer>
+</body></html>
 
 
 ================================================
-FILE: r/szn/index.html
+FILE: web/r/wb/index.html
 ================================================
-<!DOCTYPE HTML>
-<html lang="cs">
+<!DOCTYPE html>
+<html lang=cs>
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=https://seznam.cz">
-    <title>Přesměrování na Seznam</title>
-</head>
-<body>
-    <p>Pokud nebudete automaticky přesměrováni na 'Seznam', klikněte na <a href="https://seznam.cz">tento odkaz</a>.</p>
-</body>
-</html>
-
-
-
-================================================
-FILE: r/wb/index.html
-================================================
-<!DOCTYPE HTML>
-<html lang="cs">
-<head>
-    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web</title>
+    
     <meta http-equiv="refresh" content="0; url=https://msnehulak.github.io/">
-    <title>Přesměrování na Web</title>
 </head>
 <body>
-    <p>Pokud nebudete automaticky přesměrováni na 'Web', klikněte na <a href="https://msnehulak.github.io/">tento odkaz</a>.</p>
-</body>
-</html>
-
+<p>když stánka nefunguje klikněte <a href="https://msnehulak.github.io/">zde</a></p>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+</footer>
+</body></html>
 
 
 ================================================
@@ -740,11 +768,14 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install dependencies
+        run: pip install markdown
+
       # 3. Spuštění parsovacího skriptu s předáním textu z Issue
       - name: Parse Issue and Generate JSON
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
-        run: python worker.py
+        run: python code/issueworker.py
 
       # 4. Vytvoření Pull Requestu pomocí hotové akce
       - name: Create Pull Request

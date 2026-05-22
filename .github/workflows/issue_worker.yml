@@ -26,11 +26,14 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install dependencies
+        run: pip install markdown
+
       # 3. Spuštění parsovacího skriptu s předáním textu z Issue
       - name: Parse Issue and Generate JSON
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
-        run: python worker.py
+        run: python code/issueworker.py
 
       # 4. Vytvoření Pull Requestu pomocí hotové akce
       - name: Create Pull Request

@@ -4,7 +4,7 @@ body {
     margin: 0;
     padding: 0;
     background-color: #333;
-    color: #333222;
+    color: #f1f1f1;
 }
 
 header {
@@ -32,6 +32,11 @@ nav a {
     color: #ecf0f1;
     text-decoration: none;
     margin-left: 20px; /* Mezera mezi jednotlivými odkazy */
+}
+
+nav a:hover {
+    opacity: 0.8;
+    text-decoration: underline;
 }
 
 /* Hlavní obsah */
