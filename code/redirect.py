@@ -52,22 +52,17 @@ class Redirect:
         check(link, limits["link"], "link")
         check(r, limits["r"], "redirect")
 
-    def add_redirect(self, 
-                link="https://www.google.com", 
-                name = "Google", r="g"):
-        
+    def add_redirect(self, link="https://www.google.com", name="Google", r="g"):
         self.validate_redirect(name, link, r)
-
+        
+        for existing in self.links:
+            if existing["r"] == r:
+                print(f"Redirect with path '/r/{r}/' already exists")
+                sys.exit(1)
+        
         add = {"link": link, "name": name, "r": r}
-
-        if not add in self.links:
-            self.links.append(add)
-        else:
-            print("Find redirect dupe")
-            sys.exit(1)
-
-        sweb.save_json("links", self.links)        
-        print(f"Link {name} ({link}) is add as '{r}'")
+        self.links.append(add)
+        sweb.save_json("links", self.links)
 
 if __name__ == "__main__":
     app = Redirect()
