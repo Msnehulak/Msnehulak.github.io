@@ -2,25 +2,31 @@ Directory structure:
 └── web/
     ├── README.md
     ├── log.txt
+    ├── requirements.txt
     ├── code/
-    │   ├── builder.py
+    │   ├── build.py
     │   ├── issueworker.py
     │   ├── redirect.py
     │   ├── sweb.py
     │   └── webbuilder.py
     ├── data/
     │   ├── blogs.json
+    │   ├── limits.json
     │   ├── links.json
     │   ├── nav.json
     │   └── text.json
     ├── web/
+    │   ├── 404.html
     │   ├── index.html
     │   ├── projects.html
+    │   ├── sitemap.xml
     │   ├── style.css
     │   └── r/
     │       ├── favsong/
     │       │   └── index.html
     │       ├── steam/
+    │       │   └── index.html
+    │       ├── szn/
     │       │   └── index.html
     │       └── wb/
     │           └── index.html
@@ -53,14 +59,73 @@ ERROR[2026-05-22 18:31:32.083034]: No ISSUE BODY!!
 
 
 ================================================
-FILE: code/builder.py
+FILE: requirements.txt
+================================================
+markdown
+
+
+
+================================================
+FILE: code/build.py
 ================================================
 import webbuilder as wb
+import redirect as rd
 import sweb
+
+def generate_sitemap():
+    # Základní URL adresa vašeho webu
+    base_url = "https://msnehulak.github.io/"
+    web_dir = sweb.BASE_DIR / "web"
+    
+    urls = []
+    
+    # Rekurzivně projde všechny soubory .html ve složce web
+    for html_file in web_dir.rglob("*.html"):
+        # Získá relativní cestu vůči složce web
+        rel_path = html_file.relative_to(web_dir)
+        # Převede cestu na posix formát s dopřednými lomítky
+        url_path = rel_path.as_posix()
+        
+        # Hezké formátování URL adres (odstranění index.html na konci)
+        if url_path == "index.html":
+            full_url = base_url
+        elif url_path.endswith("/index.html"):
+            full_url = base_url + url_path[:-10]  # Odebere 'index.html'
+        else:
+            full_url = base_url + url_path
+            
+        urls.append(full_url)
+    
+    # Sestavení výsledného XML souboru
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for url in sorted(urls):
+        xml_content += f'  <url>\n    <loc>{url}</loc>\n  </url>\n'
+    xml_content += '</urlset>'
+    
+    # Uložení sitemap.xml přímo do kořene složky web
+    sitemap_path = web_dir / "sitemap.xml"
+    with open(sitemap_path, "w", encoding="utf-8") as f:
+        f.write(xml_content)
+        
+    print(f"Sitemap.xml úspěšně vygenerována s {len(urls)} odkazy.")
+
+def page_404():
+    text = sweb.data.texts["404"]
+    bld = wb.WebBuilder(title=text["title"])
+    bld.add_head(text["head"])
+
+    abutf = wb.Frame()
+    abutf.add_markdown(text["text"])
+    abutf.move_main()
+    bld.add_html(abutf.get_frame()) 
+
+    bld.build()
+    bld.save_web("404")
 
 def projects_page():
     text = sweb.data.texts["projects"]
-    bld = wb.WebBuilder()
+    bld = wb.WebBuilder(title=text["title"])
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -70,11 +135,10 @@ def projects_page():
 
     bld.build()
     bld.save_web("projects")
-    print("projects web is saved")
 
 def home_page():
     text = sweb.data.texts["home_page"]
-    bld = wb.WebBuilder()
+    bld = wb.WebBuilder(title=text["title"])
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -85,12 +149,19 @@ def home_page():
     bld.build()
     bld.save_web("index")
 
-projects_page()
-home_page()
+def redirect():
+    app = rd.Redirect()
+    app.main()
 
+def build():
+    redirect()
+    projects_page()
+    home_page()
+    page_404()
+    generate_sitemap()
 
-
-
+if __name__ == "__main__":
+    build() 
 
 
 
@@ -100,7 +171,8 @@ FILE: code/issueworker.py
 import sys
 import sweb
 import os
-import re
+import json
+import build
 import redirect as rd
 
 class IssueWorker:
@@ -109,53 +181,38 @@ class IssueWorker:
         self.app_rd = rd.Redirect()
 
     def find_form_type(self):
-        i = self.row_body
-        c = {
-                "rn": i.count("### Name of redirect"),
-                "wl": i.count("### Web link"),
-                "r": i.count("### Redirect")
-        }
-
-        if c["rn"] == c["wl"] == c["r"] == 1:
+        required_keys = ["Name of redirect", "Web link", "Redirect"]
+        if all(key in self.body for key in required_keys):
             self.form_type = "add_redirect"
 
-    def format_data(self):
-        data = {}
-        sections = re.split(r'###\s+', self.row_body)
-        
-        for section in sections:
-            if not section.strip():
-                continue
-            lines = section.split('\n', 1)
-            key = lines[0].strip().lower().replace(" ", "_")
-            value = lines[1].strip() if len(lines) > 1 else ""
-            data[key] = value.strip()
-        
-        self.body = data
-
     def main(self):
-        self.row_body = os.environ["ISSUE_BODY"]
+        raw_env = os.environ.get("ISSUE_JSON", "")
+        
+        try: 
+            self.body = json.loads(raw_env)
+        except json.JSONDecodeError:
+            print("Chyba: ISSUE_JSON neobsahuje validní JSON.")
+            sys.exit(1)
         
         self.find_form_type()
         if self.form_type is None:
             print("invalid format")
             sys.exit(1)
-        self.format_data()
 
         if self.form_type == "add_redirect":
-            link = self.body["web_link"]
-            name = self.body["name_of_redirect"]
-            r = self.body["redirect"]
+            link = self.body["Web link"]
+            name = self.body["Name of redirect"]
+            r = self.body["Redirect"]
             self.app_rd.add_redirect(link=link, name=name, r=r)
-            self.app_rd.main()
+            build.build()
 
 if __name__ == "__main__":
-    if "ISSUE_BODY" in os.environ:
+    if "ISSUE_JSON" in os.environ:
         app = IssueWorker()
         app.main()
     else:
         sweb.log_error("No ISSUE BODY!!")
- 
+
 
 
 
@@ -163,6 +220,7 @@ if __name__ == "__main__":
 ================================================
 FILE: code/redirect.py
 ================================================
+import sys
 import sweb
 import webbuilder as wb
 import os
@@ -197,11 +255,40 @@ class Redirect:
 
             print(f"Redirect '{i['name']}' at /r/{i['r']}/")
 
+    def validate_redirect(self, name, link, r):
+        limits = sweb.data.limits["redirect"]    
+        def check(value, 
+                   blocks,
+                   name="unknown"):
+            # Lenght
+            if len(value) > blocks["len"]:
+                print(f"{name} Lenght is over limit {blocks['len']}")
+                sys.exit(1)
+            # Block
+            for block in blocks["block"]:
+                if block in value:
+                    print(f"is use block world {block}. {blocks['block']}")
+                    sys.exit(1)
+
+        check(name, limits["name"], "name")
+        check(link, limits["link"], "link")
+        check(r, limits["r"], "redirect")
+
     def add_redirect(self, 
                 link="https://www.google.com", 
                 name = "Google", r="g"):
-        self.links.append({"link": link, "name": name, "r": r})
-        sweb.save_json("links", self.links)
+        
+        self.validate_redirect(name, link, r)
+
+        add = {"link": link, "name": name, "r": r}
+
+        if not add in self.links:
+            self.links.append(add)
+        else:
+            print("Find redirect dupe")
+            sys.exit(1)
+
+        sweb.save_json("links", self.links)        
         print(f"Link {name} ({link}) is add as '{r}'")
 
 if __name__ == "__main__":
@@ -239,11 +326,11 @@ def save_html(file: str, content: str):
     with open(path, "w", encoding='utf-8') as f:
         f.write(content)
 
-def save_json(file: str, content: str):
+def save_json(file: str, content):
     end = ".json"
     if not file.endswith(end):
         file += end
-    
+
     content = json.dumps(content)
     path = BASE_DIR / "data" / file
     with open(path, "w", encoding='utf-8') as f:
@@ -275,9 +362,10 @@ class WebBuilder:
     def __init__(self, 
                  add_start = True, 
                  add_nav = True,
+                 title = "title"
                  ):
         self.content = ""
-        if add_start: self.add_start()
+        if add_start: self.add_start(title=title)
         if add_nav: self.add_nav()
 
     def add_start(self, 
@@ -331,7 +419,7 @@ class WebBuilder:
             year = f"{start_year} - {end_year}"
         footer = f"""
 <footer>
-    <p>&copy; {year} SnehulakTV_</p>
+    <p>&copy; {year} SnehulakTV</p>
 </footer>
 """
         self.content += footer
@@ -363,6 +451,7 @@ class WebBuilder:
     def save_web(self, name: str):
         if not self.content.endswith(HTML_END): self.content += HTML_END
         sweb.save_html(name, self.content)
+        print(f"Web {name} is saved.")
 
 class Frame:
     def __init__(self) -> None:
@@ -382,7 +471,7 @@ class Frame:
         self.html_oc["main"][0] = 1
         self.content = "<main>" + self.content
 
-    def _chceck_close_html(self):
+    def _chck_close_html(self):
         i = self.html_oc
         if not i["section"][0] == i["section"][1]:
             self.content += "</section>"
@@ -390,7 +479,7 @@ class Frame:
             self.content += "</main>"
 
     def get_frame(self, print_frame = False):
-        self._chceck_close_html()
+        self._chck_close_html()
         if print_frame: print(self.content)
         return self.content
 
@@ -419,6 +508,27 @@ FILE: data/blogs.json
 
 
 ================================================
+FILE: data/limits.json
+================================================
+{ "redirect": {
+    "link":{
+        "len": 200,
+        "block": ["<", ">"]
+    },
+    "name": {
+        "len": 50,
+        "block": ["<", ">"]
+    },
+    "r":  {
+        "len": 10,
+        "block": ["<",">", ".", "/", "'"]
+    }
+}
+}
+
+
+
+================================================
 FILE: data/links.json
 ================================================
 [{"link": "https://msnehulak.github.io/", "name": "Web", "r": "wb"}, {"link": "https://youtu.be/H4jRi4E-dvA", "name": "Favorite Song", "r": "favsong"}, {"link": "https://steamcommunity.com/profiles/76561199435612424/", "name": "Steam Profile", "r": "steam"}]
@@ -440,7 +550,7 @@ FILE: data/nav.json
         },
         {
             "name": "Blog",
-            "link": "blogs.html"
+            "link": "index.html"
         },
         {
             "name": "Projects",
@@ -458,25 +568,65 @@ FILE: data/text.json
 {
     "redirect": {
         "nl_msg": {
-            "cs": "když stánka nefunguje klikněte",
+            "cs": "když stránka nefunguje klikněte",
             "en": "empty"
         },
         "nl_click": {
             "cs": "zde",
-            "en": "heare"
+            "en": "here"
         }
     },
     "home_page": {
-        "head": "SnehulaksTV's Web",
-        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2"
+        "head": "SnehulakTV's Web",
+        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2",
+        "title": "SnehulakTV's web"
     },
     "projects": {
         "head": "My Projects",
-        "text": "# My web \n My web is this web."
+        "text": "# My web \n My web is this web.",
+        "title": "My projects"
+    },
+    "404": {
+        "head": "404 Are you lost?",
+        "text": "You can go back ho by click [--> Here <--](index.html)",
+        "title": "404 Are you lost?"
     }
 
 }
 
+
+
+================================================
+FILE: web/404.html
+================================================
+<!DOCTYPE html>
+<html lang=cs>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Are you lost?</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<nav>
+    <div class="logo">SnehulakTV</div>
+    <div class="odkazy">
+        <a href="index.html">Home</a>
+        <a href="index.html">Blog</a>
+        <a href="projects.html">Projects</a>
+    </div>
+</nav>
+
+<header>
+    <h1>404 Are you lost?</h1>
+</header>
+<main><section class="karta"><p>You can go back ho by click <a href="index.html">--&gt; Here &lt;--</a></p></section></main>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
+</footer>
+</body></html>
 
 
 ================================================
@@ -487,7 +637,7 @@ FILE: web/index.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>title</title>
+    <title>SnehulakTV's web</title>
     <link rel="stylesheet" href="style.css">
     
 </head>
@@ -497,13 +647,13 @@ FILE: web/index.html
     <div class="logo">SnehulakTV</div>
     <div class="odkazy">
         <a href="index.html">Home</a>
-        <a href="blogs.html">Blog</a>
+        <a href="index.html">Blog</a>
         <a href="projects.html">Projects</a>
     </div>
 </nav>
 
 <header>
-    <h1>SnehulaksTV's Web</h1>
+    <h1>SnehulakTV's Web</h1>
 </header>
 <main><section class="karta"><h1>About me</h1>
 <p>My name is Max.</p>
@@ -512,7 +662,7 @@ FILE: web/index.html
 <li>something 2</li>
 </ul></section></main>
 <footer>
-    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
 </footer>
 </body></html>
 
@@ -525,7 +675,7 @@ FILE: web/projects.html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>title</title>
+    <title>My projects</title>
     <link rel="stylesheet" href="style.css">
     
 </head>
@@ -535,7 +685,7 @@ FILE: web/projects.html
     <div class="logo">SnehulakTV</div>
     <div class="odkazy">
         <a href="index.html">Home</a>
-        <a href="blogs.html">Blog</a>
+        <a href="index.html">Blog</a>
         <a href="projects.html">Projects</a>
     </div>
 </nav>
@@ -546,9 +696,38 @@ FILE: web/projects.html
 <main><section class="karta"><h1>My web</h1>
 <p>My web is this web.</p></section></main>
 <footer>
-    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
 </footer>
 </body></html>
+
+
+================================================
+FILE: web/sitemap.xml
+================================================
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://msnehulak.github.io/</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/404.html</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/projects.html</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/r/favsong/</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/r/steam/</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/r/szn/</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/r/wb/</loc>
+  </url>
+</urlset>
 
 
 ================================================
@@ -653,9 +832,9 @@ FILE: web/r/favsong/index.html
     <meta http-equiv="refresh" content="0; url=https://youtu.be/H4jRi4E-dvA">
 </head>
 <body>
-<p>když stánka nefunguje klikněte <a href="https://youtu.be/H4jRi4E-dvA">zde</a></p>
+<p>když stránka nefunguje klikněte <a href="https://youtu.be/H4jRi4E-dvA">zde</a></p>
 <footer>
-    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
 </footer>
 </body></html>
 
@@ -673,9 +852,29 @@ FILE: web/r/steam/index.html
     <meta http-equiv="refresh" content="0; url=https://steamcommunity.com/profiles/76561199435612424/">
 </head>
 <body>
-<p>když stánka nefunguje klikněte <a href="https://steamcommunity.com/profiles/76561199435612424/">zde</a></p>
+<p>když stránka nefunguje klikněte <a href="https://steamcommunity.com/profiles/76561199435612424/">zde</a></p>
 <footer>
-    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
+</footer>
+</body></html>
+
+
+================================================
+FILE: web/r/szn/index.html
+================================================
+<!DOCTYPE html>
+<html lang=cs>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seznam</title>
+    
+    <meta http-equiv="refresh" content="0; url=https://seznam.cz">
+</head>
+<body>
+<p>když stránka nefunguje klikněte <a href="https://seznam.cz">zde</a></p>
+<footer>
+    <p>&copy; 2026 SnehulakTV</p>
 </footer>
 </body></html>
 
@@ -693,9 +892,9 @@ FILE: web/r/wb/index.html
     <meta http-equiv="refresh" content="0; url=https://msnehulak.github.io/">
 </head>
 <body>
-<p>když stánka nefunguje klikněte <a href="https://msnehulak.github.io/">zde</a></p>
+<p>když stránka nefunguje klikněte <a href="https://msnehulak.github.io/">zde</a></p>
 <footer>
-    <p>&copy; 2026 - 2028 SnehulakTV_</p>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
 </footer>
 </body></html>
 
@@ -746,7 +945,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # Spustí se pokaždé, když se sloučí změny do větve main
+      - main 
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: 
+
 
 permissions:
   contents: read
@@ -763,14 +966,25 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+    
+      - name: Build Web Site
+        run: python code/build.py
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # KLÍČOVÝ KROK: Tady GitHubu řekneš, že má vzít pouze složku web
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -785,7 +999,7 @@ jobs:
 ================================================
 FILE: .github/workflows/issue_worker.yml
 ================================================
-name: Auto Create PR from Issue
+name: Issue Form Worker
 
 on:
   issues:
@@ -793,9 +1007,8 @@ on:
 
 jobs:
   create-pr:
-    # Workflow se spustí pouze tehdy, pokud má Issue správný nadpis nebo label
-    # Doporučuji v novém formuláři (yaml) nastavit fixní label, např. "new-character"
     if: contains(github.event.issue.labels.*.name, 'issue_worker')
+
     runs-on: ubuntu-latest
     
     permissions:
@@ -803,26 +1016,35 @@ jobs:
       pull-requests: write
 
     steps:
-      # 1. Klonování repozitáře
+      # clone repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Nastavení Pythonu
+      # Set-Up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # Install Libarys
       - name: Install dependencies
-        run: pip install markdown
+        run: pip install -r requirements.txt
+    
+      # Format form to json
+      - name: Format issue form to json
+        id: parse_form
+        uses: peter-murray/issue-forms-body-parser@v4
+        with:
+          issue_id: ${{ github.event.issue.number }}
+          separator: '###'
 
-      # 3. Spuštění parsovacího skriptu s předáním textu z Issue
+      # Run pythonn
       - name: Parse Issue and Generate JSON
         env:
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_JSON: ${{ steps.parse_form.outputs.payload }}
         run: python code/issueworker.py
 
-      # 4. Vytvoření Pull Requestu pomocí hotové akce
+        # Create Pull Request
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:

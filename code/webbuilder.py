@@ -8,13 +8,18 @@ class WebBuilder:
     def __init__(self, 
                  add_start = True, 
                  add_nav = True,
+                 title = "title"
                  ):
         self.content = ""
-        if add_start: self.add_start()
+        if add_start: self.add_start(title=title)
         if add_nav: self.add_nav()
+        self.html_oc = {
+                "body": [1, 0],
+                "html": [1, 0]
+        }
 
     def add_start(self, 
-                  lang = "cs", 
+                  lang = "en", # en, cs
                   title = "title", 
                   load_css = True, 
                   redirect = ""):
@@ -27,7 +32,7 @@ class WebBuilder:
             r = f'<meta http-equiv="refresh" content="0; url={redirect}">'
         
         web_start = f"""<!DOCTYPE html>
-<html lang={lang}>
+<html lang="{lang}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,18 +89,28 @@ class WebBuilder:
         html = markdown.markdown(md)
         self.content += html
 
+    def _check_close(self):
+        i = self.html_oc 
+        if i["body"][0] > i["body"][1]:
+            self.content += "</body>"
+            self.html_oc["body"][1] += 1
+        if i["html"][0] > i["html"][1]:
+            self.content += "</html>"
+            self.html_oc["html"][1] += 1
+
     def build(self, add_footer = True):
         if add_footer: self.add_footer()
-        self.content += "</body>" + HTML_END
+        self._check_close()
 
     def get_web(self, print_web = False):
-        if not self.content.endswith(HTML_END): self.content += HTML_END
+        self._check_close()
         if print_web: print(self.content)
         return self.content
 
     def save_web(self, name: str):
-        if not self.content.endswith(HTML_END): self.content += HTML_END
+        self._check_close()
         sweb.save_html(name, self.content)
+        print(f"Web {name} is saved.")
 
 class Frame:
     def __init__(self) -> None:
@@ -104,8 +119,6 @@ class Frame:
                 "main": [0, 0],
                 "section": [1, 0]
         }
-
-        self.WB = WebBuilder()
  
     def add_markdown(self, md):
         html = markdown.markdown(md)
@@ -119,8 +132,10 @@ class Frame:
         i = self.html_oc
         if not i["section"][0] == i["section"][1]:
             self.content += "</section>"
+            self.html_oc["section"][1] += 1
         if not i["main"][0] == i["main"][1]:
             self.content += "</main>"
+            self.html_oc["main"][1] += 1
 
     def get_frame(self, print_frame = False):
         self._chck_close_html()

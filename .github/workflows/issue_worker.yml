@@ -1,4 +1,4 @@
-name: Auto Create PR from Issue
+name: Issue Form Worker
 
 on:
   issues:
@@ -6,9 +6,8 @@ on:
 
 jobs:
   create-pr:
-    # Workflow se spustí pouze tehdy, pokud má Issue správný nadpis nebo label
-    # Doporučuji v novém formuláři (yaml) nastavit fixní label, např. "new-character"
     if: contains(github.event.issue.labels.*.name, 'issue_worker')
+
     runs-on: ubuntu-latest
     
     permissions:
@@ -16,26 +15,35 @@ jobs:
       pull-requests: write
 
     steps:
-      # 1. Klonování repozitáře
+      # clone repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Nastavení Pythonu
+      # Set-Up Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
+      # Install Libarys
       - name: Install dependencies
-        run: pip install markdown
+        run: pip install -r requirements.txt
+    
+      # Format form to json
+      - name: Format issue form to json
+        id: parse_form
+        uses: peter-murray/issue-forms-body-parser@v4
+        with:
+          issue_id: ${{ github.event.issue.number }}
+          separator: '###'
 
-      # 3. Spuštění parsovacího skriptu s předáním textu z Issue
+      # Run pythonn
       - name: Parse Issue and Generate JSON
         env:
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_JSON: ${{ steps.parse_form.outputs.payload }}
         run: python code/issueworker.py
 
-      # 4. Vytvoření Pull Requestu pomocí hotové akce
+        # Create Pull Request
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:

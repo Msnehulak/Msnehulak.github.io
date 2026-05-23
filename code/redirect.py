@@ -1,3 +1,4 @@
+import sys
 import sweb
 import webbuilder as wb
 import os
@@ -32,11 +33,40 @@ class Redirect:
 
             print(f"Redirect '{i['name']}' at /r/{i['r']}/")
 
+    def validate_redirect(self, name, link, r):
+        limits = sweb.data.limits["redirect"]    
+        def check(value, 
+                   blocks,
+                   name="unknown"):
+            # Lenght
+            if len(value) > blocks["len"]:
+                print(f"{name} Lenght is over limit {blocks['len']}")
+                sys.exit(1)
+            # Block
+            for block in blocks["block"]:
+                if block in value:
+                    print(f"is use block world {block}. {blocks['block']}")
+                    sys.exit(1)
+
+        check(name, limits["name"], "name")
+        check(link, limits["link"], "link")
+        check(r, limits["r"], "redirect")
+
     def add_redirect(self, 
                 link="https://www.google.com", 
                 name = "Google", r="g"):
-        self.links.append({"link": link, "name": name, "r": r})
-        sweb.save_json("links", self.links)
+        
+        self.validate_redirect(name, link, r)
+
+        add = {"link": link, "name": name, "r": r}
+
+        if not add in self.links:
+            self.links.append(add)
+        else:
+            print("Find redirect dupe")
+            sys.exit(1)
+
+        sweb.save_json("links", self.links)        
         print(f"Link {name} ({link}) is add as '{r}'")
 
 if __name__ == "__main__":

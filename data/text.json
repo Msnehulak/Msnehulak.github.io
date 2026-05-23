@@ -10,12 +10,19 @@
         }
     },
     "home_page": {
-        "head": "SnehulaksTV's Web",
-        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2"
+        "head": "SnehulakTV's Web",
+        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2",
+        "title": "SnehulakTV's web"
     },
     "projects": {
         "head": "My Projects",
-        "text": "# My web \n My web is this web."
+        "text": "# My web \n My web is this web.",
+        "title": "My projects"
+    },
+    "404": {
+        "head": "404 Are you lost?",
+        "text": "You can go back ho by click [--> Here <--](index.html)",
+        "title": "404 Are you lost?"
     }
 
 }
