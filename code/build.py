@@ -2,6 +2,7 @@ import webbuilder as wb
 import redirect as rd
 import osu
 import sweb
+import shutil
 
 def generate_sitemap():
     # Základní URL adresa vašeho webu
@@ -84,7 +85,25 @@ def redirect():
     app = rd.Redirect()
     app.main()
 
+def prepare_folders():
+    """Zajistí, že složka web existuje a překopíruje do ní CSS styl."""
+    web_dir = sweb.BASE_DIR / "web"
+    data_dir = sweb.BASE_DIR / "data"
+    
+    # Vytvoří složku web/ pokud neexistuje (včetně rodičovských složek)
+    web_dir.mkdir(parents=True, exist_ok=True)
+    
+    src_css = data_dir / "style.css"
+    dst_css = web_dir / "style.css"
+    
+    if src_css.exists():
+        shutil.copy2(src_css, dst_css)
+        print("Soubor style.css byl úspěšně zkopírován do složky web.")
+    else:
+        print("Upozornění: Soubor data/style.css nebyl nalezen!")
+
 def build():
+    prepare_folders()
     redirect()
     projects_page()
     home_page()
