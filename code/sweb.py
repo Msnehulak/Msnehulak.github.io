@@ -7,7 +7,7 @@ BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 class Data:
     def __init__(self) -> None:
-        self.copy_right_year = [2026, 2028]
+        self.copy_right_year = [2026, datetime.now().year]
         self.texts = load_json("text")
         self.limits = load_json("limits")
 
