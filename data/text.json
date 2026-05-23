@@ -23,6 +23,16 @@
         "head": "404 Are you lost?",
         "text": "You can go back ho by click [--> Here <--](index.html)",
         "title": "404 Are you lost?"
+    },
+    "osu": {
+        "head": "My osu profile",
+        "title": "Osu profile",
+        "play_style": {
+            "pen_grip": "Hover",
+            "area": [70, 42],
+            "sr": 5.4,
+            "fav_mods": ["Hd"]
+        }
     }
-
 }
+

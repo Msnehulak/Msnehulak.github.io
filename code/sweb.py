@@ -3,11 +3,13 @@ from pathlib import Path
 import json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 class Data:
     def __init__(self) -> None:
         self.copy_right_year = [2026, 2028]
         self.texts = load_json("text")
+        self.limits = load_json("limits")
 
 def log_error(text):
     error = f"ERROR[{datetime.now()}]: {text}"

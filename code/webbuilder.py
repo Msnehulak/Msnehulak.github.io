@@ -122,6 +122,7 @@ class Frame:
  
     def add_markdown(self, md):
         html = markdown.markdown(md)
+        html = html.replace(".nl.", "<br>")
         self.content += html
  
     def move_main(self):

@@ -9,13 +9,14 @@
             "link": "index.html"
         },
         {
-            "name": "Blog",
-            "link": "index.html"
-        },
-        {
             "name": "Projects",
             "link": "projects.html"
+        },
+        {
+            "name": "My Osu",
+            "link": "osu.html"
         }
+
     ]
 }
 

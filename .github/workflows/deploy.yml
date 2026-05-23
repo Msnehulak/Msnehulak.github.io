@@ -38,6 +38,9 @@ jobs:
         run: pip install -r requirements.txt
     
       - name: Build Web Site
+        env:
+          OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
+          OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
         run: python code/build.py
 
       - name: Setup Pages

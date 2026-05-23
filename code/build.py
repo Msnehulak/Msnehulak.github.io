@@ -1,5 +1,6 @@
 import webbuilder as wb
 import redirect as rd
+import osu
 import sweb
 
 def generate_sitemap():
@@ -89,6 +90,7 @@ def build():
     home_page()
     page_404()
     generate_sitemap()
+    osu.osu.main() 
 
 if __name__ == "__main__":
     build() 

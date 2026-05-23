@@ -6,18 +6,21 @@ Directory structure:
     ├── code/
     │   ├── build.py
     │   ├── issueworker.py
+    │   ├── osu.py
     │   ├── redirect.py
     │   ├── sweb.py
     │   └── webbuilder.py
     ├── data/
-    │   ├── blogs.json
     │   ├── limits.json
     │   ├── links.json
     │   ├── nav.json
-    │   └── text.json
+    │   ├── text.json
+    │   └── cache/
+    │       └── osu.json
     ├── web/
     │   ├── 404.html
     │   ├── index.html
+    │   ├── osu.html
     │   ├── projects.html
     │   ├── sitemap.xml
     │   ├── style.css
@@ -64,6 +67,12 @@ ERROR[2026-05-22 18:31:32.083034]: No ISSUE BODY!!
 FILE: requirements.txt
 ================================================
 markdown
+ossapi
+python-dotenv
+
+
+
+
 
 
 
@@ -72,6 +81,7 @@ FILE: code/build.py
 ================================================
 import webbuilder as wb
 import redirect as rd
+import osu
 import sweb
 
 def generate_sitemap():
@@ -161,6 +171,7 @@ def build():
     home_page()
     page_404()
     generate_sitemap()
+    osu.osu.main() 
 
 if __name__ == "__main__":
     build() 
@@ -216,6 +227,109 @@ if __name__ == "__main__":
         sweb.log_error("No ISSUE BODY!!")
 
 
+
+
+
+================================================
+FILE: code/osu.py
+================================================
+import sweb
+import os
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from ossapi import Ossapi
+import webbuilder as wb
+
+load_dotenv()
+MINIMUM_UPDATE_HOURS = 1
+
+class Osu:
+    def __init__(self) -> None:
+        self.name = "SnehulakTV_"
+        self.data = sweb.load_json("cache/osu")
+
+    def update_data(self):
+        last_update = datetime.strptime(self.data["update"], sweb.BASE_TIME_FORM)
+        time_diff = datetime.now() - last_update 
+
+        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS):
+            print("osu! data jsou aktuální (využívám cache).")
+            return
+
+        CLIENT_ID = os.getenv("OSU_CLIENT_ID")
+        CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
+
+        if not CLIENT_ID or not CLIENT_SECRET:
+            print("Chyba: Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET. Přeskakuji update.")
+            return
+
+        try:
+            api = Ossapi(int(CLIENT_ID), CLIENT_SECRET)
+            user = api.user(self.name)
+            stats = user.statistics
+
+            self.data["update"] = datetime.now().strftime(sweb.BASE_TIME_FORM)
+            self.data["pp"] = stats.pp
+            self.data["acc"] = stats.hit_accuracy
+            self.data["rank"] = stats.global_rank
+            self.data["play_time"] = stats.play_time
+            self.data["play_count"] = stats.play_count
+
+            sweb.save_json("cache/osu", self.data)
+            print("osu! cache was updated.")
+        except Exception as e:
+            print(f"ERROR with contntact osu! API: {e}")
+
+    def get_stats(self):
+        self.update_data()
+        return self.data
+
+    def create_page(self):
+        def get_area(area):
+            w = area[0]
+            h = area[1]
+            
+            return f"{w}x{h}mm"
+        texts = sweb.data.texts["osu"]
+
+        bld = wb.WebBuilder(title=texts["title"])
+        bld.add_head(text=texts["head"])
+
+        frame = wb.Frame()
+        i = texts["play_style"]
+        
+        content = f"""
+# Stats
+
+**Name:** {self.name}
+
+**Rank:** {self.data["rank"]}
+
+**PP:** {self.data["pp"]}
+
+**Play Time:** {self.data["play_time"]}
+
+**Play Count:** {self.data["play_count"]}
+
+# Play Style
+
+**Pen grip:** {i["pen_grip"]}
+
+**Area**: {get_area(i["area"])}
+
+"""
+        frame.add_markdown(content)
+        frame.move_main()
+        bld.add_html(frame.get_frame())
+
+        bld.build()
+        bld.save_web("osu")
+
+    def main(self):
+        self.update_data()
+        self.create_page()
+
+osu = Osu()
 
 
 
@@ -302,11 +416,13 @@ from pathlib import Path
 import json
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 class Data:
     def __init__(self) -> None:
         self.copy_right_year = [2026, 2028]
         self.texts = load_json("text")
+        self.limits = load_json("limits")
 
 def log_error(text):
     error = f"ERROR[{datetime.now()}]: {text}"
@@ -498,26 +614,6 @@ class Frame:
 
 
 ================================================
-FILE: data/blogs.json
-================================================
-[
-    {
-    "title": "My first blog",
-    "content": "This is my first blog. I am happy.",
-    "time": "2000-02-10T16:00:00Z"
-    },
-    {
-    "title": "My second blog",
-    "content": "This is my second blog. I am sad.",
-    "time": "2000-02-10T16:00:00Z"
-    }
-
-
-]
-
-
-
-================================================
 FILE: data/limits.json
 ================================================
 { "redirect": {
@@ -558,13 +654,14 @@ FILE: data/nav.json
             "link": "index.html"
         },
         {
-            "name": "Blog",
-            "link": "index.html"
-        },
-        {
             "name": "Projects",
             "link": "projects.html"
+        },
+        {
+            "name": "My Osu",
+            "link": "osu.html"
         }
+
     ]
 }
 
@@ -599,17 +696,33 @@ FILE: data/text.json
         "head": "404 Are you lost?",
         "text": "You can go back ho by click [--> Here <--](index.html)",
         "title": "404 Are you lost?"
+    },
+    "osu": {
+        "head": "My osu profile",
+        "title": "Osu profile",
+        "play_style": {
+            "pen_grip": "Hover",
+            "area": [70, 42],
+            "sr": 5.4,
+            "fav_mods": ["Hd"]
+        }
     }
-
 }
 
+
+
+
+================================================
+FILE: data/cache/osu.json
+================================================
+{"update": "2026-05-23 17:19:13", "rank": 567294, "pp": 1796.01, "acc": 87.4581, "play_time": 527431, "play_count": 9309}
 
 
 ================================================
 FILE: web/404.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -623,8 +736,8 @@ FILE: web/404.html
     <div class="logo">SnehulakTV</div>
     <div class="odkazy">
         <a href="index.html">Home</a>
-        <a href="index.html">Blog</a>
         <a href="projects.html">Projects</a>
+        <a href="osu.html">My Osu</a>
     </div>
 </nav>
 
@@ -642,7 +755,7 @@ FILE: web/404.html
 FILE: web/index.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -656,8 +769,8 @@ FILE: web/index.html
     <div class="logo">SnehulakTV</div>
     <div class="odkazy">
         <a href="index.html">Home</a>
-        <a href="index.html">Blog</a>
         <a href="projects.html">Projects</a>
+        <a href="osu.html">My Osu</a>
     </div>
 </nav>
 
@@ -677,10 +790,51 @@ FILE: web/index.html
 
 
 ================================================
+FILE: web/osu.html
+================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osu profile</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+<nav>
+    <div class="logo">SnehulakTV</div>
+    <div class="odkazy">
+        <a href="index.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="osu.html">My Osu</a>
+    </div>
+</nav>
+
+<header>
+    <h1>My osu profile</h1>
+</header>
+<main><section class="karta"><h1>Stats</h1>
+<p><strong>Name:</strong> SnehulakTV_</p>
+<p><strong>Rank:</strong> 567294</p>
+<p><strong>PP:</strong> 1796.01</p>
+<p><strong>Play Time:</strong> 527431</p>
+<p><strong>Play Count:</strong> 9309</p>
+<h1>Play Style</h1>
+<p><strong>Pen grip:</strong> Hover</p>
+<p><strong>Area</strong>: 70x42mm</p></section></main>
+<footer>
+    <p>&copy; 2026 - 2028 SnehulakTV</p>
+</footer>
+</body></html>
+
+
+================================================
 FILE: web/projects.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -694,8 +848,8 @@ FILE: web/projects.html
     <div class="logo">SnehulakTV</div>
     <div class="odkazy">
         <a href="index.html">Home</a>
-        <a href="index.html">Blog</a>
         <a href="projects.html">Projects</a>
+        <a href="osu.html">My Osu</a>
     </div>
 </nav>
 
@@ -722,10 +876,16 @@ FILE: web/sitemap.xml
     <loc>https://msnehulak.github.io/404.html</loc>
   </url>
   <url>
+    <loc>https://msnehulak.github.io/osu.html</loc>
+  </url>
+  <url>
     <loc>https://msnehulak.github.io/projects.html</loc>
   </url>
   <url>
     <loc>https://msnehulak.github.io/r/favsong/</loc>
+  </url>
+  <url>
+    <loc>https://msnehulak.github.io/r/go/</loc>
   </url>
   <url>
     <loc>https://msnehulak.github.io/r/steam/</loc>
@@ -752,7 +912,7 @@ body {
 }
 
 header {
-    background: #336;
+    background: #022552;
     color: white;
     padding: 10px 0;
     text-align: center;
@@ -775,7 +935,7 @@ nav {
 nav a {
     color: #ecf0f1;
     text-decoration: none;
-    margin-left: 20px; /* Mezera mezi jednotlivými odkazy */
+    margin-left: 20px;
 }
 
 nav a:hover {
@@ -805,34 +965,13 @@ footer {
     color: #666;
 }
 
-/* Styly pro nenápadné zobrazení času */
-.hlavicka-blogu {
-    display: flex;
-    justify-content: space-between; /* Nadpis vlevo, čas vpravo */
-    align-items: baseline;          /* Zarovnání na spodní linku textu */
-    border-bottom: 1px solid #444;  /* Jemná linka pod nadpisem */
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-}
-
-.hlavicka-blogu h2 {
-    margin: 0;                      /* Reset okrajů nadpisu */
-}
-
-.cas-blogu {
-    font-size: 0.85rem;             /* Menší písmo než běžný text */
-    color: #888;                    /* Nenápadná šedá barva */
-    font-style: italic;             /* Kurzíva, aby se odlišil */
-    font-weight: 300;               /* Tenčí řez písma */
-}
-
 
 
 ================================================
 FILE: web/r/favsong/index.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -852,7 +991,7 @@ FILE: web/r/favsong/index.html
 FILE: web/r/go/index.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -872,7 +1011,7 @@ FILE: web/r/go/index.html
 FILE: web/r/steam/index.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -912,7 +1051,7 @@ FILE: web/r/szn/index.html
 FILE: web/r/wb/index.html
 ================================================
 <!DOCTYPE html>
-<html lang=cs>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1009,6 +1148,9 @@ jobs:
         run: pip install -r requirements.txt
     
       - name: Build Web Site
+        env:
+          OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
+          OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
         run: python code/build.py
 
       - name: Setup Pages
