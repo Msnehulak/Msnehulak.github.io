@@ -59,6 +59,11 @@ nav {
     gap: 20px; /* Použití gap místo margin-left je čistější */
 }
 
+.osu-logo {
+    border-radius: 15px;
+    width: 100px;
+}
+
 nav a {
     color: #ecf0f1;
     text-decoration: none;

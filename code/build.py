@@ -108,8 +108,9 @@ def build():
     projects_page()
     home_page()
     page_404()
+    osu.osu.main()
     generate_sitemap()
-    osu.osu.main() 
+     
 
 if __name__ == "__main__":
     build() 

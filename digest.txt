@@ -1,6 +1,7 @@
 Directory structure:
 └── web/
     ├── README.md
+    ├── \
     ├── log.txt
     ├── requirements.txt
     ├── code/
@@ -37,6 +38,123 @@ Helo World
     "content": "content"
 }
 ```
+
+
+
+================================================
+FILE: \
+================================================
+import sweb
+import os
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from ossapi import Ossapi
+import webbuilder as wb
+import time
+
+load_dotenv()
+MINIMUM_UPDATE_HOURS = 1
+
+class Osu:
+    def __init__(self) -> None:
+        self.name = "SnehulakTV_"
+        self.data = sweb.load_json("cache/osu")
+
+    def update_data(self, Force=False):
+        last_update = datetime.strptime(self.data["update"], sweb.BASE_TIME_FORM)
+        time_diff = datetime.now() - last_update 
+
+        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS) and not Force:
+            print("osu! data jsou aktuální (využívám cache).")
+            return
+
+        CLIENT_ID = os.getenv("OSU_CLIENT_ID")
+        CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
+
+        if not CLIENT_ID or not CLIENT_SECRET:
+            print("Chyba: Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET. Přeskakuji update.")
+            return
+
+        try:
+            api = Ossapi(int(CLIENT_ID), CLIENT_SECRET)
+            user = api.user(self.name)
+            stats = user.statistics
+
+            self.data["update"] = datetime.now().strftime(sweb.BASE_TIME_FORM)
+            self.data["pp"] = stats.pp
+            self.data["acc"] = stats.hit_accuracy
+            self.data["rank"] = stats.global_rank
+            self.data["play_time"] = stats.play_time
+            self.data["play_count"] = stats.play_count
+            self.data["country_rank"] = stats.country_rank 
+            self.data["level"] = stats.level.current       
+            self.data["avatar"] = user.avatar_url          
+            self.data["ss_count"] = stats.grade_counts.ss 
+
+            sweb.save_json("cache/osu", self.data)
+            print("osu! cache was updated.")
+        except Exception as e:
+            print(f"ERROR with contntact osu! API: {e}")
+
+    def get_stats(self):
+        self.update_data()
+        return self.data
+
+    def create_page(self):
+        def get_area(area):
+            w = area[0]
+            h = area[1]
+            
+            return f"{w}x{h}mm"
+
+        texts = sweb.data.texts["osu"]
+
+        bld = wb.WebBuilder(title=texts["title"])
+        bld.add_head(text=texts["head"])
+
+        total_seconds = int(self.data["play_time"])
+        days = total_seconds // (24 * 3600)
+        hours = (total_seconds % (24 * 3600)) // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        play_time = f"{days}day {hours}h {minutes}m"        
+
+        frame = wb.Frame()
+        i = texts["play_style"]
+        content = f"""
+# Profile
+
+![logo]({self.data["avatar"]}){{.osu-logo}}
+
+- **Name:** {self.name}
+- **Rank:** {self.data["rank"]}
+- **PP:** {self.data["pp"]}
+- **Play Time:** {play_time}
+- **Play Count:** {self.data["play_count"]}
+- **ACC:** {self.data["acc"]:.2f}%
+
+# Play Style
+**Pen grip:** {i["pen_grip"]} ,nl.
+**Area**: {get_area(i["area"])} ,nl.
+**Favorite Mods**: {", ".join(i["fav_mods"])}
+"""
+        frame.add_markdown(content)
+        frame.move_main()
+        bld.add_html(frame.get_frame())
+
+        bld.build()
+        bld.get_web()
+        bld.save_web("osu")
+
+    def main(self):
+        self.update_data()
+        print(self.data)
+        self.create_page()
+
+osu = Osu()
+
+if __name__ == "__main__":
+    osu.create_page()
 
 
 
@@ -172,8 +290,9 @@ def build():
     projects_page()
     home_page()
     page_404()
+    osu.osu.main()
     generate_sitemap()
-    osu.osu.main() 
+     
 
 if __name__ == "__main__":
     build() 
@@ -241,6 +360,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from ossapi import Ossapi
 import webbuilder as wb
+import time
 
 load_dotenv()
 MINIMUM_UPDATE_HOURS = 1
@@ -250,11 +370,11 @@ class Osu:
         self.name = "SnehulakTV_"
         self.data = sweb.load_json("cache/osu")
 
-    def update_data(self):
+    def update_data(self, Force=False):
         last_update = datetime.strptime(self.data["update"], sweb.BASE_TIME_FORM)
         time_diff = datetime.now() - last_update 
 
-        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS):
+        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS) and not Force:
             print("osu! data jsou aktuální (využívám cache).")
             return
 
@@ -276,6 +396,10 @@ class Osu:
             self.data["rank"] = stats.global_rank
             self.data["play_time"] = stats.play_time
             self.data["play_count"] = stats.play_count
+            self.data["country_rank"] = stats.country_rank 
+            self.data["level"] = stats.level.current       
+            self.data["avatar"] = user.avatar_url          
+            self.data["ss_count"] = stats.grade_counts.ss 
 
             sweb.save_json("cache/osu", self.data)
             print("osu! cache was updated.")
@@ -292,40 +416,55 @@ class Osu:
             h = area[1]
             
             return f"{w}x{h}mm"
+
         texts = sweb.data.texts["osu"]
 
         bld = wb.WebBuilder(title=texts["title"])
         bld.add_head(text=texts["head"])
 
+        total_seconds = int(self.data["play_time"])
+        days = total_seconds // (24 * 3600)
+        hours = (total_seconds % (24 * 3600)) // 3600
+        minutes = (total_seconds % 3600) // 60
+
+        play_time = f"{days}days {hours}h {minutes}m"        
+
         frame = wb.Frame()
         i = texts["play_style"]
-        
         content = f"""
-# Stats
+# Profile
+
+![logo]({self.data["avatar"]}){{.osu-logo}}
 
 - **Name:** {self.name}
 - **Rank:** {self.data["rank"]}
 - **PP:** {self.data["pp"]}
-- **Play Time:** {self.data["play_time"]}
+- **Play Time:** {play_time}
 - **Play Count:** {self.data["play_count"]}
+- **ACC:** {self.data["acc"]:.2f}%
 
 # Play Style
-**Pen grip:** {i["pen_grip"]} .nl.
-**Area**: {get_area(i["area"])}
-
+**Pen grip:** {i["pen_grip"]} ,nl.
+**Area**: {get_area(i["area"])} ,nl.
+**Favorite Mods**: {", ".join(i["fav_mods"])}
 """
         frame.add_markdown(content)
         frame.move_main()
         bld.add_html(frame.get_frame())
 
         bld.build()
+        bld.get_web()
         bld.save_web("osu")
 
     def main(self):
         self.update_data()
+        print(self.data)
         self.create_page()
 
 osu = Osu()
+
+if __name__ == "__main__":
+    osu.create_page()
 
 
 
@@ -416,7 +555,7 @@ BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 class Data:
     def __init__(self) -> None:
-        self.copy_right_year = [2026, 2028]
+        self.copy_right_year = [2026, datetime.now().year]
         self.texts = load_json("text")
         self.limits = load_json("limits")
 
@@ -584,9 +723,9 @@ class Frame:
         }
  
     def add_markdown(self, md):
-        html = markdown.markdown(md)
-        html = html.replace(".nl.", "<br>")
-        self.content += html
+        content = markdown.markdown(md, extensions=['attr_list'])
+        content = content.replace(",nl.", "<br>")
+        self.content += content
  
     def move_main(self):
         self.html_oc["main"][0] = 1
@@ -727,6 +866,11 @@ nav {
 .odkazy {
     display: flex;
     gap: 20px; /* Použití gap místo margin-left je čistější */
+}
+
+.osu-logo {
+    border-radius: 15px;
+    width: 100px;
 }
 
 nav a {
@@ -871,7 +1015,7 @@ FILE: data/text.json
             "pen_grip": "Hover",
             "area": [70, 42],
             "sr": 5.4,
-            "fav_mods": ["Hd"]
+            "fav_mods": ["HD", "EZ"]
         }
     }
 }
@@ -882,8 +1026,7 @@ FILE: data/text.json
 ================================================
 FILE: data/cache/osu.json
 ================================================
-{"update": "2026-05-22 17:19:13", "rank": 567294, "pp": 1796.01, "acc": 87.4581, "play_time": 527431, "play_count": 9309}
-
+{"update": "2026-05-24 11:51:56", "rank": 565975, "pp": 1801.34, "acc": 87.591, "play_time": 530850, "play_count": 9384, "country_rank": 3798, "level": 73, "avatar": "https://a.ppy.sh/38448983?1769793231.png", "ss_count": 1}
 
 
 ================================================
@@ -939,7 +1082,7 @@ on:
 
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 

@@ -121,9 +121,9 @@ class Frame:
         }
  
     def add_markdown(self, md):
-        html = markdown.markdown(md)
-        html = html.replace(".nl.", "<br>")
-        self.content += html
+        content = markdown.markdown(md, extensions=['attr_list'])
+        content = content.replace(",nl.", "<br>")
+        self.content += content
  
     def move_main(self):
         self.html_oc["main"][0] = 1

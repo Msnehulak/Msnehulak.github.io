@@ -71,7 +71,7 @@ class Osu:
         hours = (total_seconds % (24 * 3600)) // 3600
         minutes = (total_seconds % 3600) // 60
 
-        play_time = f"{days}d  {hours}h {minutes}m"        
+        play_time = f"{days}day {hours}h {minutes}m"        
 
         frame = wb.Frame()
         i = texts["play_style"]
@@ -81,7 +81,7 @@ class Osu:
 ![logo]({self.data["avatar"]}){{.osu-logo}}
 
 - **Name:** {self.name}
-- **Rank:** #{self.data["rank"]}
+- **Rank:** {self.data["rank"]}
 - **PP:** {self.data["pp"]}
 - **Play Time:** {play_time}
 - **Play Count:** {self.data["play_count"]}
@@ -102,6 +102,7 @@ class Osu:
 
     def main(self):
         self.update_data()
+        print(self.data)
         self.create_page()
 
 osu = Osu()
