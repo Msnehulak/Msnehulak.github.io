@@ -25,7 +25,7 @@ body {
 
 /* Hlavička */
 header {
-    background: linear-gradient(135s, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
     color: white;
     padding: 30px 20px; /* Větší padding pro vzdušnější design */
     text-align: center;
