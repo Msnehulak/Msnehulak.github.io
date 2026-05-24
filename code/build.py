@@ -5,46 +5,41 @@ import sweb
 import shutil
 
 def generate_sitemap():
-    # Základní URL adresa vašeho webu
     base_url = "https://msnehulak.github.io/"
     web_dir = sweb.BASE_DIR / "web"
     
     urls = []
     
-    # Rekurzivně projde všechny soubory .html ve složce web
     for html_file in web_dir.rglob("*.html"):
-        # Získá relativní cestu vůči složce web
         rel_path = html_file.relative_to(web_dir)
-        # Převede cestu na posix formát s dopřednými lomítky
         url_path = rel_path.as_posix()
         
-        # Hezké formátování URL adres (odstranění index.html na konci)
         if url_path == "index.html":
             full_url = base_url
         elif url_path.endswith("/index.html"):
-            full_url = base_url + url_path[:-10]  # Odebere 'index.html'
+            full_url = base_url + url_path[:-10]
         else:
             full_url = base_url + url_path
             
         urls.append(full_url)
     
-    # Sestavení výsledného XML souboru
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for url in sorted(urls):
         xml_content += f'  <url>\n    <loc>{url}</loc>\n  </url>\n'
     xml_content += '</urlset>'
-    
-    # Uložení sitemap.xml přímo do kořene složky web
+  
     sitemap_path = web_dir / "sitemap.xml"
     with open(sitemap_path, "w", encoding="utf-8") as f:
         f.write(xml_content)
         
     print(f"Sitemap.xml úspěšně vygenerována s {len(urls)} odkazy.")
 
-def page_404():
-    text = sweb.data.texts["404"]
-    bld = wb.WebBuilder(title=text["title"])
+def page_404(lang, prefix):
+    text = sweb.data.texts[lang]["404"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    # ZMĚNA: Přidán parametr current_page="404"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="404")
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -53,11 +48,13 @@ def page_404():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("404")
+    bld.save_web(f"{prefix}404")
 
-def projects_page():
-    text = sweb.data.texts["projects"]
-    bld = wb.WebBuilder(title=text["title"])
+def projects_page(lang, prefix):
+    text = sweb.data.texts[lang]["projects"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    # ZMĚNA: Přidán parametr current_page="projects"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="projects")
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -66,11 +63,13 @@ def projects_page():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("projects")
+    bld.save_web(f"{prefix}projects")
 
-def home_page():
-    text = sweb.data.texts["home_page"]
-    bld = wb.WebBuilder(title=text["title"])
+def home_page(lang, prefix):
+    text = sweb.data.texts[lang]["home_page"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    # ZMĚNA: Přidán parametr current_page="index"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="index")
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -79,18 +78,16 @@ def home_page():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("index")
+    bld.save_web(f"{prefix}index")
 
 def redirect():
     app = rd.Redirect()
     app.main()
 
 def prepare_folders():
-    """Zajistí, že složka web existuje a překopíruje do ní CSS styl."""
     web_dir = sweb.BASE_DIR / "web"
     data_dir = sweb.BASE_DIR / "data"
     
-    # Vytvoří složku web/ pokud neexistuje (včetně rodičovských složek)
     web_dir.mkdir(parents=True, exist_ok=True)
     
     src_css = data_dir / "style.css"
@@ -105,12 +102,18 @@ def prepare_folders():
 def build():
     prepare_folders()
     redirect()
-    projects_page()
-    home_page()
-    page_404()
-    osu.osu.main()
+    
+    # Aktualizace dat pro osu proběhne před stavbou stránek
+    osu.osu.update_data()
+    
+    # Generování webu pro angličtinu (kořen) a češtinu (složka cz/)
+    for lang, prefix in [("en", ""), ("cs", "cz/")]:
+        projects_page(lang, prefix)
+        home_page(lang, prefix)
+        page_404(lang, prefix)
+        osu.osu.create_page(lang, prefix)
+        
     generate_sitemap()
      
-
 if __name__ == "__main__":
-    build() 
+    build()

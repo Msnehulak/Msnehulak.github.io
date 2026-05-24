@@ -1,7 +1,6 @@
 Directory structure:
 └── web/
     ├── README.md
-    ├── \
     ├── log.txt
     ├── requirements.txt
     ├── code/
@@ -42,123 +41,6 @@ Helo World
 
 
 ================================================
-FILE: \
-================================================
-import sweb
-import os
-from datetime import datetime, timedelta
-from dotenv import load_dotenv
-from ossapi import Ossapi
-import webbuilder as wb
-import time
-
-load_dotenv()
-MINIMUM_UPDATE_HOURS = 1
-
-class Osu:
-    def __init__(self) -> None:
-        self.name = "SnehulakTV_"
-        self.data = sweb.load_json("cache/osu")
-
-    def update_data(self, Force=False):
-        last_update = datetime.strptime(self.data["update"], sweb.BASE_TIME_FORM)
-        time_diff = datetime.now() - last_update 
-
-        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS) and not Force:
-            print("osu! data jsou aktuální (využívám cache).")
-            return
-
-        CLIENT_ID = os.getenv("OSU_CLIENT_ID")
-        CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
-
-        if not CLIENT_ID or not CLIENT_SECRET:
-            print("Chyba: Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET. Přeskakuji update.")
-            return
-
-        try:
-            api = Ossapi(int(CLIENT_ID), CLIENT_SECRET)
-            user = api.user(self.name)
-            stats = user.statistics
-
-            self.data["update"] = datetime.now().strftime(sweb.BASE_TIME_FORM)
-            self.data["pp"] = stats.pp
-            self.data["acc"] = stats.hit_accuracy
-            self.data["rank"] = stats.global_rank
-            self.data["play_time"] = stats.play_time
-            self.data["play_count"] = stats.play_count
-            self.data["country_rank"] = stats.country_rank 
-            self.data["level"] = stats.level.current       
-            self.data["avatar"] = user.avatar_url          
-            self.data["ss_count"] = stats.grade_counts.ss 
-
-            sweb.save_json("cache/osu", self.data)
-            print("osu! cache was updated.")
-        except Exception as e:
-            print(f"ERROR with contntact osu! API: {e}")
-
-    def get_stats(self):
-        self.update_data()
-        return self.data
-
-    def create_page(self):
-        def get_area(area):
-            w = area[0]
-            h = area[1]
-            
-            return f"{w}x{h}mm"
-
-        texts = sweb.data.texts["osu"]
-
-        bld = wb.WebBuilder(title=texts["title"])
-        bld.add_head(text=texts["head"])
-
-        total_seconds = int(self.data["play_time"])
-        days = total_seconds // (24 * 3600)
-        hours = (total_seconds % (24 * 3600)) // 3600
-        minutes = (total_seconds % 3600) // 60
-
-        play_time = f"{days}day {hours}h {minutes}m"        
-
-        frame = wb.Frame()
-        i = texts["play_style"]
-        content = f"""
-# Profile
-
-![logo]({self.data["avatar"]}){{.osu-logo}}
-
-- **Name:** {self.name}
-- **Rank:** {self.data["rank"]}
-- **PP:** {self.data["pp"]}
-- **Play Time:** {play_time}
-- **Play Count:** {self.data["play_count"]}
-- **ACC:** {self.data["acc"]:.2f}%
-
-# Play Style
-**Pen grip:** {i["pen_grip"]} ,nl.
-**Area**: {get_area(i["area"])} ,nl.
-**Favorite Mods**: {", ".join(i["fav_mods"])}
-"""
-        frame.add_markdown(content)
-        frame.move_main()
-        bld.add_html(frame.get_frame())
-
-        bld.build()
-        bld.get_web()
-        bld.save_web("osu")
-
-    def main(self):
-        self.update_data()
-        print(self.data)
-        self.create_page()
-
-osu = Osu()
-
-if __name__ == "__main__":
-    osu.create_page()
-
-
-
-================================================
 FILE: log.txt
 ================================================
 ERROR[2026-05-22 18:31:32.083034]: No ISSUE BODY!!
@@ -187,46 +69,40 @@ import sweb
 import shutil
 
 def generate_sitemap():
-    # Základní URL adresa vašeho webu
     base_url = "https://msnehulak.github.io/"
     web_dir = sweb.BASE_DIR / "web"
     
     urls = []
     
-    # Rekurzivně projde všechny soubory .html ve složce web
     for html_file in web_dir.rglob("*.html"):
-        # Získá relativní cestu vůči složce web
         rel_path = html_file.relative_to(web_dir)
-        # Převede cestu na posix formát s dopřednými lomítky
         url_path = rel_path.as_posix()
         
-        # Hezké formátování URL adres (odstranění index.html na konci)
         if url_path == "index.html":
             full_url = base_url
         elif url_path.endswith("/index.html"):
-            full_url = base_url + url_path[:-10]  # Odebere 'index.html'
+            full_url = base_url + url_path[:-10]
         else:
             full_url = base_url + url_path
             
         urls.append(full_url)
     
-    # Sestavení výsledného XML souboru
     xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for url in sorted(urls):
         xml_content += f'  <url>\n    <loc>{url}</loc>\n  </url>\n'
     xml_content += '</urlset>'
-    
-    # Uložení sitemap.xml přímo do kořene složky web
+  
     sitemap_path = web_dir / "sitemap.xml"
     with open(sitemap_path, "w", encoding="utf-8") as f:
         f.write(xml_content)
         
     print(f"Sitemap.xml úspěšně vygenerována s {len(urls)} odkazy.")
 
-def page_404():
-    text = sweb.data.texts["404"]
-    bld = wb.WebBuilder(title=text["title"])
+def page_404(lang, prefix):
+    text = sweb.data.texts[lang]["404"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css)
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -235,11 +111,12 @@ def page_404():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("404")
+    bld.save_web(f"{prefix}404")
 
-def projects_page():
-    text = sweb.data.texts["projects"]
-    bld = wb.WebBuilder(title=text["title"])
+def projects_page(lang, prefix):
+    text = sweb.data.texts[lang]["projects"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css)
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -248,11 +125,12 @@ def projects_page():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("projects")
+    bld.save_web(f"{prefix}projects")
 
-def home_page():
-    text = sweb.data.texts["home_page"]
-    bld = wb.WebBuilder(title=text["title"])
+def home_page(lang, prefix):
+    text = sweb.data.texts[lang]["home_page"]
+    css = "../style.css" if lang == "cs" else "style.css"
+    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css)
     bld.add_head(text["head"])
 
     abutf = wb.Frame()
@@ -261,18 +139,16 @@ def home_page():
     bld.add_html(abutf.get_frame()) 
 
     bld.build()
-    bld.save_web("index")
+    bld.save_web(f"{prefix}index")
 
 def redirect():
     app = rd.Redirect()
     app.main()
 
 def prepare_folders():
-    """Zajistí, že složka web existuje a překopíruje do ní CSS styl."""
     web_dir = sweb.BASE_DIR / "web"
     data_dir = sweb.BASE_DIR / "data"
     
-    # Vytvoří složku web/ pokud neexistuje (včetně rodičovských složek)
     web_dir.mkdir(parents=True, exist_ok=True)
     
     src_css = data_dir / "style.css"
@@ -287,15 +163,21 @@ def prepare_folders():
 def build():
     prepare_folders()
     redirect()
-    projects_page()
-    home_page()
-    page_404()
-    osu.osu.main()
+    
+    # Aktualizace dat pro osu proběhne před stavbou stránek
+    osu.osu.update_data()
+    
+    # Generování webu pro angličtinu (kořen) a češtinu (složka cz/)
+    for lang, prefix in [("en", ""), ("cs", "cz/")]:
+        projects_page(lang, prefix)
+        home_page(lang, prefix)
+        page_404(lang, prefix)
+        osu.osu.create_page(lang, prefix)
+        
     generate_sitemap()
      
-
 if __name__ == "__main__":
-    build() 
+    build()
 
 
 
@@ -410,16 +292,19 @@ class Osu:
         self.update_data()
         return self.data
 
-    def create_page(self):
+    def create_page(self, lang="en", prefix=""):
         def get_area(area):
             w = area[0]
             h = area[1]
-            
             return f"{w}x{h}mm"
 
-        texts = sweb.data.texts["osu"]
+        # Přístup do nové jazykové struktury text.json
+        texts = sweb.data.texts[lang]["osu"]
+        
+        # Ošetření cesty k CSS pro podsložku
+        css = "../style.css" if lang == "cs" else "style.css"
 
-        bld = wb.WebBuilder(title=texts["title"])
+        bld = wb.WebBuilder(title=texts["title"], lang=lang, css_path=css)
         bld.add_head(text=texts["head"])
 
         total_seconds = int(self.data["play_time"])
@@ -427,23 +312,28 @@ class Osu:
         hours = (total_seconds % (24 * 3600)) // 3600
         minutes = (total_seconds % 3600) // 60
 
-        play_time = f"{days}days {hours}h {minutes}m"        
+        play_time = f"{days}d  {hours}h {minutes}m"        
 
         frame = wb.Frame()
         i = texts["play_style"]
+        
+        # Přejmenování nadpisů podle zvoleného jazyka
+        head_profile = "Profil" if lang == "cs" else "Profile"
+        head_style = "Herní styl" if lang == "cs" else "Play Style"
+        
         content = f"""
-# Profile
+# {head_profile}
 
 ![logo]({self.data["avatar"]}){{.osu-logo}}
 
 - **Name:** {self.name}
-- **Rank:** {self.data["rank"]}
+- **Rank:** #{self.data["rank"]}
 - **PP:** {self.data["pp"]}
 - **Play Time:** {play_time}
 - **Play Count:** {self.data["play_count"]}
 - **ACC:** {self.data["acc"]:.2f}%
 
-# Play Style
+# {head_style}
 **Pen grip:** {i["pen_grip"]} ,nl.
 **Area**: {get_area(i["area"])} ,nl.
 **Favorite Mods**: {", ".join(i["fav_mods"])}
@@ -454,17 +344,18 @@ class Osu:
 
         bld.build()
         bld.get_web()
-        bld.save_web("osu")
+        bld.save_web(f"{prefix}osu")
 
     def main(self):
         self.update_data()
-        print(self.data)
-        self.create_page()
+        # Vygenerování obou verzí rovnou, kdyby se spouštělo napřímo
+        self.create_page("en", "")
+        self.create_page("cs", "cz/")
 
 osu = Osu()
 
 if __name__ == "__main__":
-    osu.create_page()
+    osu.main()
 
 
 
@@ -480,15 +371,23 @@ from pathlib import Path
 class Redirect:
     def __init__(self) -> None:
         self.links = sweb.load_json("links")
-        self.text = sweb.data.texts["redirect"]
+        self.texts = sweb.data.texts
         self.links_folder = sweb.BASE_DIR / "web" / "r"
 
     def create_html(self, link, name):
         bld = wb.WebBuilder(add_nav=False, add_start=False)
         bld.add_start(load_css=False, redirect=link, title=name)
-        msg = self.text["nl_msg"]["cs"]
-        click = self.text["nl_click"]["cs"]
-        bld.add_markdown(f"{msg} [{click}]({link})")
+        
+        msg_cs = self.texts["cs"]["redirect"]["nl_msg"]
+        click_cs = self.texts["cs"]["redirect"]["nl_click"]
+        
+        msg_en = self.texts["en"]["redirect"]["nl_msg"]
+        click_en = self.texts["en"]["redirect"]["nl_click"]
+        
+        # Přidání obou hlášek pro uživatele pod sebe
+        bld.add_markdown(f"{msg_en} [{click_en}]({link})")
+        bld.add_markdown(f"{msg_cs} [{click_cs}]({link})")
+       
         bld.build(add_footer=True)
         return bld.get_web()
 
@@ -499,7 +398,6 @@ class Redirect:
             target_folder = self.links_folder / i["r"]
             target_folder.mkdir(parents=True, exist_ok=True)
 
-            # Uložení index.html do dané složky
             path = target_folder / "index.html"
             with open(path, "w", encoding='utf-8') as f:
                 f.write(html_content)
@@ -508,14 +406,11 @@ class Redirect:
 
     def validate_redirect(self, name, link, r):
         limits = sweb.data.limits["redirect"]    
-        def check(value, 
-                   blocks,
-                   name="unknown"):
-            # Lenght
+   
+        def check(value, blocks, name="unknown"):
             if len(value) > blocks["len"]:
                 print(f"{name} Lenght is over limit {blocks['len']}")
                 sys.exit(1)
-            # Block
             for block in blocks["block"]:
                 if block in value:
                     print(f"is use block world {block}. {blocks['block']}")
@@ -571,6 +466,8 @@ def save_html(file: str, content: str):
         file += end
     
     path = BASE_DIR / "web" / file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
     with open(path, "w", encoding='utf-8') as f:
         f.write(content)
 
@@ -597,6 +494,8 @@ data = Data()
 
 
 
+
+
 ================================================
 FILE: code/webbuilder.py
 ================================================
@@ -610,10 +509,12 @@ class WebBuilder:
     def __init__(self, 
                  add_start = True, 
                  add_nav = True,
-                 title = "title"
+                 title = "title",
+                 lang = "en",
+                 css_path = "style.css"
                  ):
         self.content = ""
-        if add_start: self.add_start(title=title)
+        if add_start: self.add_start(title=title, lang=lang, css_path=css_path)
         if add_nav: self.add_nav()
         self.html_oc = {
                 "body": [1, 0],
@@ -621,17 +522,23 @@ class WebBuilder:
         }
 
     def add_start(self, 
-                  lang = "en", # en, cs
-                  title = "title", 
+                  lang = "en",
+                  title = "title",
+                  description = "",
                   load_css = True, 
-                  redirect = ""):
+                  redirect = "",
+                  css_path = "style.css"):
         if load_css:
-            css = '<link rel="stylesheet" href="style.css">'
+            css = f'<link rel="stylesheet" href="{css_path}">'
         else: css = ''
 
         if redirect == "": r = ""
         else:
             r = f'<meta http-equiv="refresh" content="0; url={redirect}">'
+
+        if description == "": des = ""
+        else:
+            des = f'<meta name="description" content="{description}">'
         
         web_start = f"""<!DOCTYPE html>
 <html lang="{lang}">
@@ -641,6 +548,7 @@ class WebBuilder:
     <title>{title}</title>
     {css}
     {r}
+    {des}
 </head>
 <body>
 """
@@ -749,6 +657,7 @@ class Frame:
 
 
 
+
 ================================================
 FILE: data/limits.json
 ================================================
@@ -834,7 +743,7 @@ body {
 
 /* Hlavička */
 header {
-    background: linear-gradient(135s, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
     color: white;
     padding: 30px 20px; /* Větší padding pro vzdušnější design */
     text-align: center;
@@ -983,43 +892,69 @@ footer {
 FILE: data/text.json
 ================================================
 {
-    "redirect": {
-        "nl_msg": {
-            "cs": "když stránka nefunguje klikněte",
-            "en": "empty"
+    "cs": {
+        "redirect": {
+            "nl_msg": "Pokud stránka nefunguje, klikněte",
+            "nl_click": "zde"
         },
-        "nl_click": {
-            "cs": "zde",
-            "en": "here"
+        "home_page": {
+            "head": "Web SnehulakTV",
+            "title": "Web SnehulakTV",
+            "text": "# O mně\nAhoj, jmenuji se Max. ,nl. Jsem hráč osu!, programátor a gamer. Rád hraju CS2, Genshin Impact a Subnauticu. Programuju v Pythonu."
+        },
+        "projects": {
+            "head": "Moje Projekty",
+            "title": "Moje projekty",
+            "text": "# Již brzy"
+        },
+        "404": {
+            "head": "404 Jsi ztracený?",
+            "title": "404 Jsi ztracený?",
+            "text": "Můžeš se vrátit zpět na hlavní stránku kliknutím [--> Zde <--](index.html)"
+        },
+        "osu": {
+            "head": "Můj osu! profil",
+            "title": "Osu! profil",
+            "play_style": {
+                "pen_grip": "Hover (Držení nad tabletem)",
+                "area": [70, 42],
+                "sr": 5.4,
+                "fav_mods": ["HD", "EZ"]
+            }
         }
     },
-    "home_page": {
-        "head": "SnehulakTV's Web",
-        "text": "# About me\nMy name is Max.\n\n - something 1\n - something 2",
-        "title": "SnehulakTV's web"
-    },
-    "projects": {
-        "head": "My Projects",
-        "text": "# My web \n My web is this web.",
-        "title": "My projects"
-    },
-    "404": {
-        "head": "404 Are you lost?",
-        "text": "You can go back ho by click [--> Here <--](index.html)",
-        "title": "404 Are you lost?"
-    },
-    "osu": {
-        "head": "My osu profile",
-        "title": "Osu profile",
-        "play_style": {
-            "pen_grip": "Hover",
-            "area": [70, 42],
-            "sr": 5.4,
-            "fav_mods": ["HD", "EZ"]
+    "en": {
+        "redirect": {
+            "nl_msg": "If the page does not work, click",
+            "nl_click": "here"
+        },
+        "home_page": {
+            "head": "SnehulakTV's Web",
+            "title": "SnehulakTV's web",
+            "text": "# About me\nHello, my name is Max. ,nl. I am an osu! player, programmer and gamer. I like to play CS2, Genshin Impact, and Subnautica. I program in Python."
+        },
+        "projects": {
+            "head": "My Projects",
+            "title": "My projects",
+            "text": "# Coming Soon"
+        },
+        "404": {
+            "head": "404 Are you lost?",
+            "title": "404 Are you lost?",
+            "text": "You can go back home by clicking [--> Here <--](index.html)"
+        },
+        "osu": {
+            "head": "My osu! profile",
+            "title": "Osu! profile",
+            "play_style": {
+                "pen_grip": "Hover",
+                "area": [70, 42],
+                "sr": 5.4,
+                "fav_mods": ["HD", "EZ"]
+            }
         }
     }
 }
-
 
 
 

@@ -23,6 +23,8 @@ def save_html(file: str, content: str):
         file += end
     
     path = BASE_DIR / "web" / file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
     with open(path, "w", encoding='utf-8') as f:
         f.write(content)
 
@@ -46,3 +48,5 @@ def load_json(file: str):
         return json.load(f)
 
 data = Data()
+
+

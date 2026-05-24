@@ -54,16 +54,19 @@ class Osu:
         self.update_data()
         return self.data
 
-    def create_page(self):
+    def create_page(self, lang="en", prefix=""):
         def get_area(area):
             w = area[0]
             h = area[1]
-            
             return f"{w}x{h}mm"
 
-        texts = sweb.data.texts["osu"]
+        # Přístup do nové jazykové struktury text.json
+        texts = sweb.data.texts[lang]["osu"]
+        
+        # Ošetření cesty k CSS pro podsložku
+        css = "../style.css" if lang == "cs" else "style.css"
 
-        bld = wb.WebBuilder(title=texts["title"])
+        bld = wb.WebBuilder(title=texts["title"], lang=lang, css_path=css)
         bld.add_head(text=texts["head"])
 
         total_seconds = int(self.data["play_time"])
@@ -75,8 +78,13 @@ class Osu:
 
         frame = wb.Frame()
         i = texts["play_style"]
+        
+        # Přejmenování nadpisů podle zvoleného jazyka
+        head_profile = "Profil" if lang == "cs" else "Profile"
+        head_style = "Herní styl" if lang == "cs" else "Play Style"
+        
         content = f"""
-# Profile
+# {head_profile}
 
 ![logo]({self.data["avatar"]}){{.osu-logo}}
 
@@ -87,7 +95,7 @@ class Osu:
 - **Play Count:** {self.data["play_count"]}
 - **ACC:** {self.data["acc"]:.2f}%
 
-# Play Style
+# {head_style}
 **Pen grip:** {i["pen_grip"]} ,nl.
 **Area**: {get_area(i["area"])} ,nl.
 **Favorite Mods**: {", ".join(i["fav_mods"])}
@@ -98,13 +106,15 @@ class Osu:
 
         bld.build()
         bld.get_web()
-        bld.save_web("osu")
+        bld.save_web(f"{prefix}osu")
 
     def main(self):
         self.update_data()
-        self.create_page()
+        # Vygenerování obou verzí rovnou, kdyby se spouštělo napřímo
+        self.create_page("en", "")
+        self.create_page("cs", "cz/")
 
 osu = Osu()
 
 if __name__ == "__main__":
-    osu.create_page()
+    osu.main()

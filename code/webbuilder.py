@@ -8,10 +8,15 @@ class WebBuilder:
     def __init__(self, 
                  add_start = True, 
                  add_nav = True,
-                 title = "title"
+                 title = "title",
+                 lang = "en",
+                 css_path = "style.css",
+                 current_page = "index"  # <--- PŘIDÁNO: Sledování aktuální stránky
                  ):
         self.content = ""
-        if add_start: self.add_start(title=title)
+        self.lang = lang
+        self.current_page = current_page
+        if add_start: self.add_start(title=title, lang=lang, css_path=css_path)
         if add_nav: self.add_nav()
         self.html_oc = {
                 "body": [1, 0],
@@ -19,17 +24,23 @@ class WebBuilder:
         }
 
     def add_start(self, 
-                  lang = "en", # en, cs
-                  title = "title", 
+                  lang = "en",
+                  title = "title",
+                  description = "",
                   load_css = True, 
-                  redirect = ""):
+                  redirect = "",
+                  css_path = "style.css"):
         if load_css:
-            css = '<link rel="stylesheet" href="style.css">'
+            css = f'<link rel="stylesheet" href="{css_path}">'
         else: css = ''
 
         if redirect == "": r = ""
         else:
             r = f'<meta http-equiv="refresh" content="0; url={redirect}">'
+
+        if description == "": des = ""
+        else:
+            des = f'<meta name="description" content="{description}">'
         
         web_start = f"""<!DOCTYPE html>
 <html lang="{lang}">
@@ -39,6 +50,7 @@ class WebBuilder:
     <title>{title}</title>
     {css}
     {r}
+    {des}
 </head>
 <body>
 """
@@ -51,11 +63,17 @@ class WebBuilder:
         for i in data["links"]:
             links += f'        <a href="{i["link"]}">{i["name"]}</a>\n'
 
+        # <--- PŘIDÁNO: Generování přepínače jazyků podle aktuální lokace
+        if self.lang == "en":
+            lang_btn = f'        <a href="cz/{self.current_page}.html" class="lang-switch">CZ</a>\n'
+        else:
+            lang_btn = f'        <a href="../{self.current_page}.html" class="lang-switch">EN</a>\n'
+
         nav_html = f"""
 <nav>
     <div class="logo">{data["logo"]["text"]}</div>
     <div class="odkazy">
-{links}    </div>
+{links}{lang_btn}    </div>
 </nav>
 """
         self.content += nav_html
@@ -142,5 +160,4 @@ class Frame:
         self._chck_close_html()
         if print_frame: print(self.content)
         return self.content
-
 
