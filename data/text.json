@@ -24,7 +24,7 @@
             "title": "Osu! profil",
             "play_style": {
                 "pen_grip": "Hover (Držení nad tabletem)",
-                "area": [70, 42],
+                "area": [65, 42],
                 "sr": 5.4,
                 "fav_mods": ["HD", "EZ"]
             }
@@ -55,7 +55,7 @@
             "title": "Osu! profile",
             "play_style": {
                 "pen_grip": "Hover",
-                "area": [70, 42],
+                "area": [65, 42],
                 "sr": 5.4,
                 "fav_mods": ["HD", "EZ"]
             }
