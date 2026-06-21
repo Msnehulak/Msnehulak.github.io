@@ -1,6 +1,7 @@
 .env
 venv/
 __pycache__/
+code/__pycache__/
 web/
 output/
 digest.txt
