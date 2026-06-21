@@ -1,0 +1,1413 @@
+Directory structure:
+└── web/
+    ├── README.md
+    ├── pelicanconf.py
+    ├── publishconf.py
+    ├── requirements.txt
+    ├── code/
+    │   ├── build.py
+    │   ├── issueworker.py
+    │   ├── osu.py
+    │   ├── redirect.py
+    │   └── sweb.py
+    ├── content/
+    │   ├── pages/
+    │   │   ├── 404.md
+    │   │   ├── index.md
+    │   │   ├── osu.md
+    │   │   ├── projects.md
+    │   │   └── cz/
+    │   │       ├── 404.md
+    │   │       ├── index.md
+    │   │       ├── osu.md
+    │   │       └── projects.md
+    │   ├── r/
+    │   │   ├── favsong.md
+    │   │   ├── go.md
+    │   │   ├── steam.md
+    │   │   └── wb.md
+    │   └── theme/
+    │       └── style.css
+    ├── data/
+    │   ├── limits.json
+    │   ├── links.json
+    │   ├── style.css
+    │   ├── text.json
+    │   └── cache/
+    │       └── osu.json
+    ├── theme/
+    │   └── templates/
+    │       ├── base.html
+    │       ├── osu.html
+    │       └── page.html
+    └── .github/
+        ├── ISSUE_TEMPLATE/
+        │   └── add_redirect.yml
+        └── workflows/
+            ├── deploy.yml
+            └── issue_worker.yml
+
+================================================
+FILE: README.md
+================================================
+Helo World
+
+
+```
+{
+    "title": "title",
+    "content": "content"
+}
+```
+
+
+
+================================================
+FILE: pelicanconf.py
+================================================
+# pelicanconf.py
+
+TIMEZONE = 'Europe/Prague'
+DEFAULT_LANG = 'en'
+
+# Ignorovat výchozí rozvržení pro blogy
+DIRECT_TEMPLATES = []
+# Sledovat složky pro stránky a redirecty
+PAGE_PATHS = ['pages', 'r']
+
+# Řekni Pelicanu, aby sledoval složku theme i images uvnitř složky content
+STATIC_PATHS = ['theme', 'images']
+
+# Přesměrování style.css přímo do kořene outputu
+EXTRA_PATH_METADATA = {
+    'theme/style.css': {'path': 'style.css'},
+}
+
+THEME = 'theme'
+_404_SAVE_AS = '404.html'
+
+
+
+================================================
+FILE: publishconf.py
+================================================
+# This file is only used if you use `make publish` or
+# explicitly specify it as your config file.
+
+import os
+import sys
+
+sys.path.append(os.curdir)
+from pelicanconf import *
+
+# If your site is available via HTTPS, make sure SITEURL begins with https://
+SITEURL = ""
+RELATIVE_URLS = False
+
+FEED_ALL_ATOM = "feeds/all.atom.xml"
+CATEGORY_FEED_ATOM = "feeds/{slug}.atom.xml"
+
+DELETE_OUTPUT_DIRECTORY = True
+
+# Following items are often useful when publishing
+
+# DISQUS_SITENAME = ""
+# GOOGLE_ANALYTICS = ""
+
+
+
+================================================
+FILE: requirements.txt
+================================================
+markdown
+ossapi
+python-dotenv
+pelican
+jinja2
+
+
+
+
+
+================================================
+FILE: code/build.py
+================================================
+# code/build.py
+import sweb
+import osu
+import redirect as rd
+import shutil
+from pathlib import Path
+
+def create_markdown_page(lang, page_key, prefix):
+    """Vezme texty z text.json a uloží je jako Markdown pro Pelican."""
+    text_data = sweb.data.texts[lang][page_key]
+    
+    # Detekce názvu souboru (index, projects, 404)
+    filename = "index" if page_key == "home_page" else page_key
+    
+    # Vyčištění textu od tvé staré značky ,nl.
+    clean_text = text_data["text"].replace(",nl.", "\n")
+    
+    # Metadata pro Pelican (Front Matter)
+    md_content = f"""Title: {text_data["title"]}
+Lang: {lang}
+Slug: {filename}
+Save_as: {prefix}{filename}.html
+URL: {prefix}{filename}.html
+
+{clean_text}
+"""
+    
+    # Určení cílové cesty v content/pages/
+    target_dir = sweb.BASE_DIR / "content" / "pages" / prefix
+    target_dir.mkdir(parents=True, exist_ok=True)
+    
+    with open(target_dir / f"{filename}.md", "w", encoding="utf-8") as f:
+        f.write(md_content)
+
+def prepare_theme():
+    """Zkopíruje stávající style.css do složky, kterou Pelican uvidí."""
+    src_css = sweb.BASE_DIR / "data" / "style.css"
+    dst_dir = sweb.BASE_DIR / "content" / "theme"
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    if src_css.exists():
+        shutil.copy2(src_css, dst_dir / "style.css")
+
+def build():
+    prepare_theme()
+    
+    # 1. Zpracování redirectů přes tvůj upravený redirect.py
+    app_rd = rd.Redirect()
+    app_rd.main()
+    
+    # 2. Aktualizace dat pro osu
+    osu.osu.update_data()
+    
+    # 3. Generování stránek (anglické do kořene, české do cz/)
+    for lang, prefix in [("en", ""), ("cs", "cz/")]:
+        create_markdown_page(lang, "home_page", prefix)
+        create_markdown_page(lang, "projects", prefix)
+        create_markdown_page(lang, "404", prefix)
+        
+        # Osu má specifickou logiku, vygenerujeme ji zvlášť
+        osu.osu.create_page(lang, prefix)
+     
+if __name__ == "__main__":
+    build()
+
+
+
+================================================
+FILE: code/issueworker.py
+================================================
+import sys
+import sweb
+import os
+import json
+import build
+import redirect as rd
+
+class IssueWorker:
+    def __init__(self):
+        self.form_type = None
+        self.app_rd = rd.Redirect()
+
+    def find_form_type(self):
+        required_keys = ["Name of redirect", "Web link", "Redirect"]
+        if all(key in self.body for key in required_keys):
+            self.form_type = "add_redirect"
+
+    def main(self):
+        raw_env = os.environ.get("ISSUE_JSON", "")
+        
+        try: 
+            self.body = json.loads(raw_env)
+        except json.JSONDecodeError:
+            print("Chyba: ISSUE_JSON neobsahuje validní JSON.")
+            sys.exit(1)
+        
+        self.find_form_type()
+        if self.form_type is None:
+            print("invalid format")
+            sys.exit(1)
+
+        if self.form_type == "add_redirect":
+            link = self.body["Web link"]
+            name = self.body["Name of redirect"]
+            r = self.body["Redirect"]
+            self.app_rd.add_redirect(link=link, name=name, r=r)
+            build.build()
+
+if __name__ == "__main__":
+    if "ISSUE_JSON" in os.environ:
+        app = IssueWorker()
+        app.main()
+    else:
+        sweb.log_error("No ISSUE BODY!!")
+
+
+
+
+
+================================================
+FILE: code/osu.py
+================================================
+import sweb
+import os
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from ossapi import Ossapi
+
+load_dotenv()
+MINIMUM_UPDATE_HOURS = 1
+
+class Osu:
+    def __init__(self) -> None:
+        self.name = "SnehulakTV_"
+        self.data = sweb.load_json("cache/osu")
+
+    def update_data(self, Force=False):
+        last_update = datetime.strptime(self.data["update"], sweb.BASE_TIME_FORM)
+        time_diff = datetime.now() - last_update 
+
+        if time_diff < timedelta(hours=MINIMUM_UPDATE_HOURS) and not Force:
+            print("osu! data jsou aktuální (využívám cache).")
+            return
+
+        CLIENT_ID = os.getenv("OSU_CLIENT_ID")
+        CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
+
+        if not CLIENT_ID or not CLIENT_SECRET:
+            print("Chyba: Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET. Přeskakuji update.")
+            return
+
+        try:
+            api = Ossapi(int(CLIENT_ID), CLIENT_SECRET)
+            user = api.user(self.name)
+            stats = user.statistics
+
+            self.data["update"] = datetime.now().strftime(sweb.BASE_TIME_FORM)
+            self.data["pp"] = stats.pp
+            self.data["acc"] = stats.hit_accuracy
+            self.data["rank"] = stats.global_rank
+            self.data["play_time"] = stats.play_time
+            self.data["play_count"] = stats.play_count
+            self.data["country_rank"] = stats.country_rank 
+            self.data["level"] = stats.level.current       
+            self.data["avatar"] = user.avatar_url          
+            self.data["ss_count"] = stats.grade_counts.ss 
+
+            sweb.save_json("cache/osu", self.data)
+            print("osu! cache was updated.")
+        except Exception as e:
+            print(f"ERROR with contact osu! API: {e}")
+
+    def create_page(self, lang="en", prefix=""):
+        def get_area(area):
+            return f"{area[0]}x{area[1]}mm"
+
+        texts = sweb.data.texts[lang]["osu"]
+
+        total_seconds = int(self.data["play_time"])
+        days = total_seconds // (24 * 3600)
+        hours = (total_seconds % (24 * 3600)) // 3600
+        minutes = (total_seconds % 3600) // 60
+        play_time = f"{days}d  {hours}h {minutes}m"        
+
+        i = texts["play_style"]
+        head_profile = "Profil" if lang == "cs" else "Profile"
+        head_style = "Herní styl" if lang == "cs" else "Play Style"
+        
+        # Čistý text stránky v Markdownu
+        markdown_content = f"""# {head_profile}
+
+![logo]({self.data["avatar"]}){{.osu-logo}}
+
+- **Name:** {self.name}
+- **Rank:** #{self.data["rank"]}
+- **PP:** {self.data["pp"]}
+- **Play Time:** {play_time}
+- **Play Count:** {self.data["play_count"]}
+- **ACC:** {self.data["acc"]:.2f}%
+
+# {head_style}
+**Pen grip:** {i["pen_grip"]}
+**Area**: {get_area(i["area"])}
+**Favorite Mods**: {", ".join(i["fav_mods"])}
+"""
+
+        # Front Matter hlavička pro Pelican, která definuje šablonu osu.html
+        md_page = f"""Title: {texts["title"]}
+Lang: {lang}
+Slug: osu
+Save_as: {prefix}osu.html
+URL: {prefix}osu.html
+Template: osu
+
+{markdown_content}
+"""
+        
+        target_dir = sweb.BASE_DIR / "content" / "pages" / prefix
+        target_dir.mkdir(parents=True, exist_ok=True)
+        
+        with open(target_dir / "osu.md", "w", encoding="utf-8") as f:
+            f.write(md_page)
+
+    def main(self):
+        self.update_data()
+        self.create_page("en", "")
+        self.create_page("cs", "cz/")
+
+osu = Osu()
+
+if __name__ == "__main__":
+    osu.main()
+
+
+
+================================================
+FILE: code/redirect.py
+================================================
+import sys
+import sweb
+from pathlib import Path
+
+class Redirect:
+    def __init__(self) -> None:
+        self.links = sweb.load_json("links")
+        self.texts = sweb.data.texts
+
+    def main(self):            
+        content_redirect_folder = sweb.BASE_DIR / "content" / "r"
+        content_redirect_folder.mkdir(parents=True, exist_ok=True)
+
+        for i in self.links:
+            msg_cs = self.texts["cs"]["redirect"]["nl_msg"]
+            click_cs = self.texts["cs"]["redirect"]["nl_click"]
+            
+            msg_en = self.texts["en"]["redirect"]["nl_msg"]
+            click_en = self.texts["en"]["redirect"]["nl_click"]
+
+            md_redirect = f"""Title: Redirect {i['name']}
+Save_as: r/{i['r']}/index.html
+URL: r/{i['r']}/
+
+<meta http-equiv="refresh" content="0; url={i['link']}">
+<p>{msg_en} <a href="{i['link']}">{click_en}</a>.</p>
+<p>{msg_cs} <a href="{i['link']}">{click_cs}</a>.</p>
+"""
+            path = content_redirect_folder / f"{i['r']}.md"
+            with open(path, "w", encoding='utf-8') as f:
+                f.write(md_redirect)
+
+            print(f"Prepared redirect '{i['name']}' for /r/{i['r']}/")
+
+    def validate_redirect(self, name, link, r):
+        limits = sweb.data.limits["redirect"]    
+  
+        def check(value, blocks, name="unknown"):
+            if len(value) > blocks["len"]:
+                print(f"{name} Length is over limit {blocks['len']}")
+                sys.exit(1)
+            for block in blocks["block"]:
+                if block in value:
+                    print(f"is use block world {block}. {blocks['block']}")
+                    sys.exit(1)
+
+        check(name, limits["name"], "name")
+        check(link, limits["link"], "link")
+        check(r, limits["r"], "redirect")
+
+    def add_redirect(self, link="https://www.google.com", name="Google", r="g"):
+        self.validate_redirect(name, link, r)
+        
+        for existing in self.links:
+            if existing["r"] == r:
+                print(f"Redirect with path '/r/{r}/' already exists")
+                sys.exit(1)
+        
+        add = {"link": link, "name": name, "r": r}
+        self.links.append(add)
+        sweb.save_json("links", self.links)
+
+if __name__ == "__main__":
+    app = Redirect()
+    app.main()
+
+
+
+================================================
+FILE: code/sweb.py
+================================================
+from datetime import datetime
+from pathlib import Path
+import json
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
+
+class Data:
+    def __init__(self) -> None:
+        self.copy_right_year = [2026, datetime.now().year]
+        self.texts = load_json("text")
+        self.limits = load_json("limits")
+
+def log_error(text):
+    error = f"ERROR[{datetime.now()}]: {text}"
+    print(error)
+    with open(BASE_DIR / "log.txt", "a", encoding="utf-8") as f:
+        f.write(error)
+
+def save_html(file: str, content: str):
+    end = ".html"
+    if not file.endswith(end):
+        file += end
+    
+    path = BASE_DIR / "web" / file
+    path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
+
+def save_json(file: str, content):
+    end = ".json"
+    if not file.endswith(end):
+        file += end
+
+    content = json.dumps(content)
+    path = BASE_DIR / "data" / file
+    with open(path, "w", encoding='utf-8') as f:
+        f.write(content)
+
+def load_json(file: str):
+    end = ".json"
+    if not file.endswith(end):
+        file += end
+
+    path = BASE_DIR / "data" / file
+    with open(path, "r", encoding='utf-8') as f:
+        return json.load(f)
+
+data = Data()
+
+
+
+
+
+================================================
+FILE: content/pages/404.md
+================================================
+Title: 404 Are you lost?
+Lang: en
+Slug: 404
+Save_as: 404.html
+URL: 404.html
+
+You can go back home by clicking [--> Here <--](index.html)
+
+
+
+================================================
+FILE: content/pages/index.md
+================================================
+Title: SnehulakTV's web
+Lang: en
+Slug: index
+Save_as: index.html
+URL: index.html
+
+# About me
+Hello, my name is Max. 
+ I am an osu! player, programmer and gamer. I like to play CS2, Genshin Impact, and Subnautica. I program in Python.
+
+
+
+================================================
+FILE: content/pages/osu.md
+================================================
+Title: Osu! profile
+Lang: en
+Slug: osu
+Save_as: osu.html
+URL: osu.html
+Template: osu
+
+# Profile
+
+![logo](https://a.ppy.sh/38448983?1769793231.png){.osu-logo}
+
+- **Name:** SnehulakTV_
+- **Rank:** #541536
+- **PP:** 1893.4
+- **Play Time:** 6d  13h 57m
+- **Play Count:** 10014
+- **ACC:** 87.32%
+
+# Play Style
+**Pen grip:** Hover
+**Area**: 65x42mm
+**Favorite Mods**: HD, EZ
+
+
+
+
+================================================
+FILE: content/pages/projects.md
+================================================
+Title: My projects
+Lang: en
+Slug: projects
+Save_as: projects.html
+URL: projects.html
+
+# Coming Soon
+
+
+
+================================================
+FILE: content/pages/cz/404.md
+================================================
+Title: 404 Jsi ztracený?
+Lang: cs
+Slug: 404
+Save_as: cz/404.html
+URL: cz/404.html
+
+Můžeš se vrátit zpět na hlavní stránku kliknutím [--> Zde <--](index.html)
+
+
+
+================================================
+FILE: content/pages/cz/index.md
+================================================
+Title: Web SnehulakTV
+Lang: cs
+Slug: index
+Save_as: cz/index.html
+URL: cz/index.html
+
+# O mně
+Ahoj, jmenuji se Max. 
+ Jsem hráč osu!, programátor a gamer. Rád hraju CS2, Genshin Impact a Subnauticu. Programuju v Pythonu.
+
+
+
+================================================
+FILE: content/pages/cz/osu.md
+================================================
+Title: Osu! profil
+Lang: cs
+Slug: osu
+Save_as: cz/osu.html
+URL: cz/osu.html
+Template: osu
+
+# Profil
+
+![logo](https://a.ppy.sh/38448983?1769793231.png){.osu-logo}
+
+- **Name:** SnehulakTV_
+- **Rank:** #541536
+- **PP:** 1893.4
+- **Play Time:** 6d  13h 57m
+- **Play Count:** 10014
+- **ACC:** 87.32%
+
+# Herní styl
+**Pen grip:** Hover (Držení nad tabletem)
+**Area**: 65x42mm
+**Favorite Mods**: HD, EZ
+
+
+
+
+================================================
+FILE: content/pages/cz/projects.md
+================================================
+Title: Moje projekty
+Lang: cs
+Slug: projects
+Save_as: cz/projects.html
+URL: cz/projects.html
+
+# Již brzy
+
+
+
+================================================
+FILE: content/r/favsong.md
+================================================
+Title: Redirect Favorite Song
+Save_as: r/favsong/index.html
+URL: r/favsong/
+
+<meta http-equiv="refresh" content="0; url=https://youtu.be/H4jRi4E-dvA">
+<p>If the page does not work, click <a href="https://youtu.be/H4jRi4E-dvA">here</a>.</p>
+<p>Pokud stránka nefunguje, klikněte <a href="https://youtu.be/H4jRi4E-dvA">zde</a>.</p>
+
+
+
+================================================
+FILE: content/r/go.md
+================================================
+Title: Redirect google
+Save_as: r/go/index.html
+URL: r/go/
+
+<meta http-equiv="refresh" content="0; url=https://www.google.com/">
+<p>If the page does not work, click <a href="https://www.google.com/">here</a>.</p>
+<p>Pokud stránka nefunguje, klikněte <a href="https://www.google.com/">zde</a>.</p>
+
+
+
+================================================
+FILE: content/r/steam.md
+================================================
+Title: Redirect Steam Profile
+Save_as: r/steam/index.html
+URL: r/steam/
+
+<meta http-equiv="refresh" content="0; url=https://steamcommunity.com/profiles/76561199435612424/">
+<p>If the page does not work, click <a href="https://steamcommunity.com/profiles/76561199435612424/">here</a>.</p>
+<p>Pokud stránka nefunguje, klikněte <a href="https://steamcommunity.com/profiles/76561199435612424/">zde</a>.</p>
+
+
+
+================================================
+FILE: content/r/wb.md
+================================================
+Title: Redirect Web
+Save_as: r/wb/index.html
+URL: r/wb/
+
+<meta http-equiv="refresh" content="0; url=https://msnehulak.github.io/">
+<p>If the page does not work, click <a href="https://msnehulak.github.io/">here</a>.</p>
+<p>Pokud stránka nefunguje, klikněte <a href="https://msnehulak.github.io/">zde</a>.</p>
+
+
+
+================================================
+FILE: content/theme/style.css
+================================================
+/* Definice globálních proměnných pro snadnou správu barev */
+:root {
+    --bg-main: #1e1e1e;       /* Trochu tmavší a modernější šedá pro pozadí */
+    --bg-card: #2d2d2d;       /* Kontrastnější šedá pro karty */
+    --primary: #033663;       /* Tvoje modrá z navigace */
+    --primary-dark: #022552;  /* Tvoje tmavší modrá z headeru */
+    --text-main: #f1f1f1;     /* Hlavní světlý text */
+    --text-muted: #aaaaaa;    /* Ztlumený text pro patičku a detaily */
+    --accent: #3498db;        /* Akcentová barva pro odkazy v textu */
+    --radius: 12px;           /* Zaoblení rohů */
+    --transition: all 0.3s ease;
+}
+
+.lang-switch {
+    font-weight: bold;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.lang-switch:hover {
+    background: var(--primary);
+    color: var(--primary-dark) !important;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Zajistí, že patička bude vždy dole, i na prázdných stránkách */
+}
+
+/* Hlavička */
+header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
+    color: white;
+    padding: 30px 20px; /* Větší padding pro vzdušnější design */
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Navigace */
+nav {
+    background: var(--primary);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.odkazy {
+    display: flex;
+    gap: 20px; /* Použití gap místo margin-left je čistější */
+}
+
+.osu-logo {
+    border-radius: 15px;
+    width: 100px;
+}
+
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Jemné podbarvení při hoveru */
+    color: #fff;
+}
+
+/* Hlavní obsah */
+main {
+    padding: 40px 20px;
+    flex: 1; /* Roztáhne obsah tak, aby vytlačil footer dolů */
+}
+
+.karta {
+    max-width: 800px;
+    width: 100%;
+    box-sizing: border-box; /* Aby padding nezvětšoval šířku nad 100% */
+    margin: 0 auto;
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Výraznější stín pro hloubku */
+}
+
+/* Stylizace prvků uvnitř karty (Markdown výstupy) */
+.karta h1, .karta h2, .karta h3 {
+    color: #fff;
+    margin-top: 0.5em;
+    margin-bottom: 0.1em;
+}
+
+.karta h1:first-child {
+    margin-top: 0; /* Odstraní mezeru nad prvním nadpisem v kartě */
+}
+
+.karta p {
+    margin-bottom: 1.0em;
+    color: #e0e0e0;
+}
+
+/* Styl pro odkazy v textu, které vygeneruje Markdown */
+.karta a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.karta a:hover {
+    text-decoration: underline;
+    color: #5dade2;
+}
+
+/* Styly pro seznamy z Markdownu */
+.karta ul, .karta ol {
+    margin-bottom: 1.5em;
+    padding-left: 25px;
+}
+
+.karta li {
+    margin-bottom: 0.3em;
+}
+
+/* Patička */
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 📱 Responzivita pro mobily (Media Queries) */
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .odkazy {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .karta {
+        padding: 20px; /* Menší padding na mobilech, aby zbyl prostor pro text */
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+}
+
+
+
+
+================================================
+FILE: data/limits.json
+================================================
+{ "redirect": {
+    "link":{
+        "len": 200,
+        "block": ["<", ">"]
+    },
+    "name": {
+        "len": 50,
+        "block": ["<", ">"]
+    },
+    "r":  {
+        "len": 10,
+        "block": ["<",">", ".", "/", "'", "#", "?", "\\"]
+    }
+}
+}
+
+
+
+================================================
+FILE: data/links.json
+================================================
+[{"link": "https://msnehulak.github.io/", "name": "Web", "r": "wb"}, {"link": "https://youtu.be/H4jRi4E-dvA", "name": "Favorite Song", "r": "favsong"}, {"link": "https://steamcommunity.com/profiles/76561199435612424/", "name": "Steam Profile", "r": "steam"}, {"link": "https://www.google.com/", "name": "google", "r": "go"}]
+
+
+================================================
+FILE: data/style.css
+================================================
+/* Definice globálních proměnných pro snadnou správu barev */
+:root {
+    --bg-main: #1e1e1e;       /* Trochu tmavší a modernější šedá pro pozadí */
+    --bg-card: #2d2d2d;       /* Kontrastnější šedá pro karty */
+    --primary: #033663;       /* Tvoje modrá z navigace */
+    --primary-dark: #022552;  /* Tvoje tmavší modrá z headeru */
+    --text-main: #f1f1f1;     /* Hlavní světlý text */
+    --text-muted: #aaaaaa;    /* Ztlumený text pro patičku a detaily */
+    --accent: #3498db;        /* Akcentová barva pro odkazy v textu */
+    --radius: 12px;           /* Zaoblení rohů */
+    --transition: all 0.3s ease;
+}
+
+.lang-switch {
+    font-weight: bold;
+    color: var(--primary) !important;
+    border: 1px solid var(--primary);
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.lang-switch:hover {
+    background: var(--primary);
+    color: var(--primary-dark) !important;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Zajistí, že patička bude vždy dole, i na prázdných stránkách */
+}
+
+/* Hlavička */
+header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary)); /* Moderní jemný přechod */
+    color: white;
+    padding: 30px 20px; /* Větší padding pro vzdušnější design */
+    text-align: center;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Navigace */
+nav {
+    background: var(--primary);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.odkazy {
+    display: flex;
+    gap: 20px; /* Použití gap místo margin-left je čistější */
+}
+
+.osu-logo {
+    border-radius: 15px;
+    width: 100px;
+}
+
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Jemné podbarvení při hoveru */
+    color: #fff;
+}
+
+/* Hlavní obsah */
+main {
+    padding: 40px 20px;
+    flex: 1; /* Roztáhne obsah tak, aby vytlačil footer dolů */
+}
+
+.karta {
+    max-width: 800px;
+    width: 100%;
+    box-sizing: border-box; /* Aby padding nezvětšoval šířku nad 100% */
+    margin: 0 auto;
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Výraznější stín pro hloubku */
+}
+
+/* Stylizace prvků uvnitř karty (Markdown výstupy) */
+.karta h1, .karta h2, .karta h3 {
+    color: #fff;
+    margin-top: 0.5em;
+    margin-bottom: 0.1em;
+}
+
+.karta h1:first-child {
+    margin-top: 0; /* Odstraní mezeru nad prvním nadpisem v kartě */
+}
+
+.karta p {
+    margin-bottom: 1.0em;
+    color: #e0e0e0;
+}
+
+/* Styl pro odkazy v textu, které vygeneruje Markdown */
+.karta a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.karta a:hover {
+    text-decoration: underline;
+    color: #5dade2;
+}
+
+/* Styly pro seznamy z Markdownu */
+.karta ul, .karta ol {
+    margin-bottom: 1.5em;
+    padding-left: 25px;
+}
+
+.karta li {
+    margin-bottom: 0.3em;
+}
+
+/* Patička */
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* 📱 Responzivita pro mobily (Media Queries) */
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 15px;
+    }
+
+    .odkazy {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .karta {
+        padding: 20px; /* Menší padding na mobilech, aby zbyl prostor pro text */
+    }
+
+    header h1 {
+        font-size: 1.8rem;
+    }
+}
+
+
+
+
+================================================
+FILE: data/text.json
+================================================
+{
+    "cs": {
+        "redirect": {
+            "nl_msg": "Pokud stránka nefunguje, klikněte",
+            "nl_click": "zde"
+        },
+        "home_page": {
+            "head": "Web SnehulakTV",
+            "title": "Web SnehulakTV",
+            "text": "# O mně\nAhoj, jmenuji se Max. ,nl. Jsem hráč osu!, programátor a gamer. Rád hraju CS2, Genshin Impact a Subnauticu. Programuju v Pythonu."
+        },
+        "projects": {
+            "head": "Moje Projekty",
+            "title": "Moje projekty",
+            "text": "# Již brzy"
+        },
+        "404": {
+            "head": "404 Jsi ztracený?",
+            "title": "404 Jsi ztracený?",
+            "text": "Můžeš se vrátit zpět na hlavní stránku kliknutím [--> Zde <--](index.html)"
+        },
+        "osu": {
+            "head": "Můj osu! profil",
+            "title": "Osu! profil",
+            "play_style": {
+                "pen_grip": "Hover (Držení nad tabletem)",
+                "area": [65, 42],
+                "sr": 5.4,
+                "fav_mods": ["HD", "EZ"]
+            }
+        }
+    },
+    "en": {
+        "redirect": {
+            "nl_msg": "If the page does not work, click",
+            "nl_click": "here"
+        },
+        "home_page": {
+            "head": "SnehulakTV's Web",
+            "title": "SnehulakTV's web",
+            "text": "# About me\nHello, my name is Max. ,nl. I am an osu! player, programmer and gamer. I like to play CS2, Genshin Impact, and Subnautica. I program in Python."
+        },
+        "projects": {
+            "head": "My Projects",
+            "title": "My projects",
+            "text": "# Coming Soon"
+        },
+        "404": {
+            "head": "404 Are you lost?",
+            "title": "404 Are you lost?",
+            "text": "You can go back home by clicking [--> Here <--](index.html)"
+        },
+        "osu": {
+            "head": "My osu! profile",
+            "title": "Osu! profile",
+            "play_style": {
+                "pen_grip": "Hover",
+                "area": [65, 42],
+                "sr": 5.4,
+                "fav_mods": ["HD", "EZ"]
+            }
+        }
+    }
+}
+
+
+
+================================================
+FILE: data/cache/osu.json
+================================================
+{"update": "2026-06-04 15:46:54", "rank": 541536, "pp": 1893.4, "acc": 87.3232, "play_time": 568667, "play_count": 10014, "country_rank": 3634, "level": 77, "avatar": "https://a.ppy.sh/38448983?1769793231.png", "ss_count": 1}
+
+
+================================================
+FILE: theme/templates/base.html
+================================================
+<!DOCTYPE html>
+<html lang="{{ page.lang if page else 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page.title }} - {{ SITENAME }}{% endblock %}</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">SnehulakTV</div>
+        <div class="odkazy">
+            {% set lang_prefix = '/cz' if page and page.lang == 'cs' else '' %}
+            <a href="{{ lang_prefix }}/index.html">Home</a>
+            <a href="{{ lang_prefix }}/projects.html">Projects</a>
+            <a href="{{ lang_prefix }}/osu.html">My Osu</a>
+            
+            {% if page and page.lang == 'en' %}
+                <a href="/cz/{{ page.slug }}.html" class="lang-switch">CZ</a>
+            {% elif page %}
+                <a href="/{{ page.slug }}.html" class="lang-switch">EN</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <main>
+        <section class="karta">
+            {% block content %}{{ page.content }}{% endblock %}
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 SnehulakTV</p>
+    </footer>
+</body>
+</html>
+
+
+
+================================================
+FILE: theme/templates/osu.html
+================================================
+{% extends "base.html" %}
+{% block content %}
+    <div class="osu-container">
+        {{ page.content }}
+    </div>
+{% endblock %}
+
+
+
+================================================
+FILE: theme/templates/page.html
+================================================
+{% extends "base.html" %}
+{% block content %}
+    {{ page.content }}
+{% endblock %}
+
+
+
+================================================
+FILE: .github/ISSUE_TEMPLATE/add_redirect.yml
+================================================
+name: Add redirect/shortner
+description: add new redirect/shortner to https://msnehulak.github.io/r/
+labels:
+- issue_worker
+body:
+- type: input
+  id: link
+  attributes:
+    label: Web link
+    description: Link to the web
+    placeholder: https://msnehulak.github.io/
+  validations:
+    required: true
+
+- type: input
+  id: name
+  attributes:
+    label: Name of redirect
+    description: Name of redirect
+    placeholder: Youtube, Discord
+  validations:
+    required: true
+
+- type: input
+  id: redirect 
+  attributes:
+    label: Redirect
+    description: what is going to be after r/XX
+    placeholder: yt, dc
+  validations:
+    required: true
+
+
+
+
+================================================
+FILE: .github/workflows/deploy.yml
+================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main 
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: 
+
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+    
+      - name: Build Web Site
+        env:
+          OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
+          OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
+        run: |
+          python code/build.py
+          
+          pelican content -o output -s pelicanconf.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './output'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Web update" || exit 0
+          git push
+
+
+
+
+
+================================================
+FILE: .github/workflows/issue_worker.yml
+================================================
+name: Issue Form Worker
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  create-pr:
+    if: contains(github.event.issue.labels.*.name, 'issue_worker')
+
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      # clone repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set-Up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install Libarys
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+    
+      # Format form to json
+      - name: Format issue form to json
+        id: parse_form
+        uses: peter-murray/issue-forms-body-parser@v4
+        with:
+          issue_id: ${{ github.event.issue.number }}
+          separator: '###'
+
+      # Run pythonn
+      - name: Parse Issue and Generate JSON
+        env:
+          ISSUE_JSON: ${{ steps.parse_form.outputs.payload }}
+        run: python code/issueworker.py
+
+        # Create Pull Request
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "feat: Issue Worker commit #${{ github.event.issue.number }}"
+          branch: "issue_worker/issue-${{ github.event.issue.number }}"
+          title: "Worker start form Issue #${{ github.event.issue.number }}"
+          body: |
+            This pull requests is automated generated form issue forms.
+
+            Issue body:
+            ${{ github.event.issue.body }}
+          labels: |
+            automated-pr
+            data-update
+
+

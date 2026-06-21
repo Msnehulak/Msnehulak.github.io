@@ -41,7 +41,10 @@ jobs:
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
-        run: python code/build.py
+        run: |
+          python code/build.py
+          
+          pelican content -o output -s pelicanconf.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -49,7 +52,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './web'
+          path: './output'
 
       - name: Deploy to GitHub Pages
         id: deployment

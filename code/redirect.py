@@ -1,51 +1,43 @@
 import sys
 import sweb
-import webbuilder as wb
-import os
 from pathlib import Path
 
 class Redirect:
     def __init__(self) -> None:
         self.links = sweb.load_json("links")
         self.texts = sweb.data.texts
-        self.links_folder = sweb.BASE_DIR / "web" / "r"
-
-    def create_html(self, link, name):
-        bld = wb.WebBuilder(add_nav=False, add_start=False)
-        bld.add_start(load_css=False, redirect=link, title=name)
-        
-        msg_cs = self.texts["cs"]["redirect"]["nl_msg"]
-        click_cs = self.texts["cs"]["redirect"]["nl_click"]
-        
-        msg_en = self.texts["en"]["redirect"]["nl_msg"]
-        click_en = self.texts["en"]["redirect"]["nl_click"]
-        
-        # Přidání obou hlášek pro uživatele pod sebe
-        bld.add_markdown(f"{msg_en} [{click_en}]({link})")
-        bld.add_markdown(f"{msg_cs} [{click_cs}]({link})")
-       
-        bld.build(add_footer=True)
-        return bld.get_web()
 
     def main(self):            
+        content_redirect_folder = sweb.BASE_DIR / "content" / "r"
+        content_redirect_folder.mkdir(parents=True, exist_ok=True)
+
         for i in self.links:
-            html_content = self.create_html(i["link"], i["name"])
+            msg_cs = self.texts["cs"]["redirect"]["nl_msg"]
+            click_cs = self.texts["cs"]["redirect"]["nl_click"]
             
-            target_folder = self.links_folder / i["r"]
-            target_folder.mkdir(parents=True, exist_ok=True)
+            msg_en = self.texts["en"]["redirect"]["nl_msg"]
+            click_en = self.texts["en"]["redirect"]["nl_click"]
 
-            path = target_folder / "index.html"
+            md_redirect = f"""Title: Redirect {i['name']}
+Save_as: r/{i['r']}/index.html
+URL: r/{i['r']}/
+
+<meta http-equiv="refresh" content="0; url={i['link']}">
+<p>{msg_en} <a href="{i['link']}">{click_en}</a>.</p>
+<p>{msg_cs} <a href="{i['link']}">{click_cs}</a>.</p>
+"""
+            path = content_redirect_folder / f"{i['r']}.md"
             with open(path, "w", encoding='utf-8') as f:
-                f.write(html_content)
+                f.write(md_redirect)
 
-            print(f"Redirect '{i['name']}' at /r/{i['r']}/")
+            print(f"Prepared redirect '{i['name']}' for /r/{i['r']}/")
 
     def validate_redirect(self, name, link, r):
         limits = sweb.data.limits["redirect"]    
-   
+  
         def check(value, blocks, name="unknown"):
             if len(value) > blocks["len"]:
-                print(f"{name} Lenght is over limit {blocks['len']}")
+                print(f"{name} Length is over limit {blocks['len']}")
                 sys.exit(1)
             for block in blocks["block"]:
                 if block in value:

@@ -1,119 +1,63 @@
-import webbuilder as wb
-import redirect as rd
-import osu
+# code/build.py
 import sweb
+import osu
+import redirect as rd
 import shutil
+from pathlib import Path
 
-def generate_sitemap():
-    base_url = "https://msnehulak.github.io/"
-    web_dir = sweb.BASE_DIR / "web"
+def create_markdown_page(lang, page_key, prefix):
+    """Vezme texty z text.json a uloží je jako Markdown pro Pelican."""
+    text_data = sweb.data.texts[lang][page_key]
     
-    urls = []
+    # Detekce názvu souboru (index, projects, 404)
+    filename = "index" if page_key == "home_page" else page_key
     
-    for html_file in web_dir.rglob("*.html"):
-        rel_path = html_file.relative_to(web_dir)
-        url_path = rel_path.as_posix()
-        
-        if url_path == "index.html":
-            full_url = base_url
-        elif url_path.endswith("/index.html"):
-            full_url = base_url + url_path[:-10]
-        else:
-            full_url = base_url + url_path
-            
-        urls.append(full_url)
+    # Vyčištění textu od tvé staré značky ,nl.
+    clean_text = text_data["text"].replace(",nl.", "\n")
     
-    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml_content += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for url in sorted(urls):
-        xml_content += f'  <url>\n    <loc>{url}</loc>\n  </url>\n'
-    xml_content += '</urlset>'
-  
-    sitemap_path = web_dir / "sitemap.xml"
-    with open(sitemap_path, "w", encoding="utf-8") as f:
-        f.write(xml_content)
-        
-    print(f"Sitemap.xml úspěšně vygenerována s {len(urls)} odkazy.")
+    # Metadata pro Pelican (Front Matter)
+    md_content = f"""Title: {text_data["title"]}
+Lang: {lang}
+Slug: {filename}
+Save_as: {prefix}{filename}.html
+URL: {prefix}{filename}.html
 
-def page_404(lang, prefix):
-    text = sweb.data.texts[lang]["404"]
-    css = "../style.css" if lang == "cs" else "style.css"
-    # ZMĚNA: Přidán parametr current_page="404"
-    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="404")
-    bld.add_head(text["head"])
-
-    abutf = wb.Frame()
-    abutf.add_markdown(text["text"])
-    abutf.move_main()
-    bld.add_html(abutf.get_frame()) 
-
-    bld.build()
-    bld.save_web(f"{prefix}404")
-
-def projects_page(lang, prefix):
-    text = sweb.data.texts[lang]["projects"]
-    css = "../style.css" if lang == "cs" else "style.css"
-    # ZMĚNA: Přidán parametr current_page="projects"
-    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="projects")
-    bld.add_head(text["head"])
-
-    abutf = wb.Frame()
-    abutf.add_markdown(text["text"])
-    abutf.move_main()
-    bld.add_html(abutf.get_frame()) 
-
-    bld.build()
-    bld.save_web(f"{prefix}projects")
-
-def home_page(lang, prefix):
-    text = sweb.data.texts[lang]["home_page"]
-    css = "../style.css" if lang == "cs" else "style.css"
-    # ZMĚNA: Přidán parametr current_page="index"
-    bld = wb.WebBuilder(title=text["title"], lang=lang, css_path=css, current_page="index")
-    bld.add_head(text["head"])
-
-    abutf = wb.Frame()
-    abutf.add_markdown(text["text"])
-    abutf.move_main()
-    bld.add_html(abutf.get_frame()) 
-
-    bld.build()
-    bld.save_web(f"{prefix}index")
-
-def redirect():
-    app = rd.Redirect()
-    app.main()
-
-def prepare_folders():
-    web_dir = sweb.BASE_DIR / "web"
-    data_dir = sweb.BASE_DIR / "data"
+{clean_text}
+"""
     
-    web_dir.mkdir(parents=True, exist_ok=True)
+    # Určení cílové cesty v content/pages/
+    target_dir = sweb.BASE_DIR / "content" / "pages" / prefix
+    target_dir.mkdir(parents=True, exist_ok=True)
     
-    src_css = data_dir / "style.css"
-    dst_css = web_dir / "style.css"
-    
+    with open(target_dir / f"{filename}.md", "w", encoding="utf-8") as f:
+        f.write(md_content)
+
+def prepare_theme():
+    """Zkopíruje stávající style.css do složky, kterou Pelican uvidí."""
+    src_css = sweb.BASE_DIR / "data" / "style.css"
+    dst_dir = sweb.BASE_DIR / "content" / "theme"
+    dst_dir.mkdir(parents=True, exist_ok=True)
     if src_css.exists():
-        shutil.copy2(src_css, dst_css)
-        print("Soubor style.css byl úspěšně zkopírován do složky web.")
-    else:
-        print("Upozornění: Soubor data/style.css nebyl nalezen!")
+        shutil.copy2(src_css, dst_dir / "style.css")
 
 def build():
-    prepare_folders()
-    redirect()
+    prepare_theme()
     
-    # Aktualizace dat pro osu proběhne před stavbou stránek
+    # 1. Zpracování redirectů přes tvůj upravený redirect.py
+    app_rd = rd.Redirect()
+    app_rd.main()
+    
+    # 2. Aktualizace dat pro osu
     osu.osu.update_data()
     
-    # Generování webu pro angličtinu (kořen) a češtinu (složka cz/)
+    # 3. Generování stránek (anglické do kořene, české do cz/)
     for lang, prefix in [("en", ""), ("cs", "cz/")]:
-        projects_page(lang, prefix)
-        home_page(lang, prefix)
-        page_404(lang, prefix)
-        osu.osu.create_page(lang, prefix)
+        create_markdown_page(lang, "home_page", prefix)
+        create_markdown_page(lang, "projects", prefix)
+        create_markdown_page(lang, "404", prefix)
         
-    generate_sitemap()
+        # Osu má specifickou logiku, vygenerujeme ji zvlášť
+        osu.osu.create_page(lang, prefix)
      
 if __name__ == "__main__":
     build()

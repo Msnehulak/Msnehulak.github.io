@@ -3,8 +3,6 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from ossapi import Ossapi
-import webbuilder as wb
-import time
 
 load_dotenv()
 MINIMUM_UPDATE_HOURS = 1
@@ -48,43 +46,26 @@ class Osu:
             sweb.save_json("cache/osu", self.data)
             print("osu! cache was updated.")
         except Exception as e:
-            print(f"ERROR with contntact osu! API: {e}")
-
-    def get_stats(self):
-        self.update_data()
-        return self.data
+            print(f"ERROR with contact osu! API: {e}")
 
     def create_page(self, lang="en", prefix=""):
         def get_area(area):
-            w = area[0]
-            h = area[1]
-            return f"{w}x{h}mm"
+            return f"{area[0]}x{area[1]}mm"
 
-        # Přístup do nové jazykové struktury text.json
         texts = sweb.data.texts[lang]["osu"]
-        
-        # Ošetření cesty k CSS pro podsložku
-        css = "../style.css" if lang == "cs" else "style.css"
-
-        bld = wb.WebBuilder(title=texts["title"], lang=lang, css_path=css)
-        bld.add_head(text=texts["head"])
 
         total_seconds = int(self.data["play_time"])
         days = total_seconds // (24 * 3600)
         hours = (total_seconds % (24 * 3600)) // 3600
         minutes = (total_seconds % 3600) // 60
-
         play_time = f"{days}d  {hours}h {minutes}m"        
 
-        frame = wb.Frame()
         i = texts["play_style"]
-        
-        # Přejmenování nadpisů podle zvoleného jazyka
         head_profile = "Profil" if lang == "cs" else "Profile"
         head_style = "Herní styl" if lang == "cs" else "Play Style"
         
-        content = f"""
-# {head_profile}
+        # Čistý text stránky v Markdownu
+        markdown_content = f"""# {head_profile}
 
 ![logo]({self.data["avatar"]}){{.osu-logo}}
 
@@ -96,21 +77,30 @@ class Osu:
 - **ACC:** {self.data["acc"]:.2f}%
 
 # {head_style}
-**Pen grip:** {i["pen_grip"]} ,nl.
-**Area**: {get_area(i["area"])} ,nl.
+**Pen grip:** {i["pen_grip"]}
+**Area**: {get_area(i["area"])}
 **Favorite Mods**: {", ".join(i["fav_mods"])}
 """
-        frame.add_markdown(content)
-        frame.move_main()
-        bld.add_html(frame.get_frame())
 
-        bld.build()
-        bld.get_web()
-        bld.save_web(f"{prefix}osu")
+        # Front Matter hlavička pro Pelican, která definuje šablonu osu.html
+        md_page = f"""Title: {texts["title"]}
+Lang: {lang}
+Slug: osu
+Save_as: {prefix}osu.html
+URL: {prefix}osu.html
+Template: osu
+
+{markdown_content}
+"""
+        
+        target_dir = sweb.BASE_DIR / "content" / "pages" / prefix
+        target_dir.mkdir(parents=True, exist_ok=True)
+        
+        with open(target_dir / "osu.md", "w", encoding="utf-8") as f:
+            f.write(md_page)
 
     def main(self):
         self.update_data()
-        # Vygenerování obou verzí rovnou, kdyby se spouštělo napřímo
         self.create_page("en", "")
         self.create_page("cs", "cz/")
 
