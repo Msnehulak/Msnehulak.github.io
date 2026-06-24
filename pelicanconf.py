@@ -1,20 +1,47 @@
-# pelicanconf.py
-
-TIMEZONE = 'Europe/Prague'
+AUTHOR = 'Snehulak'
+SITENAME = 'Snehulak'
+SITEURL = ""
+PATH = "content"
+THEME = "theme/0.1"
+TIMEZONE = 'Europe/Rome'
 DEFAULT_LANG = 'en'
+DEFAULT_PAGINATION = False
 
-# Ignorovat výchozí rozvržení pro blogy
-DIRECT_TEMPLATES = []
-# Sledovat složky pro stránky a redirecty
-PAGE_PATHS = ['pages', 'r']
+# 1. Všechno v 'content' budeme brát jako statické stránky (Pages)
+PAGE_PATHS = ['']
+PAGE_URL = '{slug}/'
+PAGE_SAVE_AS = '{slug}/index.html'
 
-# Řekni Pelicanu, aby sledoval složku theme i images uvnitř složky content
-STATIC_PATHS = ['theme', 'images']
+# Pokud máte podsložky (např. content/o-nas/index.md -> o-nas/index.html), použijte toto:
+# PAGE_URL = '{path_no_ext}.html'
+# PAGE_SAVE_AS = '{path_no_ext}.html'
 
-# Přesměrování style.css přímo do kořene outputu
-EXTRA_PATH_METADATA = {
-    'theme/style.css': {'path': 'style.css'},
-}
+# 2. Vypnutí článků (Articles) a všech jejich automatických výstupů
+ARTICLE_PATHS = []
+ARTICLE_SAVE_AS = ''
+ARTICLE_LANG_SAVE_AS = ''
 
-THEME = 'theme'
-_404_SAVE_AS = '404.html'
+# 3. Ignorovat CSS a JS, aby se negenerovaly jako samostatné stránky
+ARTICLE_EXCLUDES = ['css', 'js', 'r']
+PAGE_EXCLUDES = ['css', 'js', 'r']
+
+# 4. Statické soubory, které se mají pouze zkopírovat (CSS, JS, soubory v 'r')
+STATIC_PATHS = ['css', 'js', 'r']
+
+# Ostatní vypínací direktivy (ponechat prázdné)
+AUTHOR_SAVE_AS = ''
+AUTHORS_SAVE_AS = ''
+CATEGORY_SAVE_AS = ''
+CATEGORIES_SAVE_AS = ''
+TAG_SAVE_AS = ''
+TAGS_SAVE_AS = ''
+ARCHIVES_SAVE_AS = ''
+
+FEED_ALL_ATOM = None
+CATEGORY_FEED_ATOM = None
+TRANSLATION_FEED_ATOM = None
+AUTHOR_FEED_ATOM = None
+AUTHOR_FEED_RSS = None
+
+DELETE_OUTPUT_DIRECTORY = True
+

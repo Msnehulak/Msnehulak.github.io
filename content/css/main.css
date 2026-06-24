@@ -1,0 +1,77 @@
+
+:root {
+    --bg-main: #1e1e1e;
+    --bg-card: #2d2d2d;
+    --primary: #033663;
+    --primary-dark: #022552;
+    --text-main: #f1f1f1;
+    --text-muted: #aaaaaa;
+    --accent: #3498db;
+    --radius: 12px;
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; 
+}
+
+.logo {
+    color: #ecf0f1;
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.links {
+    display: flex;
+    gap: 20px;
+}
+
+nav {
+    background: var(--primary);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+nav a {
+    color: #ecf0f1;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: var(--transition);
+}
+
+nav a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+main {
+    background-color: var(--bg-card); /* Použije tvoji připravenou šedou */
+    border-radius: var(--radius);     /* Použije tvoje zaoblení 12px */
+    padding: 30px;                    /* Vnitřní odsazení, aby text nebyl nalepený na okrajích */
+    margin: 40px auto;                /* Odsazení od navigace/footeru a vycentrování */
+    max-width: 800px;                 /* Omezí šířku textu, aby se dobře četl */
+    width: calc(100% - 40px);         /* Zajistí responzivitu na mobilech */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Volitelné: jemný stín pro lepší vzhled */
+}

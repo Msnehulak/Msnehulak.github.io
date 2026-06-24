@@ -1,7 +1,0 @@
-markdown
-ossapi
-python-dotenv
-pelican
-jinja2
-
-
