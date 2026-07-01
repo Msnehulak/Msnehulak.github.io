@@ -11,6 +11,7 @@ DEFAULT_PAGINATION = False
 PAGE_PATHS = ['']
 PAGE_URL = '{slug}/'
 PAGE_SAVE_AS = '{slug}/index.html'
+INDEX_SAVE_AS = 'index.html'
 
 # Pokud máte podsložky (např. content/o-nas/index.md -> o-nas/index.html), použijte toto:
 # PAGE_URL = '{path_no_ext}.html'

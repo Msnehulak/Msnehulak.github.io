@@ -3,9 +3,7 @@ Directory structure:
     ├── build.py
     ├── pelicanconf.py
     ├── publishconf.py
-    ├── cache/
-    │   ├── master.json
-    │   └── osu.json
+    ├── requirements.txt
     ├── code/
     │   ├── __init__.py
     │   ├── osu.py
@@ -17,11 +15,14 @@ Directory structure:
     │   ├── test.html
     │   └── css/
     │       └── main.css
-    └── theme/
-        └── 0.1/
-            └── templates/
-                ├── base.html
-                └── page.html
+    ├── theme/
+    │   └── 0.1/
+    │       └── templates/
+    │           ├── base.html
+    │           └── page.html
+    └── .github/
+        └── workflows/
+            └── deploy.yml
 
 ================================================
 FILE: build.py
@@ -30,40 +31,36 @@ import subprocess
 from pathlib import Path
 from code.osu import Osu
 
-def build_website():
-    # 1. Spustíme osu worker, který zkontroluje expiraci cache a případně stáhne nová data
-    osu_app = Osu()
-    osu_app.load_data() # Toto interně zavolá sweb.cache.get a případný _update()
+class BuildWebsite:
+    def __init__(self) -> None:
+        pass
 
-    # 2. Načteme aktuální data z cache pro vložení do stránky
-    data = osu_app.data
+    def content_build(self, data: dict, file: str):
+        template_path = Path(f"content/{file}.md.template")
+        output_path = Path(f"content/{file}.md")
 
-    if data:
-        # Vytvoříme přehledný seznam/tabulku v Markdownu
-        md_content = f"""
-- **Rank:** #{data.get('rank', 'N/A')}
-- **PP:** {data.get('pp', 'N/A')}
-- **Přesnost:** {data.get('acc', 0):.2f}%
-- **Obrázek:** ![Avatar]({data.get('avatar', '')})
-"""
-    else:
-        md_content = "Data se nepodařilo načíst."
+        if template_path.exists():
+            text = template_path.read_text(encoding="utf-8")
+            for key, value in data.items():
+                text = text.replace(f'{{{{ {key} }}}}', f'{value}')
+            output_path.write_text(text, encoding="utf-8")
 
-    # 3. Přečteme šablonu, nahradíme placeholder a uložíme finální verzi pro Pelican
-    template_path = Path("content/osu.md.template") # Přejmenuj původní osu.md na .template
-    output_path = Path("content/osu.md")
+    def osu(self):
+        osu_app = Osu()
+        osu_app.load_data()
+        data = osu_app.data
 
-    if template_path.exists():
-        text = template_path.read_text(encoding="utf-8")
-        final_text = text.replace("{OSU_DATA}", md_content)
-        output_path.write_text(final_text, encoding="utf-8")
+        self.content_build(data, 'osu')
 
-    # 4. Spustíme Pelican build
-    print("Spouštím Pelican build...")
-    subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])
+    def build_website(self):
+        self.osu()
+
+        print("Spouštím Pelican build...")
+        subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])
 
 if __name__ == "__main__":
-    build_website()
+    app = BuildWebsite()
+    app.build_website()
 
 
 
@@ -83,6 +80,7 @@ DEFAULT_PAGINATION = False
 PAGE_PATHS = ['']
 PAGE_URL = '{slug}/'
 PAGE_SAVE_AS = '{slug}/index.html'
+INDEX_SAVE_AS = 'index.html'
 
 # Pokud máte podsložky (např. content/o-nas/index.md -> o-nas/index.html), použijte toto:
 # PAGE_URL = '{path_no_ext}.html'
@@ -149,30 +147,15 @@ DELETE_OUTPUT_DIRECTORY = True
 
 
 ================================================
-FILE: cache/master.json
+FILE: requirements.txt
 ================================================
-[
-    {
-        "index": "osu",
-        "frequency": 1,
-        "last": "0001-06-24 21:20:49",
-        "file": "osu.json"
-    }
-]
+markdown
+ossapi
+python-dotenv
+pelican
+jinja2
+diskcache
 
-
-
-================================================
-FILE: cache/osu.json
-================================================
-{
-    "rank": 26,
-    "pp": 1234,
-    "acc": 98.25,
-    "play_time": 500000,
-    "play_count": 12000,
-    "avatar": "https://..."
-}
 
 
 
@@ -186,31 +169,36 @@ FILE: code/__init__.py
 FILE: code/osu.py
 ================================================
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from ossapi import Ossapi
-from . import sweb
+from diskcache import Cache
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CACHE_DIR = BASE_DIR / "cache" / "diskcache"
 
 class Osu:
     def __init__(self) -> None:
         self.data = None 
+        self.cache = Cache(str(CACHE_DIR))
+        self.update_frequency_hours = 1
 
     def load_data(self):
-        row_data = sweb.cache.get("osu") 
+        cached_data = self.cache.get("osu") 
         
-        if row_data is None:
-            print("Index 'osu' nebyl v cache nalezen vůbec.")
-            return
-        self.data = row_data['data']
+        if cached_data is None:
+            print("Cache pro 'osu' neexistuje nebo vypršela. Spouštím update...")
+            self._update()
+            cached_data = self.cache.get("osu")
 
-        if row_data["update"] == True: 
-            self._update() 
+        if cached_data:
+            self.data = cached_data
+        else:
+            print("Chyba: Nepodařilo se získat data z API ani z cache.")
 
     def _update(self):
-        """
-        Načtení reálných dat hráče z osu! API a update nové cache.
-        """
-        print("Cache vypršela. Stahuji nová data z osu! API...")
-        
         CLIENT_ID = os.getenv("OSU_CLIENT_ID")
         CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
         username = "SnehulakTV_"
@@ -224,7 +212,6 @@ class Osu:
             user = api.user(username)
             stats = user.statistics
 
-            # Příprava čistého slovníku s daty
             novy_api_vystup = {
                 "rank": stats.global_rank,
                 "pp": stats.pp,
@@ -234,13 +221,15 @@ class Osu:
                 "avatar": user.avatar_url
             } 
             
-            # sweb.cache.update se postará o zápis do osu.json i aktualizaci času v master.json
-            uspech = sweb.cache.update("osu", novy_api_vystup)
-            if uspech:
-                self.data = novy_api_vystup
-                print("osu! cache byla úspěšně aktualizována v novém systému.")
+            # Zápis do cache s nastavenou expirací (převod hodin na sekundy)
+            expire_seconds = self.update_frequency_hours * 3600
+            self.cache.set("osu", novy_api_vystup, expire=expire_seconds)
+            
+            print("osu! cache byla úspěšně aktualizována pomocí diskcache.")
+            
         except Exception as e:
             print(f"Chyba při komunikaci s osu! API: {e}")
+
 if __name__ == "__main__":
     app = Osu()
     app.load_data()
@@ -338,7 +327,12 @@ Slug: osu
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
 
-{OSU_DATA}
+- Global Ranking: 499900#
+- Performance Points: 2071.6
+- Accuracy: 86.7137
+- Play Time: 654516
+- Play count: 11455
+
 
 
 
@@ -351,7 +345,12 @@ Slug: osu
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
 
-{OSU_DATA}
+- Global Ranking: {{ rank }}#
+- Performance Points: {{ pp }}
+- Accuracy: {{ acc }}
+- Play Time: {{ play_time }}
+- Play count: {{ play_count }}
+
 
 
 
@@ -362,7 +361,7 @@ FILE: content/test.html
 <html>
     <head>
         <title>Testovaci stránka</title>
-        <meta name="slug" content="testt" />
+        <meta name="slug" content="test" />
     </head>
     <body>
         <div class="moje-vlastni-html-stranka">
@@ -453,6 +452,7 @@ main {
     max-width: 800px;                 /* Omezí šířku textu, aby se dobře četl */
     width: calc(100% - 40px);         /* Zajistí responzivitu na mobilech */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Volitelné: jemný stín pro lepší vzhled */
+    line-height: 1.65;
 }
 
 
@@ -503,5 +503,80 @@ FILE: theme/0.1/templates/page.html
 {% block content %}
     {{ page.content }}
 {% endblock %}
+
+
+
+================================================
+FILE: .github/workflows/deploy.yml
+================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main 
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch: 
+
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+    
+      - name: Build Web Site
+        env:
+          OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
+          OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
+        run: |
+          python build.py
+          
+          pelican content -o output -s pelicanconf.py
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './output'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Web update" || exit 0
+          git push
+
+
 
 

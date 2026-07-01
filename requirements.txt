@@ -1,0 +1,7 @@
+markdown
+ossapi
+python-dotenv
+pelican
+jinja2
+diskcache
+

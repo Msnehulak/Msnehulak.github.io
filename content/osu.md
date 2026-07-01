@@ -4,4 +4,9 @@ Slug: osu
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
 
-{OSU_DATA}
+- Global Ranking: 499900#
+- Performance Points: 2071.6
+- Accuracy: 86.7137
+- Play Time: 654516
+- Play count: 11455
+

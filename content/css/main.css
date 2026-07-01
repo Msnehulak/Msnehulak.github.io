@@ -74,4 +74,5 @@ main {
     max-width: 800px;                 /* Omezí šířku textu, aby se dobře četl */
     width: calc(100% - 40px);         /* Zajistí responzivitu na mobilech */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Volitelné: jemný stín pro lepší vzhled */
+    line-height: 1.65;
 }

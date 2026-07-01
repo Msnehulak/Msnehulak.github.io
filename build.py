@@ -2,37 +2,33 @@ import subprocess
 from pathlib import Path
 from code.osu import Osu
 
-def build_website():
-    # 1. Spustíme osu worker, který zkontroluje expiraci cache a případně stáhne nová data
-    osu_app = Osu()
-    osu_app.load_data() # Toto interně zavolá sweb.cache.get a případný _update()
+class BuildWebsite:
+    def __init__(self) -> None:
+        pass
 
-    # 2. Načteme aktuální data z cache pro vložení do stránky
-    data = osu_app.data
+    def content_build(self, data: dict, file: str):
+        template_path = Path(f"content/{file}.md.template")
+        output_path = Path(f"content/{file}.md")
 
-    if data:
-        # Vytvoříme přehledný seznam/tabulku v Markdownu
-        md_content = f"""
-- **Rank:** #{data.get('rank', 'N/A')}
-- **PP:** {data.get('pp', 'N/A')}
-- **Přesnost:** {data.get('acc', 0):.2f}%
-- **Obrázek:** ![Avatar]({data.get('avatar', '')})
-"""
-    else:
-        md_content = "Data se nepodařilo načíst."
+        if template_path.exists():
+            text = template_path.read_text(encoding="utf-8")
+            for key, value in data.items():
+                text = text.replace(f'{{{{ {key} }}}}', f'{value}')
+            output_path.write_text(text, encoding="utf-8")
 
-    # 3. Přečteme šablonu, nahradíme placeholder a uložíme finální verzi pro Pelican
-    template_path = Path("content/osu.md.template") # Přejmenuj původní osu.md na .template
-    output_path = Path("content/osu.md")
+    def osu(self):
+        osu_app = Osu()
+        osu_app.load_data()
+        data = osu_app.data
 
-    if template_path.exists():
-        text = template_path.read_text(encoding="utf-8")
-        final_text = text.replace("{OSU_DATA}", md_content)
-        output_path.write_text(final_text, encoding="utf-8")
+        self.content_build(data, 'osu')
 
-    # 4. Spustíme Pelican build
-    print("Spouštím Pelican build...")
-    subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])
+    def build_website(self):
+        self.osu()
+
+        print("Spouštím Pelican build...")
+        subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])
 
 if __name__ == "__main__":
-    build_website()
+    app = BuildWebsite()
+    app.build_website()
