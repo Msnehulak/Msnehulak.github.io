@@ -1,3 +1,4 @@
+from datetime import datetime
 import subprocess
 from pathlib import Path
 from code.osu import Osu
@@ -20,6 +21,21 @@ class BuildWebsite:
         osu_app = Osu()
         osu_app.load_data()
         data = osu_app.data
+
+        if data is None:
+            data = {
+                "rank": '-1',
+                "pp": 42069,
+                "acc": 101,
+                "play_time": 365,
+                "play_count": 0,
+                # "avatar": user.avatar_url
+                "status": 'API is down, here are some funny numbers'
+            }
+        else:
+            msg = f'update at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+
+            data['status'] = msg 
 
         self.content_build(data, 'osu')
 

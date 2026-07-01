@@ -27,6 +27,7 @@ Directory structure:
 ================================================
 FILE: build.py
 ================================================
+from datetime import datetime
 import subprocess
 from pathlib import Path
 from code.osu import Osu
@@ -49,6 +50,21 @@ class BuildWebsite:
         osu_app = Osu()
         osu_app.load_data()
         data = osu_app.data
+
+        if data is None:
+            data = {
+                "rank": '-1',
+                "pp": 42069,
+                "acc": 101,
+                "play_time": 365,
+                "play_count": 0,
+                # "avatar": user.avatar_url
+                "status": 'API is down, here are some funny numbers'
+            }
+        else:
+            msg = f'update at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+
+            data['status'] = msg 
 
         self.content_build(data, 'osu')
 
@@ -246,63 +262,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
-CACHE_PATH = BASE_DIR / "cache"
-DATA_PATH = BASE_DIR / "data"
-
-CACHE_MASTER_PATH = CACHE_PATH / "master.json"
-
-class Cache:
-    def __init__(self):
-        with open(CACHE_MASTER_PATH, "r") as f:
-            self.master = json.load(f)
-    
-    def get(self, index):
-        for x in self.master:
-            if x.get("index") == index:
-                # 1. Načtení dat
-                try:
-                    with open(CACHE_PATH / x["file"], "r") as f:
-                        data = json.load(f)
-                except FileNotFoundError:
-                    return {"data": None, "meta": x, "update": True}
 
 
-                last_update = datetime.strptime(x["last"], BASE_TIME_FORM)
-                expiry_limit = last_update + timedelta(hours=x["frequency"])
-                
-                need_update = datetime.now() > expiry_limit
-                
-                return {"data": data, "meta": x, "update": need_update}
-        
-        return None
-    
-    def update(self, index, data=None):
-        # 1. Najdeme správný záznam v listu
-        for x in self.master:
-            if x.get("index") == index:
-                # 2. Převedeme datetime na string pomocí tvého formátu
-                x['last'] = datetime.now().strftime(BASE_TIME_FORM)
-                
-                if data is not None:
-                    try:
-                        with open(CACHE_PATH / x["file"], "w") as f:
-                            json.dump(data, f, indent=4, ensure_ascii=False)
-                    except Exception as e:
-                        print(f"Chyba při zápisu dat pro index '{index}': {e}")
-                        return False
-                
-                # 4. Uložíme aktualizovaný master.json zpět na disk
-                self._save_master()
-                return True
-        
-        print(f"Index '{index}' nelze aktualizovat, chybí v master.json")
-        return False
-
-    def _save_master(self):
-        with open(CACHE_MASTER_PATH, "w") as f:
-            json.dump(self.master, f, indent=4, ensure_ascii=False)
-
-cache = Cache()
 
 
 
@@ -333,6 +294,9 @@ Zde jsou staticky generovaná data z cache:
 - Play Time: 654516
 - Play count: 11455
 
+update at 2026-07-01 21:10:25
+
+
 
 
 
@@ -350,6 +314,9 @@ Zde jsou staticky generovaná data z cache:
 - Accuracy: {{ acc }}
 - Play Time: {{ play_time }}
 - Play count: {{ play_count }}
+
+{{ status }}
+
 
 
 
@@ -473,9 +440,8 @@ FILE: theme/0.1/templates/base.html
         <div class="logo">SnehulakTV</div>
         <div class="links">
             <a href="{{ SITEURL }}/">Home</a>
-            <a href="{{ SITEURL }}/projects/">Projects</a>
+            <!-- <a href="{{ SITEURL }}/projects/">Projects</a> -->
             <a href="{{ SITEURL }}/osu/">My Osu</a>
-            <a href="{{ SITEURL }}/testt/">Test HTML</a>
         </div>
     </nav>
 
@@ -519,7 +485,6 @@ on:
     - cron: '0 0 * * *'
   workflow_dispatch: 
 
-
 permissions:
   contents: write
   pages: write
@@ -554,8 +519,6 @@ jobs:
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
         run: |
           python build.py
-          
-          pelican content -o output -s pelicanconf.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -573,10 +536,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Web update" || exit 0
+          git add content/osu.md cache/
+          git commit -m "Web update [skip ci]" || exit 0
           git push
-
-
 
 
