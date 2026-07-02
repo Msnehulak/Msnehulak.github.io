@@ -2,8 +2,7 @@ Title: My Osu
 Slug: osu
 Lang: en
 
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
+# My osu! profile
 
 - Global Ranking: 500079#
 - Performance Points: 2071.6

@@ -2,8 +2,7 @@ Title: My Osu
 Slug: osu
 Lang: en
 
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
+# My osu! profile
 
 - Global Ranking: {{ rank }}#
 - Performance Points: {{ pp }}
