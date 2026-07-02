@@ -1,5 +1,6 @@
 Title: My Osu
 Slug: osu
+Lang: cs
 
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
@@ -9,7 +10,5 @@ Zde jsou staticky generovaná data z cache:
 - Accuracy: {{ acc }}
 - Play Time: {{ play_time }}
 - Play count: {{ play_count }}
-
-{{ status }}
 
 

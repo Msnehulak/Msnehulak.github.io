@@ -1,0 +1,14 @@
+Title: My Osu
+Slug: osu
+Lang: en
+
+# Můj osu! profil
+Zde jsou staticky generovaná data z cache:
+
+- Global Ranking: {{ rank }}#
+- Performance Points: {{ pp }}
+- Accuracy: {{ acc }}
+- Play Time: {{ play_time }}
+- Play count: {{ play_count }}
+
+

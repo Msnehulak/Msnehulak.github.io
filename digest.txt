@@ -9,14 +9,25 @@ Directory structure:
     │   ├── osu.py
     │   └── sweb.py
     ├── content/
-    │   ├── index.md
-    │   ├── osu.md
-    │   ├── osu.md.template
     │   ├── test.html
-    │   └── css/
-    │       └── main.css
+    │   ├── cs/
+    │   │   ├── index.md
+    │   │   ├── osu.md
+    │   │   ├── osu.md.template
+    │   │   └── test.md
+    │   ├── de/
+    │   │   ├── index.md
+    │   │   ├── osu.md
+    │   │   └── osu.md.template
+    │   └── en/
+    │       ├── index.md
+    │       ├── osu.md
+    │       └── osu.md.template
     ├── theme/
     │   └── 0.1/
+    │       ├── static/
+    │       │   └── css/
+    │       │       └── main.css
     │       └── templates/
     │           ├── base.html
     │           └── page.html
@@ -45,6 +56,7 @@ class BuildWebsite:
             for key, value in data.items():
                 text = text.replace(f'{{{{ {key} }}}}', f'{value}')
             output_path.write_text(text, encoding="utf-8")
+            print(f"Page `{file}.md` is build.")
 
     def osu(self):
         osu_app = Osu()
@@ -52,7 +64,8 @@ class BuildWebsite:
         data = osu_app.data
 
         if data is None:
-            data = {
+            print('I DONT HAVE DATA')
+            _data = {
                 "rank": '-1',
                 "pp": 42069,
                 "acc": 101,
@@ -61,12 +74,11 @@ class BuildWebsite:
                 # "avatar": user.avatar_url
                 "status": 'API is down, here are some funny numbers'
             }
-        else:
-            msg = f'update at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+            return
 
-            data['status'] = msg 
-
-        self.content_build(data, 'osu')
+        self.content_build(data, 'en/osu')
+        self.content_build(data, 'cs/osu')
+        self.content_build(data, 'de/osu')
 
     def build_website(self):
         self.osu()
@@ -85,36 +97,16 @@ FILE: pelicanconf.py
 ================================================
 AUTHOR = 'Snehulak'
 SITENAME = 'Snehulak'
-SITEURL = ""
-PATH = "content"
-THEME = "theme/0.1"
+SITEURL = ''  # Pro lokální vývoj prázdné, publishconf.py si to pro produkci přepíše
+PATH = 'content'
+THEME = 'theme/0.1'
 TIMEZONE = 'Europe/Rome'
-DEFAULT_LANG = 'en'
 DEFAULT_PAGINATION = False
 
-# 1. Všechno v 'content' budeme brát jako statické stránky (Pages)
-PAGE_PATHS = ['']
-PAGE_URL = '{slug}/'
-PAGE_SAVE_AS = '{slug}/index.html'
-INDEX_SAVE_AS = 'index.html'
-
-# Pokud máte podsložky (např. content/o-nas/index.md -> o-nas/index.html), použijte toto:
-# PAGE_URL = '{path_no_ext}.html'
-# PAGE_SAVE_AS = '{path_no_ext}.html'
-
-# 2. Vypnutí článků (Articles) a všech jejich automatických výstupů
+# Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
 ARTICLE_SAVE_AS = ''
 ARTICLE_LANG_SAVE_AS = ''
-
-# 3. Ignorovat CSS a JS, aby se negenerovaly jako samostatné stránky
-ARTICLE_EXCLUDES = ['css', 'js', 'r']
-PAGE_EXCLUDES = ['css', 'js', 'r']
-
-# 4. Statické soubory, které se mají pouze zkopírovat (CSS, JS, soubory v 'r')
-STATIC_PATHS = ['css', 'js', 'r']
-
-# Ostatní vypínací direktivy (ponechat prázdné)
 AUTHOR_SAVE_AS = ''
 AUTHORS_SAVE_AS = ''
 CATEGORY_SAVE_AS = ''
@@ -129,8 +121,53 @@ TRANSLATION_FEED_ATOM = None
 AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
+RELATIVE_PATH = True
+
 DELETE_OUTPUT_DIRECTORY = True
 
+# Nastavení URL adres pro čisté složky
+PAGE_URL = '{slug}/'
+PAGE_SAVE_AS = '{slug}/index.html'
+
+# Přidej tyto dva řádky pro správné párování překladů:
+PAGE_LANG_URL = '{slug}/'
+PAGE_LANG_SAVE_AS = '{slug}/index.html'
+
+INDEX_SAVE_AS = 'index.html'
+
+# --- 1. JAZYKOVÁ KONFIGURACE (ZDE DIKTUJEŠ HLAVNÍ JAZYK) ---
+MAIN_LANG = 'en'  # Stačí změnit na 'cz', 'de' atd. a celý web se přenastaví sám
+
+# Seznam všech podporovaných jazyků na webu
+ALL_LANGUAGES = {
+    'en': 'Snehulak (EN)',
+    'cs': 'Snehulak (CS)',
+    'de': 'Snehulak (DE)',
+}
+
+# --- 2. AUTOMATICKÉ NASTAVENÍ PRO PELICAN ---
+DEFAULT_LANG = MAIN_LANG
+
+# ZMĚNA: Pelican musí vidět VŠECHNY složky, aby dokázal spárovat překlady!
+PAGE_PATHS = ['en', 'cs', 'de'] 
+
+PLUGINS = ['pelican.plugins.i18n_subsites']
+JINJA_ENVIRONMENT = {
+    'extensions': ['jinja2.ext.i18n']
+}
+I18N_TEMPLATES_LANG = 'en'
+
+# --- 3. DYNAMICKÉ GENEROVÁNÍ SUBWEBŮ ---
+I18N_SUBSITES = {}
+for lang_code, site_name in ALL_LANGUAGES.items():
+    if lang_code != MAIN_LANG:
+        I18N_SUBSITES[lang_code] = {
+            # ZMĚNA: Subweb si vyfiltruje jen svůj jazyk, 
+            # ale interní vazby na ostatní jazyky z PAGE_PATHS zůstanou zachovány
+            'PAGE_PATHS': [lang_code],
+            'SITENAME': site_name,
+            'I18N_TEMPLATES_LANG': 'en',
+        }
 
 
 
@@ -169,6 +206,7 @@ markdown
 ossapi
 python-dotenv
 pelican
+pelican-i18n-subsites
 jinja2
 diskcache
 
@@ -268,60 +306,6 @@ BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 
 ================================================
-FILE: content/index.md
-================================================
-Title: Home
-Slug: index
-Save_as: index.html
-
-# Vítejte na mém webu!
-Tohle je hlavní strana generovaná přímo ze souboru `index.md`.
-
-
-
-================================================
-FILE: content/osu.md
-================================================
-Title: My Osu
-Slug: osu
-
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
-
-- Global Ranking: 499900#
-- Performance Points: 2071.6
-- Accuracy: 86.7137
-- Play Time: 654516
-- Play count: 11455
-
-update at 2026-07-01 21:10:25
-
-
-
-
-
-================================================
-FILE: content/osu.md.template
-================================================
-Title: My Osu
-Slug: osu
-
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
-
-- Global Ranking: {{ rank }}#
-- Performance Points: {{ pp }}
-- Accuracy: {{ acc }}
-- Play Time: {{ play_time }}
-- Play count: {{ play_count }}
-
-{{ status }}
-
-
-
-
-
-================================================
 FILE: content/test.html
 ================================================
 
@@ -341,7 +325,174 @@ FILE: content/test.html
 
 
 ================================================
-FILE: content/css/main.css
+FILE: content/cs/index.md
+================================================
+Title: Home
+Slug: index
+Lang: cs
+Save_as: index.html
+
+# Vítejte na mém webu!
+Moje jmeno je Snehulak,
+
+
+
+================================================
+FILE: content/cs/osu.md
+================================================
+Title: My Osu
+Slug: osu
+Lang: cs
+
+# Můj osu! profil
+Zde jsou staticky generovaná data z cache:
+
+- Global Ranking: 500079#
+- Performance Points: 2071.6
+- Accuracy: 86.7137
+- Play Time: 654662
+- Play count: 11461
+
+
+
+
+
+================================================
+FILE: content/cs/osu.md.template
+================================================
+Title: My Osu
+Slug: osu
+Lang: cs
+
+# Můj osu! profil
+Zde jsou staticky generovaná data z cache:
+
+- Global Ranking: {{ rank }}#
+- Performance Points: {{ pp }}
+- Accuracy: {{ acc }}
+- Play Time: {{ play_time }}
+- Play count: {{ play_count }}
+
+
+
+
+
+================================================
+FILE: content/cs/test.md
+================================================
+Title: Home
+Slug: test
+Lang: cs
+
+# test
+
+
+
+
+================================================
+FILE: content/de/index.md
+================================================
+Title: Home
+Slug: index
+Lang: de
+Save_as: index.html
+
+# Willkommen auf meiner Website!
+Mein Name ist Snehulak,
+
+
+
+================================================
+FILE: content/de/osu.md
+================================================
+Title: My Osu
+Slug: osu
+Lang: de
+
+# Mein osu!-Profil
+Hier sind die statisch generierten Daten aus dem Cache:
+
+- Globales Ranking: 500079#
+- Performance-Punkte: 2071.6
+- Genauigkeit: 86.7137
+- Spielzeit: 654662
+- Anzahl der Spiele: 11461
+
+
+
+================================================
+FILE: content/de/osu.md.template
+================================================
+Title: My Osu
+Slug: osu
+Lang: de
+
+# Mein osu!-Profil
+Hier sind die statisch generierten Daten aus dem Cache:
+
+- Globales Ranking: {{ rank }}#
+- Performance-Punkte: {{ pp }}
+- Genauigkeit: {{ acc }}
+- Spielzeit: {{ play_time }}
+- Anzahl der Spiele: {{ play_count }}
+
+
+
+================================================
+FILE: content/en/index.md
+================================================
+Title: Home
+Slug: index
+Lang: en
+Save_as: index.html
+
+# Welcome to my website!
+My name is Snehulak,
+
+
+
+================================================
+FILE: content/en/osu.md
+================================================
+Title: My Osu
+Slug: osu
+Lang: en
+
+# Můj osu! profil
+Zde jsou staticky generovaná data z cache:
+
+- Global Ranking: 500079#
+- Performance Points: 2071.6
+- Accuracy: 86.7137
+- Play Time: 654662
+- Play count: 11461
+
+
+
+
+
+================================================
+FILE: content/en/osu.md.template
+================================================
+Title: My Osu
+Slug: osu
+Lang: en
+
+# Můj osu! profil
+Zde jsou staticky generovaná data z cache:
+
+- Global Ranking: {{ rank }}#
+- Performance Points: {{ pp }}
+- Accuracy: {{ acc }}
+- Play Time: {{ play_time }}
+- Play count: {{ play_count }}
+
+
+
+
+
+================================================
+FILE: theme/0.1/static/css/main.css
 ================================================
 
 :root {
@@ -433,18 +584,39 @@ FILE: theme/0.1/templates/base.html
 <head>
     <meta charset="utf-8">
     <title>{{ SITENAME }}</title>
-    <link rel="stylesheet" href="{{ SITEURL }}/css/main.css">
+    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
 </head>
 <body>
     <nav>
         <div class="logo">SnehulakTV</div>
-        <div class="links">
-            <a href="{{ SITEURL }}/">Home</a>
-            <!-- <a href="{{ SITEURL }}/projects/">Projects</a> -->
-            <a href="{{ SITEURL }}/osu/">My Osu</a>
-        </div>
-    </nav>
+<div class="links">
+    <a href="{{ SITEURL }}/">Home</a>
+    <a href="{{ SITEURL }}/osu/">My Osu</a>
+    
+    {% if page and page.translations %}
+        {% for translation in page.translations %}
+            <a href="/{{ translation.lang if translation.lang != 'en' else '' }}{{ '/' if translation.lang != 'en' else '' }}{{ translation.slug }}/" class="lang-switcher">
+                🌐 {{ translation.lang | upper }}
+            </a>
+        {% endfor %}
+    {% else %}
+        {% if DEFAULT_LANG != 'en' %}
+            <a href="/" class="lang-switcher">🌐 EN</a>
+        {% endif %}
+        
+        {% if lang_siteurls %}
+            {% for lang_code, lang_url in lang_siteurls.items() %}
+                {% if lang_code != DEFAULT_LANG and lang_code != 'en' %}
+                    <a href="{{ lang_url }}/" class="lang-switcher">
+                        🌐 {{ lang_code | upper }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+</div>
 
+    </nav>
     <main>
         {% block content %}
         {% endblock %}
@@ -536,7 +708,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/osu.md cache/
+          git add content/en/osu.md content/cs/osu.md content/de/osu.md
           git commit -m "Web update [skip ci]" || exit 0
           git push
 

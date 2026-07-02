@@ -16,6 +16,7 @@ class BuildWebsite:
             for key, value in data.items():
                 text = text.replace(f'{{{{ {key} }}}}', f'{value}')
             output_path.write_text(text, encoding="utf-8")
+            print(f"Page `{file}.md` is build.")
 
     def osu(self):
         osu_app = Osu()
@@ -23,7 +24,8 @@ class BuildWebsite:
         data = osu_app.data
 
         if data is None:
-            data = {
+            print('I DONT HAVE DATA')
+            _data = {
                 "rank": '-1',
                 "pp": 42069,
                 "acc": 101,
@@ -32,12 +34,11 @@ class BuildWebsite:
                 # "avatar": user.avatar_url
                 "status": 'API is down, here are some funny numbers'
             }
-        else:
-            msg = f'update at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
+            return
 
-            data['status'] = msg 
-
-        self.content_build(data, 'osu')
+        self.content_build(data, 'en/osu')
+        self.content_build(data, 'cs/osu')
+        self.content_build(data, 'de/osu')
 
     def build_website(self):
         self.osu()

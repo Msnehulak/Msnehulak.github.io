@@ -2,6 +2,7 @@ markdown
 ossapi
 python-dotenv
 pelican
+pelican-i18n-subsites
 jinja2
 diskcache
 

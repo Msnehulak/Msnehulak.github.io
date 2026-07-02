@@ -1,6 +1,8 @@
 Title: Home
 Slug: index
+Lang: cs
 Save_as: index.html
 
+
 # Vítejte na mém webu!
-Tohle je hlavní strana generovaná přímo ze souboru `index.md`.
+Moje jmeno je Snehulak,
