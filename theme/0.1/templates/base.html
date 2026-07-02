@@ -18,18 +18,20 @@
         {% if lang_code != DEFAULT_LANG %}
             
             {% if lang_code == 'en' %}
-                <a href="/{{ page.slug }}/" class="lang-switcher">
+                <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
                     🌐 {{ lang_code | upper }}
                 </a>
             {% else %}
-                <a href="{{ lang_url }}/{{ page.slug }}/" class="lang-switcher">
+                <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
                     🌐 {{ lang_code | upper }}
                 </a>
             {% endif %}
 
         {% endif %}
     {% endfor %}
-{% endif %}</div>
+{% endif %}
+
+</div>
 
     </nav>
     <main>
