@@ -5,5 +5,5 @@ Save_as: index.html
 
 
 # Welcome to my website!
-My name is Snehulak,
+
 {{ links }}

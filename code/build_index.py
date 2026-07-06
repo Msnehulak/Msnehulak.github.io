@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LINKS = BASE_DIR / 'data' / 'links.yaml'
 IMG_CLASS_NAME = 'index-img'
 LINKS_CLASS = 'links-index' 
-IMG_PATH_START = 'icon' # /trace
+IMG_PATH_START = 'icon/btrace' # /trace
 
 def get_links_html(lan='en'):
     with open(LINKS, 'r', encoding='utf-8') as f:

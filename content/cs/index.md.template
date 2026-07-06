@@ -5,5 +5,5 @@ Save_as: index.html
 
 
 # Vítejte na mém webu!
-Moje jmeno je Snehulak,
+
 {{ links }}

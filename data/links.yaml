@@ -12,6 +12,13 @@
     cs: GitHub
     en: GitHub
 
+- name: twitch
+  img: twitch.svg
+  link: https://www.twitch.tv/codesnehulak
+  hover: 
+    cs: Twitch
+    en: Twitch
+
 - name: osu
   img: osu.svg
   link: https://osu.ppy.sh/users/38448983

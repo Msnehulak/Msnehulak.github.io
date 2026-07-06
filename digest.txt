@@ -73,7 +73,7 @@ class BuildWebsite:
 
         if data is None:
             print('I DONT HAVE DATA')
-            _data = {
+            data = {
                 "rank": '-1',
                 "pp": 42069,
                 "acc": 101,
@@ -82,11 +82,9 @@ class BuildWebsite:
                 # "avatar": user.avatar_url
                 "status": 'API is down, here are some funny numbers'
             }
-            return
 
         self.content_build(data, 'en/osu')
         self.content_build(data, 'cs/osu')
-        self.content_build(data, 'de/osu')
 
     def build_website(self):
         self.osu()
@@ -237,6 +235,8 @@ import yaml
 BASE_DIR = Path(__file__).resolve().parent.parent
 LINKS = BASE_DIR / 'data' / 'links.yaml'
 IMG_CLASS_NAME = 'index-img'
+LINKS_CLASS = 'links-index' 
+IMG_PATH_START = 'icon' # /trace
 
 def get_links_html(lan='en'):
     with open(LINKS, 'r', encoding='utf-8') as f:
@@ -245,7 +245,7 @@ def get_links_html(lan='en'):
     if not data:
         return ''
 
-    html_elements = ['<div class="links">']
+    html_elements = [f'<div class="{LINKS_CLASS}">']
 
     for link in data:
         url = link['link']
@@ -258,7 +258,7 @@ def get_links_html(lan='en'):
         })
 
         # 2. Vytvoříme vnořený obrázek <img>
-        img_path = f"/images/{link['img']}"
+        img_path = f"/images/{IMG_PATH_START}/{link['img']}"
         alt_text = link['hover'][lan]
         
         ET.SubElement(button_element, 'img', {
@@ -396,7 +396,7 @@ Save_as: index.html
 
 # Vítejte na mém webu!
 Moje jmeno je Snehulak,
-<div class="links"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button></div>
+<div class="links-index"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/icon/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://github.com/Msnehulak', '_blank')" class="index-btn"><img src="/images/icon/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button><button type="button" onclick="window.open('https://osu.ppy.sh/users/38448983', '_blank')" class="index-btn"><img src="/images/icon/osu.svg" alt="OSU!" title="OSU!" class="index-img" /></button></div>
 
 
 
@@ -478,7 +478,7 @@ Save_as: index.html
 
 # Welcome to my website!
 My name is Snehulak,
-<div class="links"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button></div>
+<div class="links-index"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/icon/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://github.com/Msnehulak', '_blank')" class="index-btn"><img src="/images/icon/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button><button type="button" onclick="window.open('https://osu.ppy.sh/users/38448983', '_blank')" class="index-btn"><img src="/images/icon/osu.svg" alt="OSU!" title="OSU!" class="index-img" /></button></div>
 
 
 
@@ -544,12 +544,20 @@ FILE: data/links.yaml
   hover: 
     cs: YouTube
     en: YouTube
+
 - name: github
   img: github.svg
-  link: https://youtube.com/@SnehulakTV
+  link: https://github.com/Msnehulak
   hover: 
     cs: GitHub
     en: GitHub
+
+- name: osu
+  img: osu.svg
+  link: https://osu.ppy.sh/users/38448983
+  hover: 
+    cs: OSU!
+    en: OSU!
 
 
 
@@ -593,6 +601,8 @@ body {
     gap: 20px;
 }
 
+
+
 nav {
     background: var(--primary);
     padding: 15px 30px;
@@ -624,20 +634,27 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Index */
+.links-index {
+    display: flex;
+    gap: 20px;
+    justify-content: left;
+}
+
 .index-img {
     width: 100%;
     height: 100%;
-    border-radius: 32px;
+    border-radius: 16px;
 }
 
 .index-btn {
-    width: 150px;
-    height: 150px;
+    width: 100px;
+    height: 100px;
     object-fit: cover;
     display: block;
     margin: 0px 0;
     background-color: #2d2d2d;
-    border-radius: 32px;
+    border-radius: 16px;
     border: transparent;
 }
 

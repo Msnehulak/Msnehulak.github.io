@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   width="800px"
+   height="800px"
+   viewBox="0 0 48 48"
+   version="1.1"
+   id="svg2"
+   sodipodi:docname="osu.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview2"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1"
+     inkscape:cx="400"
+     inkscape:cy="400"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs1">
+    <style
+       id="style1">.a{fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;}.b{fill:#000000;}</style>
+  </defs>
+  <circle
+     class="a"
+     cx="24"
+     cy="24"
+     r="21.5"
+     id="circle1"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <rect
+     class="a"
+     x="9.22"
+     y="19.96"
+     width="6.34"
+     height="8.4"
+     rx="3.17"
+     id="rect1"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <path
+     class="a"
+     d="M27.57,20v5.23a3.16,3.16,0,0,0,3.17,3.17h0a3.16,3.16,0,0,0,3.16-3.17V20"
+     id="path1"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <line
+     class="a"
+     x1="33.9"
+     y1="25.19"
+     x2="33.9"
+     y2="28.36"
+     id="line1"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <path
+     class="a"
+     d="M18.86,27.65a3.56,3.56,0,0,0,2.61.71h.71a2.1,2.1,0,0,0,2.1-2.1h0a2.1,2.1,0,0,0-2.1-2.1H20.76a2.1,2.1,0,0,1-2.1-2.1h0a2.1,2.1,0,0,1,2.1-2.1h.71a3.56,3.56,0,0,1,2.61.71"
+     id="path2"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <circle
+     class="b"
+     cx="38.03"
+     cy="28.17"
+     r="0.75"
+     id="circle2"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+  <line
+     class="a"
+     x1="38.03"
+     y1="15.49"
+     x2="38.03"
+     y2="24.92"
+     id="line2"
+     style="stroke-width:2.4;stroke-dasharray:none" />
+</svg>
