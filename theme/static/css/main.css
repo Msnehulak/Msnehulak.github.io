@@ -35,6 +35,8 @@ body {
     gap: 20px;
 }
 
+
+
 nav {
     background: var(--primary);
     padding: 15px 30px;
@@ -66,6 +68,34 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+/* Index */
+.links-index {
+    display: flex;
+    gap: 20px;
+    justify-content: left;
+}
+
+.index-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+}
+
+.index-btn {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    display: block;
+    margin: 0px 0;
+    background-color: #2d2d2d;
+    border-radius: 16px;
+    border: transparent;
+}
+
+.index-btn:hover {
+  background-color: #3d3d3d;
+}
+
 main {
     background-color: var(--bg-card); /* Použije tvoji připravenou šedou */
     border-radius: var(--radius);     /* Použije tvoje zaoblení 12px */
@@ -76,3 +106,4 @@ main {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Volitelné: jemný stín pro lepší vzhled */
     line-height: 1.65;
 }
+

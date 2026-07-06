@@ -2,9 +2,10 @@ AUTHOR = 'Snehulak'
 SITENAME = 'Snehulak'
 SITEURL = ''  # Pro lokální vývoj prázdné, publishconf.py si to pro produkci přepíše
 PATH = 'content'
-THEME = 'theme/0.1'
+THEME = 'theme'
 TIMEZONE = 'Europe/Rome'
 DEFAULT_PAGINATION = False
+STATIC_PATHS = ['images']
 
 # Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
@@ -45,7 +46,6 @@ MAIN_LANG = 'en'  # Stačí změnit na 'cz', 'de' atd. a celý web se přenastav
 ALL_LANGUAGES = {
     'en': 'Snehulak (EN)',
     'cs': 'Snehulak (CS)',
-    'de': 'Snehulak (DE)',
 }
 
 # --- 2. AUTOMATICKÉ NASTAVENÍ PRO PELICAN ---

@@ -6,31 +6,31 @@ Directory structure:
     ├── requirements.txt
     ├── code/
     │   ├── __init__.py
+    │   ├── build_index.py
     │   ├── osu.py
     │   └── sweb.py
     ├── content/
     │   ├── test.html
     │   ├── cs/
     │   │   ├── index.md
+    │   │   ├── index.md.template
     │   │   ├── osu.md
     │   │   ├── osu.md.template
     │   │   └── test.md
-    │   ├── de/
-    │   │   ├── index.md
-    │   │   ├── osu.md
-    │   │   └── osu.md.template
     │   └── en/
     │       ├── index.md
+    │       ├── index.md.template
     │       ├── osu.md
     │       └── osu.md.template
+    ├── data/
+    │   └── links.yaml
     ├── theme/
-    │   └── 0.1/
-    │       ├── static/
-    │       │   └── css/
-    │       │       └── main.css
-    │       └── templates/
-    │           ├── base.html
-    │           └── page.html
+    │   ├── static/
+    │   │   └── css/
+    │   │       └── main.css
+    │   └── templates/
+    │       ├── base.html
+    │       └── page.html
     └── .github/
         └── workflows/
             └── deploy.yml
@@ -42,6 +42,7 @@ from datetime import datetime
 import subprocess
 from pathlib import Path
 from code.osu import Osu
+from code.build_index import get_links_html
 
 class BuildWebsite:
     def __init__(self) -> None:
@@ -57,6 +58,13 @@ class BuildWebsite:
                 text = text.replace(f'{{{{ {key} }}}}', f'{value}')
             output_path.write_text(text, encoding="utf-8")
             print(f"Page `{file}.md` is build.")
+
+    def index(self):
+            data_cs = {"links": get_links_html(lan = "cs")}
+            self.content_build(data_cs, 'cs/index')
+
+            data_en = {"links": get_links_html(lan = "en")}
+            self.content_build(data_en, 'en/index')
 
     def osu(self):
         osu_app = Osu()
@@ -82,6 +90,7 @@ class BuildWebsite:
 
     def build_website(self):
         self.osu()
+        self.index()
 
         print("Spouštím Pelican build...")
         subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])
@@ -99,9 +108,10 @@ AUTHOR = 'Snehulak'
 SITENAME = 'Snehulak'
 SITEURL = ''  # Pro lokální vývoj prázdné, publishconf.py si to pro produkci přepíše
 PATH = 'content'
-THEME = 'theme/0.1'
+THEME = 'theme'
 TIMEZONE = 'Europe/Rome'
 DEFAULT_PAGINATION = False
+STATIC_PATHS = ['images']
 
 # Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
@@ -142,14 +152,13 @@ MAIN_LANG = 'en'  # Stačí změnit na 'cz', 'de' atd. a celý web se přenastav
 ALL_LANGUAGES = {
     'en': 'Snehulak (EN)',
     'cs': 'Snehulak (CS)',
-    'de': 'Snehulak (DE)',
 }
 
 # --- 2. AUTOMATICKÉ NASTAVENÍ PRO PELICAN ---
 DEFAULT_LANG = MAIN_LANG
 
 # ZMĚNA: Pelican musí vidět VŠECHNY složky, aby dokázal spárovat překlady!
-PAGE_PATHS = ['en', 'cs', 'de'] 
+PAGE_PATHS = ['en'] 
 
 PLUGINS = ['pelican.plugins.i18n_subsites']
 JINJA_ENVIRONMENT = {
@@ -162,8 +171,6 @@ I18N_SUBSITES = {}
 for lang_code, site_name in ALL_LANGUAGES.items():
     if lang_code != MAIN_LANG:
         I18N_SUBSITES[lang_code] = {
-            # ZMĚNA: Subweb si vyfiltruje jen svůj jazyk, 
-            # ale interní vazby na ostatní jazyky z PAGE_PATHS zůstanou zachovány
             'PAGE_PATHS': [lang_code],
             'SITENAME': site_name,
             'I18N_TEMPLATES_LANG': 'en',
@@ -209,6 +216,7 @@ pelican
 pelican-i18n-subsites
 jinja2
 diskcache
+PyYAML
 
 
 
@@ -217,6 +225,59 @@ diskcache
 FILE: code/__init__.py
 ================================================
 [Empty file]
+
+
+================================================
+FILE: code/build_index.py
+================================================
+from pathlib import Path
+import xml.etree.ElementTree as ET
+import yaml
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+LINKS = BASE_DIR / 'data' / 'links.yaml'
+IMG_CLASS_NAME = 'index-img'
+
+def get_links_html(lan='en'):
+    with open(LINKS, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+
+    if not data:
+        return ''
+
+    html_elements = ['<div class="links">']
+
+    for link in data:
+        url = link['link']
+        
+        # 1. Vytvoříme element <button> s JavaScriptem pro otevření odkazu
+        button_element = ET.Element('button', {
+            'type': 'button',
+            'onclick': f"window.open('{url}', '_blank')",
+            'class': 'index-btn'  # Můžeš mu dát vlastní třídu pro stylování v CSS
+        })
+
+        # 2. Vytvoříme vnořený obrázek <img>
+        img_path = f"/images/{link['img']}"
+        alt_text = link['hover'][lan]
+        
+        ET.SubElement(button_element, 'img', {
+            'src': img_path,
+            'alt': alt_text,
+            'title': alt_text,
+            'class': IMG_CLASS_NAME
+        })
+
+        # 3. Převedeme element na HTML text
+        html_string = ET.tostring(button_element, encoding='unicode')
+        html_elements.append(html_string)
+    html_elements.append('</div>')    
+    return ''.join(html_elements)
+
+if __name__ == '__main__':
+    print("CS verze s tlačítky:")
+    print(get_links_html('cs'))
+
 
 
 ================================================
@@ -332,8 +393,25 @@ Slug: index
 Lang: cs
 Save_as: index.html
 
+
 # Vítejte na mém webu!
 Moje jmeno je Snehulak,
+<div class="links"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button></div>
+
+
+
+================================================
+FILE: content/cs/index.md.template
+================================================
+Title: Home
+Slug: index
+Lang: cs
+Save_as: index.html
+
+
+# Vítejte na mém webu!
+Moje jmeno je Snehulak,
+{{ links }}
 
 
 
@@ -347,11 +425,11 @@ Lang: cs
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
 
-- Global Ranking: 500079#
-- Performance Points: 2071.6
-- Accuracy: 86.7137
-- Play Time: 654662
-- Play count: 11461
+- Global Ranking: 492933#
+- Performance Points: 2102.4
+- Accuracy: 86.1126
+- Play Time: 663750
+- Play count: 11600
 
 
 
@@ -390,55 +468,6 @@ Lang: cs
 
 
 ================================================
-FILE: content/de/index.md
-================================================
-Title: Home
-Slug: index
-Lang: de
-Save_as: index.html
-
-# Willkommen auf meiner Website!
-Mein Name ist Snehulak,
-
-
-
-================================================
-FILE: content/de/osu.md
-================================================
-Title: My Osu
-Slug: osu
-Lang: de
-
-# Mein osu!-Profil
-Hier sind die statisch generierten Daten aus dem Cache:
-
-- Globales Ranking: 500079#
-- Performance-Punkte: 2071.6
-- Genauigkeit: 86.7137
-- Spielzeit: 654662
-- Anzahl der Spiele: 11461
-
-
-
-================================================
-FILE: content/de/osu.md.template
-================================================
-Title: My Osu
-Slug: osu
-Lang: de
-
-# Mein osu!-Profil
-Hier sind die statisch generierten Daten aus dem Cache:
-
-- Globales Ranking: {{ rank }}#
-- Performance-Punkte: {{ pp }}
-- Genauigkeit: {{ acc }}
-- Spielzeit: {{ play_time }}
-- Anzahl der Spiele: {{ play_count }}
-
-
-
-================================================
 FILE: content/en/index.md
 ================================================
 Title: Home
@@ -446,8 +475,25 @@ Slug: index
 Lang: en
 Save_as: index.html
 
+
 # Welcome to my website!
 My name is Snehulak,
+<div class="links"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button></div>
+
+
+
+================================================
+FILE: content/en/index.md.template
+================================================
+Title: Home
+Slug: index
+Lang: en
+Save_as: index.html
+
+
+# Welcome to my website!
+My name is Snehulak,
+{{ links }}
 
 
 
@@ -458,14 +504,13 @@ Title: My Osu
 Slug: osu
 Lang: en
 
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
+# My osu! profile
 
-- Global Ranking: 500079#
-- Performance Points: 2071.6
-- Accuracy: 86.7137
-- Play Time: 654662
-- Play count: 11461
+- Global Ranking: 492933#
+- Performance Points: 2102.4
+- Accuracy: 86.1126
+- Play Time: 663750
+- Play count: 11600
 
 
 
@@ -478,8 +523,7 @@ Title: My Osu
 Slug: osu
 Lang: en
 
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
+# My osu! profile
 
 - Global Ranking: {{ rank }}#
 - Performance Points: {{ pp }}
@@ -492,7 +536,25 @@ Zde jsou staticky generovaná data z cache:
 
 
 ================================================
-FILE: theme/0.1/static/css/main.css
+FILE: data/links.yaml
+================================================
+- name: youtube
+  img: youtube.svg
+  link: https://youtube.com/@SnehulakTV
+  hover: 
+    cs: YouTube
+    en: YouTube
+- name: github
+  img: github.svg
+  link: https://youtube.com/@SnehulakTV
+  hover: 
+    cs: GitHub
+    en: GitHub
+
+
+
+================================================
+FILE: theme/static/css/main.css
 ================================================
 
 :root {
@@ -562,6 +624,27 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+.index-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 32px;
+}
+
+.index-btn {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    display: block;
+    margin: 0px 0;
+    background-color: #2d2d2d;
+    border-radius: 32px;
+    border: transparent;
+}
+
+.index-btn:hover {
+  background-color: #3d3d3d;
+}
+
 main {
     background-color: var(--bg-card); /* Použije tvoji připravenou šedou */
     border-radius: var(--radius);     /* Použije tvoje zaoblení 12px */
@@ -575,12 +658,13 @@ main {
 
 
 
+
 ================================================
-FILE: theme/0.1/templates/base.html
+FILE: theme/templates/base.html
 ================================================
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ page.lang if page else DEFAULT_LANG }}">
 <head>
     <meta charset="utf-8">
     <title>{{ SITENAME }}</title>
@@ -592,28 +676,25 @@ FILE: theme/0.1/templates/base.html
 <div class="links">
     <a href="{{ SITEURL }}/">Home</a>
     <a href="{{ SITEURL }}/osu/">My Osu</a>
-    
-    {% if page and page.translations %}
-        {% for translation in page.translations %}
-            <a href="/{{ translation.lang if translation.lang != 'en' else '' }}{{ '/' if translation.lang != 'en' else '' }}{{ translation.slug }}/" class="lang-switcher">
-                🌐 {{ translation.lang | upper }}
-            </a>
-        {% endfor %}
-    {% else %}
-        {% if DEFAULT_LANG != 'en' %}
-            <a href="/" class="lang-switcher">🌐 EN</a>
+
+{% if page %}
+    {% for lang_code, lang_url in lang_siteurls.items() %}
+        {% if lang_code != DEFAULT_LANG %}
+            
+            {% if lang_code == 'en' %}
+                <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                    🌐 {{ lang_code | upper }}
+                </a>
+            {% else %}
+                <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                    🌐 {{ lang_code | upper }}
+                </a>
+            {% endif %}
+
         {% endif %}
-        
-        {% if lang_siteurls %}
-            {% for lang_code, lang_url in lang_siteurls.items() %}
-                {% if lang_code != DEFAULT_LANG and lang_code != 'en' %}
-                    <a href="{{ lang_url }}/" class="lang-switcher">
-                        🌐 {{ lang_code | upper }}
-                    </a>
-                {% endif %}
-            {% endfor %}
-        {% endif %}
-    {% endif %}
+    {% endfor %}
+{% endif %}
+
 </div>
 
     </nav>
@@ -632,7 +713,7 @@ FILE: theme/0.1/templates/base.html
 
 
 ================================================
-FILE: theme/0.1/templates/page.html
+FILE: theme/templates/page.html
 ================================================
 {% extends "base.html" %}
 
@@ -704,12 +785,12 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add content/en/osu.md content/cs/osu.md content/de/osu.md
-          git commit -m "Web update [skip ci]" || exit 0
-          git push
+#      - name: Commit and push changes
+#        run: |
+#          git config --global user.name "github-actions[bot]"
+#          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+#          git add content/en/osu.md content/cs/osu.md content/de/osu.md
+#          git commit -m "Web update [skip ci]" || exit 0
+#          git push
 
 

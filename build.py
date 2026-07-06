@@ -2,6 +2,7 @@ from datetime import datetime
 import subprocess
 from pathlib import Path
 from code.osu import Osu
+from code.build_index import get_links_html
 
 class BuildWebsite:
     def __init__(self) -> None:
@@ -18,6 +19,13 @@ class BuildWebsite:
             output_path.write_text(text, encoding="utf-8")
             print(f"Page `{file}.md` is build.")
 
+    def index(self):
+            data_cs = {"links": get_links_html(lan = "cs")}
+            self.content_build(data_cs, 'cs/index')
+
+            data_en = {"links": get_links_html(lan = "en")}
+            self.content_build(data_en, 'en/index')
+
     def osu(self):
         osu_app = Osu()
         osu_app.load_data()
@@ -25,7 +33,7 @@ class BuildWebsite:
 
         if data is None:
             print('I DONT HAVE DATA')
-            _data = {
+            data = {
                 "rank": '-1',
                 "pp": 42069,
                 "acc": 101,
@@ -34,14 +42,13 @@ class BuildWebsite:
                 # "avatar": user.avatar_url
                 "status": 'API is down, here are some funny numbers'
             }
-            return
 
         self.content_build(data, 'en/osu')
         self.content_build(data, 'cs/osu')
-        self.content_build(data, 'de/osu')
 
     def build_website(self):
         self.osu()
+        self.index()
 
         print("Spouštím Pelican build...")
         subprocess.run(["pelican", "content", "-s", "pelicanconf.py"])

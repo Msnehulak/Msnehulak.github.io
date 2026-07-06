@@ -5,10 +5,10 @@ Lang: cs
 # Můj osu! profil
 Zde jsou staticky generovaná data z cache:
 
-- Global Ranking: 500079#
-- Performance Points: 2071.6
-- Accuracy: 86.7137
-- Play Time: 654662
-- Play count: 11461
+- Global Ranking: 492933#
+- Performance Points: 2102.4
+- Accuracy: 86.1126
+- Play Time: 663750
+- Play count: 11600
 
 
