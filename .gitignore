@@ -6,3 +6,5 @@ web/
 output/
 digest.txt
 cache/
+content/*/osu.md
+content/*/index.md
