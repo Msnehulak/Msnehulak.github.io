@@ -9,6 +9,12 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "cache" / "diskcache"
 
+ENV_VAL = {
+    "osu_client_id": os.getenv("OSU_CLIENT_ID"),
+    "osu_client_secret": os.getenv("OSU_CLIENT_SECRET"),
+    "github_token": os.getenv("GIT_HUB_TOKEN")
+}
+
 class Osu:
     def __init__(self) -> None:
         self.data = None 
@@ -29,16 +35,16 @@ class Osu:
             print("Chyba: Nepodařilo se získat data z API ani z cache.")
 
     def _update(self):
-        CLIENT_ID = os.getenv("OSU_CLIENT_ID")
-        CLIENT_SECRET = os.getenv("OSU_CLIENT_SECRET")
+        client_id = ENV_VAL['osu_client_id']
+        client_secret = ENV_VAL['osu_client_secret']
         username = "SnehulakTV_"
 
-        if not CLIENT_ID or not CLIENT_SECRET:
-            print("Chyba: Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
+        if not client_id or not client_secret:
+            print("Chyba: Chybí OSU_client_id nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
             return
 
         try:
-            api = Ossapi(int(CLIENT_ID), CLIENT_SECRET)
+            api = Ossapi(int(client_id), client_secret)
             user = api.user(username)
             stats = user.statistics
 
@@ -59,6 +65,10 @@ class Osu:
             
         except Exception as e:
             print(f"Chyba při komunikaci s osu! API: {e}")
+
+class GitHub:
+    def __init__(self) -> None:
+        pass
 
 if __name__ == "__main__":
     app = Osu()

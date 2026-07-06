@@ -1,26 +1,22 @@
 Directory structure:
-└── web_new/
+└── web/
     ├── build.py
     ├── pelicanconf.py
     ├── publishconf.py
     ├── requirements.txt
     ├── code/
     │   ├── __init__.py
+    │   ├── api.py
     │   ├── build_index.py
     │   ├── osu.py
     │   └── sweb.py
     ├── content/
     │   ├── test.html
     │   ├── cs/
-    │   │   ├── index.md
     │   │   ├── index.md.template
-    │   │   ├── osu.md
-    │   │   ├── osu.md.template
-    │   │   └── test.md
+    │   │   └── osu.md.template
     │   └── en/
-    │       ├── index.md
     │       ├── index.md.template
-    │       ├── osu.md
     │       └── osu.md.template
     ├── data/
     │   └── links.yaml
@@ -41,7 +37,8 @@ FILE: build.py
 from datetime import datetime
 import subprocess
 from pathlib import Path
-from code.osu import Osu
+from code.api import Osu
+from code.api import Osu
 from code.build_index import get_links_html
 
 class BuildWebsite:
@@ -226,6 +223,87 @@ FILE: code/__init__.py
 
 
 ================================================
+FILE: code/api.py
+================================================
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+from ossapi import Ossapi
+from diskcache import Cache
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+CACHE_DIR = BASE_DIR / "cache" / "diskcache"
+
+ENV_VAL = {
+    "osu_client_id": os.getenv("OSU_CLIENT_ID"),
+    "osu_client_secret": os.getenv("OSU_CLIENT_SECRET"),
+    "github_token": os.getenv("GIT_HUB_TOKEN")
+}
+
+class Osu:
+    def __init__(self) -> None:
+        self.data = None 
+        self.cache = Cache(str(CACHE_DIR))
+        self.update_frequency_hours = 1
+
+    def load_data(self):
+        cached_data = self.cache.get("osu") 
+        
+        if cached_data is None:
+            print("Cache pro 'osu' neexistuje nebo vypršela. Spouštím update...")
+            self._update()
+            cached_data = self.cache.get("osu")
+
+        if cached_data:
+            self.data = cached_data
+        else:
+            print("Chyba: Nepodařilo se získat data z API ani z cache.")
+
+    def _update(self):
+        client_id = ENV_VAL['osu_client_id']
+        client_secret = ENV_VAL['osu_client_secret']
+        username = "SnehulakTV_"
+
+        if not client_id or not client_secret:
+            print("Chyba: Chybí OSU_client_id nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
+            return
+
+        try:
+            api = Ossapi(int(client_id), client_secret)
+            user = api.user(username)
+            stats = user.statistics
+
+            novy_api_vystup = {
+                "rank": stats.global_rank,
+                "pp": stats.pp,
+                "acc": stats.hit_accuracy,
+                "play_time": stats.play_time,
+                "play_count": stats.play_count,
+                "avatar": user.avatar_url
+            } 
+            
+            # Zápis do cache s nastavenou expirací (převod hodin na sekundy)
+            expire_seconds = self.update_frequency_hours * 3600
+            self.cache.set("osu", novy_api_vystup, expire=expire_seconds)
+            
+            print("osu! cache byla úspěšně aktualizována pomocí diskcache.")
+            
+        except Exception as e:
+            print(f"Chyba při komunikaci s osu! API: {e}")
+
+class GitHub:
+    def __init__(self) -> None:
+        pass
+
+if __name__ == "__main__":
+    app = Osu()
+    app.load_data()
+
+
+
+================================================
 FILE: code/build_index.py
 ================================================
 from pathlib import Path
@@ -236,7 +314,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LINKS = BASE_DIR / 'data' / 'links.yaml'
 IMG_CLASS_NAME = 'index-img'
 LINKS_CLASS = 'links-index' 
-IMG_PATH_START = 'icon' # /trace
+IMG_PATH_START = 'icon/btrace' # /trace
 
 def get_links_html(lan='en'):
     with open(LINKS, 'r', encoding='utf-8') as f:
@@ -386,21 +464,6 @@ FILE: content/test.html
 
 
 ================================================
-FILE: content/cs/index.md
-================================================
-Title: Home
-Slug: index
-Lang: cs
-Save_as: index.html
-
-
-# Vítejte na mém webu!
-Moje jmeno je Snehulak,
-<div class="links-index"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/icon/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://github.com/Msnehulak', '_blank')" class="index-btn"><img src="/images/icon/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button><button type="button" onclick="window.open('https://osu.ppy.sh/users/38448983', '_blank')" class="index-btn"><img src="/images/icon/osu.svg" alt="OSU!" title="OSU!" class="index-img" /></button></div>
-
-
-
-================================================
 FILE: content/cs/index.md.template
 ================================================
 Title: Home
@@ -410,28 +473,8 @@ Save_as: index.html
 
 
 # Vítejte na mém webu!
-Moje jmeno je Snehulak,
+
 {{ links }}
-
-
-
-================================================
-FILE: content/cs/osu.md
-================================================
-Title: My Osu
-Slug: osu
-Lang: cs
-
-# Můj osu! profil
-Zde jsou staticky generovaná data z cache:
-
-- Global Ranking: 492933#
-- Performance Points: 2102.4
-- Accuracy: 86.1126
-- Play Time: 663750
-- Play count: 11600
-
-
 
 
 
@@ -456,33 +499,6 @@ Zde jsou staticky generovaná data z cache:
 
 
 ================================================
-FILE: content/cs/test.md
-================================================
-Title: Home
-Slug: test
-Lang: cs
-
-# test
-
-
-
-
-================================================
-FILE: content/en/index.md
-================================================
-Title: Home
-Slug: index
-Lang: en
-Save_as: index.html
-
-
-# Welcome to my website!
-My name is Snehulak,
-<div class="links-index"><button type="button" onclick="window.open('https://youtube.com/@SnehulakTV', '_blank')" class="index-btn"><img src="/images/icon/youtube.svg" alt="YouTube" title="YouTube" class="index-img" /></button><button type="button" onclick="window.open('https://github.com/Msnehulak', '_blank')" class="index-btn"><img src="/images/icon/github.svg" alt="GitHub" title="GitHub" class="index-img" /></button><button type="button" onclick="window.open('https://osu.ppy.sh/users/38448983', '_blank')" class="index-btn"><img src="/images/icon/osu.svg" alt="OSU!" title="OSU!" class="index-img" /></button></div>
-
-
-
-================================================
 FILE: content/en/index.md.template
 ================================================
 Title: Home
@@ -492,27 +508,8 @@ Save_as: index.html
 
 
 # Welcome to my website!
-My name is Snehulak,
+
 {{ links }}
-
-
-
-================================================
-FILE: content/en/osu.md
-================================================
-Title: My Osu
-Slug: osu
-Lang: en
-
-# My osu! profile
-
-- Global Ranking: 492933#
-- Performance Points: 2102.4
-- Accuracy: 86.1126
-- Play Time: 663750
-- Play count: 11600
-
-
 
 
 
@@ -551,6 +548,13 @@ FILE: data/links.yaml
   hover: 
     cs: GitHub
     en: GitHub
+
+- name: twitch
+  img: twitch.svg
+  link: https://www.twitch.tv/codesnehulak
+  hover: 
+    cs: Twitch
+    en: Twitch
 
 - name: osu
   img: osu.svg
@@ -787,6 +791,7 @@ jobs:
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
+          GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
         run: |
           python build.py
 

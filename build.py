@@ -1,7 +1,8 @@
 from datetime import datetime
 import subprocess
 from pathlib import Path
-from code.osu import Osu
+from code.api import Osu
+from code.api import Osu
 from code.build_index import get_links_html
 
 class BuildWebsite:
