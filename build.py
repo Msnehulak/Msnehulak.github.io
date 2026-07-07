@@ -2,8 +2,10 @@ from datetime import datetime
 import subprocess
 from pathlib import Path
 from code.api import Osu
-from code.api import Osu
+from code.api import YouTube
 from code.build_index import get_links_html
+
+api_yt = YouTube()
 
 class BuildWebsite:
     def __init__(self) -> None:
@@ -21,16 +23,22 @@ class BuildWebsite:
             print(f"Page `{file}.md` is build.")
 
     def index(self):
-            data_cs = {"links": get_links_html(lan = "cs")}
+            new_vid_frame = api_yt.get_frame()
+            data_cs = {
+                "links": get_links_html(lan = "cs"),
+                'new_video': new_vid_frame,
+            }
             self.content_build(data_cs, 'cs/index')
 
-            data_en = {"links": get_links_html(lan = "en")}
+            data_en = {
+                "links": get_links_html(lan = "en"),
+                'new_video': new_vid_frame,
+            }
             self.content_build(data_en, 'en/index')
 
     def osu(self):
         osu_app = Osu()
-        osu_app.load_data()
-        data = osu_app.data
+        data = osu_app.get_data()
 
         if data is None:
             print('I DONT HAVE DATA')

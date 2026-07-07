@@ -4,10 +4,16 @@ Lang: en
 
 # My osu! profile
 
-- Global Ranking: {{ rank }}#
-- Performance Points: {{ pp }}
-- Accuracy: {{ acc }}
-- Play Time: {{ play_time }}
-- Play count: {{ play_count }}
+- Global Ranking: **{{ rank }}**#
+- Performance Points: **{{ pp }}**pp
+- Accuracy: **{{ acc }}**%
+- Play Time: **{{ play_time }}**
+- Play count: **{{ play_count }}** maps
+
+## Taping
+I use both fingers (full alt), but I don't have a dominant finger.
+both can start a burst and have no problem with single taping.
+
+
 
 

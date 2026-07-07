@@ -7,3 +7,6 @@ Save_as: index.html
 # Vítejte na mém webu!
 
 {{ links }}
+
+## Nejnovější YT video
+{{ new_video }}

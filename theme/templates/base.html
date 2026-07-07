@@ -1,8 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="{{ page.lang if page else DEFAULT_LANG }}">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ SITENAME }}</title>
     <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
 </head>
@@ -12,6 +12,7 @@
 <div class="links">
     <a href="{{ SITEURL }}/">Home</a>
     <a href="{{ SITEURL }}/osu/">My Osu</a>
+    <a href="{{ SITEURL }}/about_me/">About Me</a>
 
 {% if page %}
     {% for lang_code, lang_url in lang_siteurls.items() %}

@@ -1,4 +1,3 @@
-
 :root {
     --bg-main: #1e1e1e;
     --bg-card: #2d2d2d;
@@ -71,7 +70,7 @@ footer {
 /* Index */
 .links-index {
     display: flex;
-    gap: 20px;
+    flex-wrap: wrap;
     justify-content: left;
 }
 
@@ -97,13 +96,41 @@ footer {
 }
 
 main {
-    background-color: var(--bg-card); /* Použije tvoji připravenou šedou */
-    border-radius: var(--radius);     /* Použije tvoje zaoblení 12px */
-    padding: 30px;                    /* Vnitřní odsazení, aby text nebyl nalepený na okrajích */
-    margin: 40px auto;                /* Odsazení od navigace/footeru a vycentrování */
-    max-width: 800px;                 /* Omezí šířku textu, aby se dobře četl */
-    width: calc(100% - 40px);         /* Zajistí responzivitu na mobilech */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Volitelné: jemný stín pro lepší vzhled */
+    background-color: var(--bg-card); /* PouÅ¾ije tvoji pÅ™ipravenou Å¡edou */
+    border-radius: var(--radius);     /* PouÅ¾ije tvoje zaoblenÃ­ 12px */
+    padding: 30px;                    /* VnitÅ™nÃ­ odsazenÃ­, aby text nebyl nalepenÃ½ na okrajÃ­ch */
+    margin: 40px auto;                /* OdsazenÃ­ od navigace/footeru a vycentrovÃ¡nÃ­ */
+    max-width: 800px;                 /* OmezÃ­ Å¡Ã­Å™ku textu, aby se dobÅ™e Äetl */
+    width: calc(100% - 40px);         /* ZajistÃ­ responzivitu na mobilech */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* VolitelnÃ©: jemnÃ½ stÃ­n pro lepÅ¡Ã­ vzhled */
     line-height: 1.65;
+}
+
+iframe {
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    .links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+    main {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 435px) {
+    .index-btn {
+        width: 80px;
+        height: 80px;
+    }
 }
 

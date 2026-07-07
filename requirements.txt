@@ -6,4 +6,8 @@ pelican-i18n-subsites
 jinja2
 diskcache
 PyYAML
+google-api-python-client
+
+
+
 

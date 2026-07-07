@@ -7,3 +7,6 @@ Save_as: index.html
 # Welcome to my website!
 
 {{ links }}
+
+## Newest YT video
+{{ new_video }}
