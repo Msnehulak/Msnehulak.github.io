@@ -11,9 +11,11 @@ Directory structure:
     │   └── sweb.py
     ├── content/
     │   ├── cs/
+    │   │   ├── about_me.md
     │   │   ├── index.md.template
     │   │   └── osu.md.template
     │   └── en/
+    │       ├── about_me.md
     │       ├── index.md.template
     │       └── osu.md.template
     ├── data/
@@ -72,8 +74,7 @@ class BuildWebsite:
 
     def osu(self):
         osu_app = Osu()
-        osu_app.load_data()
-        data = osu_app.data
+        data = osu_app.get_data()
 
         if data is None:
             print('I DONT HAVE DATA')
@@ -242,6 +243,7 @@ from dotenv import load_dotenv
 from ossapi import Ossapi
 from diskcache import Cache
 from googleapiclient.discovery import build
+from datetime import timedelta
 
 load_dotenv()
 
@@ -297,7 +299,8 @@ class Osu:
                 "rank": stats.global_rank,
                 "pp": stats.pp,
                 "acc": stats.hit_accuracy,
-                "play_time": stats.play_time,
+                "play_time_s": stats.play_time,
+                "play_time": str(timedelta(seconds=stats.play_time)),
                 "play_count": stats.play_count,
                 "avatar": user.avatar_url
             } 
@@ -310,6 +313,10 @@ class Osu:
             
         except Exception as e:
             print(f"Chyba při komunikaci s osu! API: {e}")
+
+    def get_data(self):
+        self.load_data()
+        return self.data
 
 class GitHub:
     def __init__(self) -> None:
@@ -363,7 +370,7 @@ class YouTube:
             video_id = latest_video['snippet']['resourceId']['videoId']
             published_at = latest_video['snippet']['publishedAt']
             video_url = f"https://www.youtube.com/watch?v={video_id}"
-            video_url_embed = f"https://www.youtube.com/embed/{video_id}"
+            video_url_embed = f"https://www.youtube-nocookie.com/embed/{video_id}"
 
             new_data = {
                 'profile': {
@@ -392,11 +399,10 @@ class YouTube:
         return f'''<iframe {size} src="{src}" title="{video_title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" ></iframe>'''
 
 if __name__ == "__main__":
-#    app_osu = Osu()
-#    app_osu.load_data()
+     app_osu = Osu()
+     app_yt = YouTube()
 
-    app_yt = YouTube()
-    
+     app_osu._update()
 
 
 
@@ -471,6 +477,19 @@ BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
 
 ================================================
+FILE: content/cs/about_me.md
+================================================
+Title: O mně
+Slug: about_me
+Lang: cs
+
+
+# O mně 
+Jmenuji se Snehulak (bez háčků a čárek!), někdy Snehulak TV. 
+
+
+
+================================================
 FILE: content/cs/index.md.template
 ================================================
 Title: Home
@@ -496,15 +515,49 @@ Slug: osu
 Lang: cs
 
 # Můj osu! profil
-Zde jsou staticky generovaná data z cache:
 
-- Global Ranking: {{ rank }}#
-- Performance Points: {{ pp }}
-- Accuracy: {{ acc }}
-- Play Time: {{ play_time }}
-- Play count: {{ play_count }}
+- Globální žebříček: #**{{ rank }}**
+- Body za výkon: **{{ pp }}**pp
+- Přesnost: **{{ acc }}**%
+- Doba hraní: **{{ play_time }}**
+- Počet přehrání: **{{ play_count }}** maps
+
+# Skiny které používám  
+### WhiteCat 3.0
+Převážně používám V1, Aquwa a DT verzi: [Osu Forum](https://osu.ppy.sh/community/forums/topics/1864774?n=1) - [Google Drive](https://drive.google.com/drive/folders/1ZKuKi-jLdhrR0F2yi7r2cbOZDh-uVsOV)
+
+### Aristia Refreshed
+Když jsem unavený z WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/topics/2004302?n=1) - [Google Drive](https://drive.google.com/drive/folders/1hNagtYyM9fkG3_TvgEn5DhDVvo9n1iqZ)
 
 
+# Herní Styl
+### Míření 
+K míření používám svůj CTL-672 tablet. 
+Moje are je 65x45mm a jesem hover hráč. 
+
+### Taping
+Používám oba dva prsty (full alt), ale nemam dominantní prst. 
+Každý zvládne začít burst a nemají problém se single tap.
+
+
+
+
+
+
+
+
+
+
+================================================
+FILE: content/en/about_me.md
+================================================
+Title: About Me
+Slug: about_me
+Lang: en
+
+
+# About me 
+My name is Snehulak, sometimes Snehulak TV.
 
 
 
@@ -535,11 +588,29 @@ Lang: en
 
 # My osu! profile
 
-- Global Ranking: {{ rank }}#
-- Performance Points: {{ pp }}
-- Accuracy: {{ acc }}
-- Play Time: {{ play_time }}
-- Play count: {{ play_count }}
+- Global Rank: #**{{ rank }}**
+- Performance Points: **{{ pp }}**pp
+- Accuracy: **{{ acc }}**%
+- Play Time: **{{ play_time }}**
+- Play count: **{{ play_count }}** maps
+
+# Skins I use
+### WhiteCat 3.0
+I Mainly use V1, Aquwa and DT ver: [Osu Forum](https://osu.ppy.sh/community/forums/topics/1864774?n=1) - [Google Drive](https://drive.google.com/drive/folders/1ZKuKi-jLdhrR0F2yi7r2cbOZDh-uVsOV)
+
+### Aristia Refreshed
+When I am bored of WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/topics/2004302?n=1) - [Google Drive](https://drive.google.com/drive/folders/1hNagtYyM9fkG3_TvgEn5DhDVvo9n1iqZ)
+
+# Play Style
+### Taping
+I use both fingers (full alt), but I don't have a dominant finger.
+Both can start a burst and have no problem with single taping.
+
+### Aim
+To aim i use tablet (Sorry mouse players). 
+Tablet in my left hand is CTL-672. I like it and love it.
+I use tablet area 65x42mm. Hover main.
+
 
 
 
@@ -603,6 +674,14 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh; 
+}
+
+a {
+    color: #00ccff;
+}
+
+a:hover {
+    color: #008cad;
 }
 
 .logo {
@@ -737,6 +816,7 @@ FILE: theme/templates/base.html
 <div class="links">
     <a href="{{ SITEURL }}/">Home</a>
     <a href="{{ SITEURL }}/osu/">My Osu</a>
+    <a href="{{ SITEURL }}/about_me/">About Me</a>
 
 {% if page %}
     {% for lang_code, lang_url in lang_siteurls.items() %}

@@ -46,7 +46,7 @@ class BuildWebsite:
                 "rank": '-1',
                 "pp": 42069,
                 "acc": 101,
-                "play_time": 365,
+                "play_time": '365 dayS',
                 "play_count": 0,
                 # "avatar": user.avatar_url
                 "status": 'API is down, here are some funny numbers'

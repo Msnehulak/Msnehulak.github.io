@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from ossapi import Ossapi
 from diskcache import Cache
 from googleapiclient.discovery import build
+from datetime import timedelta
 
 load_dotenv()
 
@@ -59,7 +60,8 @@ class Osu:
                 "rank": stats.global_rank,
                 "pp": stats.pp,
                 "acc": stats.hit_accuracy,
-                "play_time": stats.play_time,
+                "play_time_s": stats.play_time,
+                "play_time": str(timedelta(seconds=stats.play_time)),
                 "play_count": stats.play_count,
                 "avatar": user.avatar_url
             } 
@@ -129,7 +131,7 @@ class YouTube:
             video_id = latest_video['snippet']['resourceId']['videoId']
             published_at = latest_video['snippet']['publishedAt']
             video_url = f"https://www.youtube.com/watch?v={video_id}"
-            video_url_embed = f"https://www.youtube.com/embed/{video_id}"
+            video_url_embed = f"https://www.youtube-nocookie.com/embed/{video_id}"
 
             new_data = {
                 'profile': {
@@ -158,8 +160,7 @@ class YouTube:
         return f'''<iframe {size} src="{src}" title="{video_title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" ></iframe>'''
 
 if __name__ == "__main__":
-#    app_osu = Osu()
-#    app_osu.load_data()
+     app_osu = Osu()
+     app_yt = YouTube()
 
-    app_yt = YouTube()
-    
+     app_osu._update()
