@@ -43,7 +43,8 @@ jobs:
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
-          pelican content -s publishconf.py
+          pelican  
+# content -s publishconf.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
