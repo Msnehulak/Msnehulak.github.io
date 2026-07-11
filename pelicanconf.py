@@ -12,8 +12,6 @@ from build import get_web_data
 # Načteme data z API hned při startu Pelicanu (aby se nevolalo pro každý soubor znovu)
 WEB_DATA = get_web_data()
 
-print(WEB_DATA)
-
 def fill_data_to_md(content_objekt):
     """
     Tato funkce se spustí pokaždé, když Pelican otevře a načte jakýkoli .md soubor.
