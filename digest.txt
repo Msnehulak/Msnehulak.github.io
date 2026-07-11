@@ -153,7 +153,7 @@ ALL_LANGUAGES = {
 DEFAULT_LANG = MAIN_LANG
 
 # ZMĚNA: Pelican musí vidět VŠECHNY složky, aby dokázal spárovat překlady!
-PAGE_PATHS = ['en'] 
+PAGE_PATHS = ['en', 'cs', 'images'] 
 
 PLUGINS = ['pelican.plugins.i18n_subsites']
 JINJA_ENVIRONMENT = {
@@ -792,7 +792,8 @@ jobs:
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
-          pelican
+          pelican  
+# content -s publishconf.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
