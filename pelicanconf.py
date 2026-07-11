@@ -1,3 +1,34 @@
+import os
+import sys
+from pelican import signals
+from jinja2 import Template
+
+# Aby Python viděl build.py v aktuálním adresáři
+sys.path.append(os.curdir)
+
+# Importujeme tvou funkci z build.py
+from build import get_web_data
+
+# Načteme data z API hned při startu Pelicanu (aby se nevolalo pro každý soubor znovu)
+WEB_DATA = get_web_data()
+
+def fill_data_to_md(content_objekt):
+    """
+    Tato funkce se spustí pokaždé, když Pelican otevře a načte jakýkoli .md soubor.
+    Vezme jeho surový obsah a projede ho přes Jinja2 s daty z build.py.
+    """
+    if hasattr(content_objekt, '_content') and content_objekt._content:
+        print(f">>> Upravuji Markdown pro soubor: {content_objekt.source_path}")
+        
+        surovy_text = content_objekt._content
+        
+        sablona = Template(surovy_text)
+        upraveny_text = sablona.render(**WEB_DATA)
+        
+        content_objekt._content = upraveny_text
+
+signals.content_object_init.connect(fill_data_to_md)
+
 AUTHOR = 'Snehulak'
 SITENAME = 'Snehulak'
 SITEURL = ''  # Pro lokální vývoj prázdné, publishconf.py si to pro produkci přepíše
@@ -52,7 +83,7 @@ ALL_LANGUAGES = {
 DEFAULT_LANG = MAIN_LANG
 
 # ZMĚNA: Pelican musí vidět VŠECHNY složky, aby dokázal spárovat překlady!
-PAGE_PATHS = ['en'] 
+PAGE_PATHS = ['en', 'cs', 'images'] 
 
 PLUGINS = ['pelican.plugins.i18n_subsites']
 JINJA_ENVIRONMENT = {
@@ -67,5 +98,5 @@ for lang_code, site_name in ALL_LANGUAGES.items():
         I18N_SUBSITES[lang_code] = {
             'PAGE_PATHS': [lang_code],
             'SITENAME': site_name,
-            'I18N_TEMPLATES_LANG': 'en',
+            'I18N_TEMPLATES_LANG': None,
         }
