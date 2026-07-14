@@ -7,7 +7,7 @@ jinja2
 diskcache
 PyYAML
 google-api-python-client
-
+pelican-sitemap
 
 
 

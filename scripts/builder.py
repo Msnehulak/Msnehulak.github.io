@@ -15,7 +15,7 @@ class Builder:
         allowfullscreen=""></iframe>''' 
 
     @staticmethod
-    def index_links():
+    def index_links(site_url=''):
         master_links = BASE_DIR / 'data' / 'links.yaml'
         with open(master_links, 'r') as f:
             data = yaml.safe_load(f)
@@ -26,7 +26,7 @@ class Builder:
         for link in data:
             template =  f'''<a href="{link['link']}" class="index-a"
             target="_blank" rel="noopener noreferrer">
-            <img src="/images/icon/btrace/{link['img']}" 
+            <img src="{site_url}/images/icon/btrace/{link['img']}" 
             alt="{link['hover']}" title="{link['hover']}" 
             class="index-img"> </a>'''
             links.append(template)

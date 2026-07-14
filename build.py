@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 from scripts.api import APIs
 from scripts.builder import Builder
+from pelicanconf import SITEURL
 
 builder = Builder()
 
@@ -14,7 +15,7 @@ def get_web_data():
     yt_vid_name = yt_data['newest_vid']['title']
     yt_frame = builder.yt_frame(yt_vid_id, yt_vid_name)
     
-    index_links = builder.index_links()
+    index_links = builder.index_links(site_url=SITEURL)
 
     # -- OSU --
     osu_data = app_apis.get_data('osu')
