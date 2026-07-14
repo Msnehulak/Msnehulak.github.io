@@ -42,7 +42,7 @@ jobs:
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          SITEURL: https://${{ github.repository_owner }}.github.io/
+          SITEURL: https://${{ github.repository_owner }}.github.io
         run: |
           pelican content -s publishconf.py
 
