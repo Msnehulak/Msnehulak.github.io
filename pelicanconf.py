@@ -17,6 +17,8 @@ TEMPLATE_PAGES = {
     'robots.txt': 'robots.txt'
 }
 
+print(SITEURL)
+
 # Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
 ARTICLE_SAVE_AS = ''
