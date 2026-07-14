@@ -21,10 +21,11 @@ class Builder:
             data = yaml.safe_load(f)
 
         links = ['<div class="links-index">']
-        
+        new_window = 'target="_blank" rel="noopener noreferrer"'
+
         for link in data:
-            template =  f'''<a href="{link['link']}" 
-            class="index-a">
+            template =  f'''<a href="{link['link']}" class="index-a"
+            target="_blank" rel="noopener noreferrer">
             <img src="/images/icon/btrace/{link['img']}" 
             alt="{link['hover']}" title="{link['hover']}" 
             class="index-img"> </a>'''
