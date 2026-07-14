@@ -6,15 +6,19 @@ Directory structure:
     ├── requirements.txt
     ├── content/
     │   ├── cs/
-    │   │   └── about_me.md
+    │   │   ├── about_me.md
+    │   │   ├── index.md
+    │   │   └── osu.md
     │   └── en/
-    │       └── about_me.md
+    │       ├── about_me.md
+    │       ├── index.md
+    │       └── osu.md
     ├── data/
     │   └── links.yaml
     ├── scripts/
     │   ├── __init__.py
     │   ├── api.py
-    │   ├── build_index.py
+    │   ├── builder.py
     │   └── sweb.py
     ├── theme/
     │   ├── static/
@@ -32,16 +36,24 @@ FILE: build.py
 ================================================
 from datetime import datetime
 from pathlib import Path
-from scripts.api import Osu, YouTube
-from scripts.build_index import get_links_html
+from scripts.api import APIs
+from scripts.builder import Builder
 
-api_yt = YouTube()
-osu_app = Osu()
+builder = Builder()
 
-def get_web_data(): 
-    yt_frame = api_yt.get_frame()
+def get_web_data():
+    app_apis = APIs()
+    
+    # -- YT Frame --
+    yt_data = app_apis.get_data('yt')
+    yt_vid_id = yt_data['newest_vid']['id']
+    yt_vid_name = yt_data['newest_vid']['title']
+    yt_frame = builder.yt_frame(yt_vid_id, yt_vid_name)
+    
+    index_links = builder.index_links()
 
-    osu_data = osu_app.get_data()
+    # -- OSU --
+    osu_data = app_apis.get_data('osu')
     if osu_data is None:
         osu_data = {
             "rank": '-1',
@@ -49,14 +61,12 @@ def get_web_data():
             "acc": 101,
             "play_time": '365 dayS',
             "play_count": 0,
-            "status": 'API is down, here are some funny numbers'
         }
-        
+
     return {
         'YT_FRAME': yt_frame,
         'OSU_DATA': osu_data,
-        'LINKS_CS': get_links_html(lan="cs"),
-        'LINKS_EN': get_links_html(lan="en")
+        'INDEX_LINKS_DIV': index_links, 
     }
 
 if __name__ == "__main__":
@@ -234,6 +244,65 @@ Jmenuji se Snehulak (bez háčků a čárek!), někdy Snehulak TV.
 
 
 ================================================
+FILE: content/cs/index.md
+================================================
+Title: Home
+Slug: index
+Lang: cs
+Save_as: index.html
+
+
+# Vítejte na mém webu!
+
+{{ INDEX_LINKS_DIV }}
+
+## Nejnovější YT video
+{{ YT_FRAME }}
+
+
+
+================================================
+FILE: content/cs/osu.md
+================================================
+Title: My Osu
+Slug: osu
+Lang: cs
+
+# Můj osu! profil
+
+- Globální žebříček: #**{{ OSU_DATA.rank }}**
+- Body za výkon: **{{ OSU_DATA.pp }}**pp
+- Přesnost: **{{ OSU_DATA.acc }}**%
+- Doba hraní: **{{ OSU_DATA.play_time }}**
+- Počet přehrání: **{{ OSU_DATA.play_count }}** maps
+
+# Skiny které používám  
+### WhiteCat 3.0
+Převážně používám V1, Aquwa a DT verzi: [Osu Forum](https://osu.ppy.sh/community/forums/topics/1864774?n=1) - [Google Drive](https://drive.google.com/drive/folders/1ZKuKi-jLdhrR0F2yi7r2cbOZDh-uVsOV)
+
+### Aristia Refreshed
+Když jsem unavený z WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/topics/2004302?n=1) - [Google Drive](https://drive.google.com/drive/folders/1hNagtYyM9fkG3_TvgEn5DhDVvo9n1iqZ)
+
+
+# Herní Styl
+### Míření 
+K míření používám svůj CTL-672 tablet. 
+Moje are je 65x45mm a jesem hover hráč. 
+
+### Klikání
+Používám oba dva prsty (full alt), ale nemam dominantní prst. 
+Každý zvládne začít burst a nemají problém se single tap.
+
+
+
+
+
+
+
+
+
+
+================================================
 FILE: content/en/about_me.md
 ================================================
 Title: About Me
@@ -247,35 +316,82 @@ My name is Snehulak, sometimes Snehulak TV.
 
 
 ================================================
+FILE: content/en/index.md
+================================================
+Title: Home
+Slug: index
+Lang: en
+Save_as: index.html
+
+
+# Welcome to my website!
+
+{{ INDEX_LINKS_DIV }}
+
+## Newest YT video
+{{ YT_FRAME }}
+
+
+
+================================================
+FILE: content/en/osu.md
+================================================
+Title: My Osu
+Slug: osu
+Lang: en
+
+# My osu! profile
+
+- Global Rank: #**{{ OSU_DATA.rank }}**
+- Performance Points: **{{ OSU_DATA.pp }}**pp
+- Accuracy: **{{ OSU_DATA.acc }}**%
+- Play Time: **{{ OSU_DATA.play_time }}**
+- Play count: **{{ OSU_DATA.play_count }}** maps
+
+# Skins I use
+### WhiteCat 3.0
+I Mainly use V1, Aquwa and DT ver: [Osu Forum](https://osu.ppy.sh/community/forums/topics/1864774?n=1) - [Google Drive](https://drive.google.com/drive/folders/1ZKuKi-jLdhrR0F2yi7r2cbOZDh-uVsOV)
+
+### Aristia Refreshed
+When I am bored of WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/topics/2004302?n=1) - [Google Drive](https://drive.google.com/drive/folders/1hNagtYyM9fkG3_TvgEn5DhDVvo9n1iqZ)
+
+# Play Style
+### Taping
+I use both fingers (full alt), but I don't have a dominant finger.
+Both can start a burst and have no problem with single taping.
+
+### Aim
+To aim i use tablet (Sorry mouse players). 
+Tablet in my left hand is CTL-672. I like it and love it.
+I use tablet area 65x42mm. Hover main.
+
+
+
+
+
+
+================================================
 FILE: data/links.yaml
 ================================================
 - name: youtube
   img: youtube.svg
   link: https://youtube.com/@SnehulakTV
-  hover: 
-    cs: YouTube
-    en: YouTube
+  hover: YouTube
 
 - name: github
   img: github.svg
   link: https://github.com/Msnehulak
-  hover: 
-    cs: GitHub
-    en: GitHub
+  hover: GitHub
 
 - name: twitch
   img: twitch.svg
   link: https://www.twitch.tv/codesnehulak
-  hover: 
-    cs: Twitch
-    en: Twitch
+  hover: Twitch
 
 - name: osu
   img: osu.svg
   link: https://osu.ppy.sh/users/38448983
-  hover: 
-    cs: OSU!
-    en: OSU!
+  hover: OSU!
 
 
 
@@ -289,6 +405,7 @@ FILE: scripts/__init__.py
 FILE: scripts/api.py
 ================================================
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from ossapi import Ossapi
@@ -312,90 +429,52 @@ ENV_VAL = {
 for i, x in ENV_VAL.items():
     if x is None:
         print(f'missing {i}')
+        sys.exit(1)
 
-class Osu:
+class APIs:
     def __init__(self) -> None:
-        self.data = None 
         self.cache = Cache(str(CACHE_DIR))
-        self.update_frequency_hours = 1
+        self.apis = {
+            'yt': {
+                'update': self.update_yt,
+                'refresh': 1 * 60 * 60,
+                'data': None
+            },
+            'osu': {
+                'update': self.update_osu,
+                'refresh': 1 * 60 * 60,
+                'data': None
+            }
+        }
+        self.update_data()
 
-    def load_data(self):
-        cached_data = self.cache.get("osu") 
-        
-        if cached_data is None:
-            print("Cache pro 'osu' neexistuje nebo vypršela. Spouštím update...")
-            self._update()
-            cached_data = self.cache.get("osu")
+    def update_data(self):
+        for api in self.apis.keys():
+            cached_data = self.cache.get(api)
 
-        if cached_data:
-            self.data = cached_data
+            if cached_data is None:
+                print(f"Cache pro '{api}' neexistuje nebo vypršela. Spouštím update...")
+                self.apis[api]['update']()
+            else:
+                self.apis[api]['data'] = cached_data
+
+    def get_data(self, api):
+        if api in self.apis:
+            return self.apis[api]['data']
         else:
-            print("Chyba: Nepodařilo se získat data z API ani z cache.")
+            print(f"API data '{api}' dont exist")
 
-    def _update(self):
-        client_id = ENV_VAL['osu_client_id']
-        client_secret = ENV_VAL['osu_client_secret']
-        username = "SnehulakTV_"
+    def _update_cache(self, api, data):
+        if data and api in self.apis:
+            expire_seconds = self.apis[api]['refresh']
+            self.cache.set(api, data, expire=expire_seconds)
+            self.apis[api]['data'] = data
+            print(f"Update cache for '{api}'")
 
-        if not client_id or not client_secret:
-            print("Chyba: Chybí OSU_client_id nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
-            return
-
+    def update_yt(self):
+        youtube = build('youtube', 'v3', developerKey=ENV_VAL['youtube_api_key'])
         try:
-            api = Ossapi(int(client_id), client_secret)
-            user = api.user(username)
-            stats = user.statistics
-
-            novy_api_vystup = {
-                "rank": stats.global_rank,
-                "pp": stats.pp,
-                "acc": stats.hit_accuracy,
-                "play_time_s": stats.play_time,
-                "play_time": str(timedelta(seconds=stats.play_time)),
-                "play_count": stats.play_count,
-                "avatar": user.avatar_url
-            } 
-            
-            # Zápis do cache s nastavenou expirací (převod hodin na sekundy)
-            expire_seconds = self.update_frequency_hours * 3600
-            self.cache.set("osu", novy_api_vystup, expire=expire_seconds)
-            
-            print("osu! cache byla úspěšně aktualizována pomocí diskcache.")
-            
-        except Exception as e:
-            print(f"Chyba při komunikaci s osu! API: {e}")
-
-    def get_data(self):
-        self.load_data()
-        return self.data
-
-class GitHub:
-    def __init__(self) -> None:
-        pass
-
-class YouTube:
-    def __init__(self) -> None:
-        self.data = None 
-        self.cache = Cache(str(CACHE_DIR))
-        self.update_frequency_hours = 1
-
-    def load_data(self):
-        cached_data = self.cache.get("yt") 
-        
-        if cached_data is None:
-            print("Cache pro 'yt' neexistuje nebo vypršela. Spouštím update...")
-            self._update()
-            cached_data = self.cache.get("yt")
-
-        if cached_data:
-            self.data = cached_data
-        else:
-            print("Chyba: Nepodařilo se získat data z API ani z cache.")
-
-    def _update(self):
-        self.youtube = build('youtube', 'v3', developerKey=ENV_VAL['youtube_api_key'])
-        try:
-            channel_request = self.youtube.channels().list(
+            channel_request = youtube.channels().list(
                 part='contentDetails,snippet',
                 id=YT_CHANEL_ID
             )
@@ -409,12 +488,16 @@ class YouTube:
             channel_tag = channel_response['items'][0]['snippet']['customUrl']
             uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
             
-            playlist_request = self.youtube.playlistItems().list(
+            playlist_request = youtube.playlistItems().list(
                 part='snippet',
                 playlistId=uploads_playlist_id,
                 maxResults=1 
             )
             playlist_response = playlist_request.execute()
+
+            if not playlist_response.get('items'):
+                print("V playlistu nahraných videí nebyla nalezena žádná videa. Přeskakuji uložení.")
+                return
 
             latest_video = playlist_response['items'][0]
             video_title = latest_video['snippet']['title']
@@ -436,79 +519,79 @@ class YouTube:
                     'embed': video_url_embed
                 }
             }
-            expire_seconds = self.update_frequency_hours * 3600
-            self.cache.set("yt", new_data, expire=expire_seconds)
+            self._update_cache('yt', new_data)
         except Exception as e:
             print(f"Došlo k chybě: {e}")
 
-    def get_frame(self):
-        self.load_data()
+    def update_osu(self):
+        client_id = ENV_VAL['osu_client_id']
+        client_secret = ENV_VAL['osu_client_secret']
+        username = "SnehulakTV_"
 
-        size = 'width="100%" height="450"'
-        src = self.data['newest_vid']['embed']
-        video_title = self.data['newest_vid']['title']
-        return f'''<iframe {size} src="{src}" title="{video_title}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="" ></iframe>'''
+        if not client_id or not client_secret:
+            print("Chyba: Chybí OSU_client_id nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
+            return
 
-if __name__ == "__main__":
-     app_osu = Osu()
-     app_yt = YouTube()
+        try:
+            api = Ossapi(int(client_id), client_secret)
+            user = api.user(username)
+            stats = user.statistics
 
-     app_osu._update()
+            new_data = {
+                "rank": stats.global_rank,
+                "pp": stats.pp,
+                "acc": stats.hit_accuracy,
+                "play_time_s": stats.play_time,
+                "play_time": str(timedelta(seconds=stats.play_time)),
+                "play_count": stats.play_count,
+                "avatar": user.avatar_url
+            } 
+            
+            self._update_cache('osu', new_data)
+            
+        except Exception as e:
+            print(f"Chyba při komunikaci s osu! API: {e}")
 
 
 
 ================================================
-FILE: scripts/build_index.py
+FILE: scripts/builder.py
 ================================================
-from pathlib import Path
-import xml.etree.ElementTree as ET
 import yaml
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-LINKS = BASE_DIR / 'data' / 'links.yaml'
-IMG_CLASS_NAME = 'index-img'
-LINKS_CLASS = 'links-index' 
-IMG_PATH_START = 'icon/btrace' # /trace
 
-def get_links_html(lan='en'):
-    with open(LINKS, 'r', encoding='utf-8') as f:
-        data = yaml.safe_load(f)
+class Builder:
+    @staticmethod
+    def yt_frame(video_id, title): 
+        return f'''<iframe width="100%" height="450" 
+        src="https://www.youtube-nocookie.com/embed/{video_id}" 
+        title="{title}" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        referrerpolicy="strict-origin-when-cross-origin" 
+        allowfullscreen=""></iframe>''' 
 
-    if not data:
-        return ''
+    @staticmethod
+    def index_links():
+        master_links = BASE_DIR / 'data' / 'links.yaml'
+        with open(master_links, 'r') as f:
+            data = yaml.safe_load(f)
 
-    html_elements = [f'<div class="{LINKS_CLASS}">']
-
-    for link in data:
-        url = link['link']
+        links = ['<div class="links-index">']
         
-        # 1. Vytvoříme element <button> s JavaScriptem pro otevření odkazu
-        button_element = ET.Element('button', {
-            'type': 'button',
-            'onclick': f"window.open('{url}', '_blank')",
-            'class': 'index-btn'  # Můžeš mu dát vlastní třídu pro stylování v CSS
-        })
+        for link in data:
+            template =  f'''<a href="{link['link']}" 
+            class="index-a">
+            <img src="/images/icon/btrace/{link['img']}" 
+            alt="{link['hover']}" title="{link['hover']}" 
+            class="index-img"> </a>'''
+            links.append(template)
 
-        # 2. Vytvoříme vnořený obrázek <img>
-        img_path = f"/images/{IMG_PATH_START}/{link['img']}"
-        alt_text = link['hover'][lan]
-        
-        ET.SubElement(button_element, 'img', {
-            'src': img_path,
-            'alt': alt_text,
-            'title': alt_text,
-            'class': IMG_CLASS_NAME
-        })
+        links.append('</div>')
 
-        # 3. Převedeme element na HTML text
-        html_string = ET.tostring(button_element, encoding='unicode')
-        html_elements.append(html_string)
-    html_elements.append('</div>')    
-    return ''.join(html_elements)
-
-if __name__ == '__main__':
-    print("CS verze s tlačítky:")
-    print(get_links_html('cs'))
+        return ''.join(links)
 
 
 
@@ -620,18 +703,22 @@ footer {
     border-radius: 16px;
 }
 
-.index-btn {
+.index-a {
     width: 100px;
-    height: 100px;
+    height: 100%;
     object-fit: cover;
     display: block;
-    margin: 0px 0;
     background-color: #2d2d2d;
     border-radius: 16px;
     border: transparent;
+    margin: 0px 2.5px;
 }
 
-.index-btn:hover {
+.index-a:active {
+  background-color: #2d2d2d;
+}
+
+.index-a:hover {
   background-color: #3d3d3d;
 }
 
@@ -792,8 +879,7 @@ jobs:
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: |
-          pelican  
-# content -s publishconf.py
+          pelican content -s publishconf.py
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

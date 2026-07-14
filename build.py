@@ -1,15 +1,23 @@
 from datetime import datetime
 from pathlib import Path
-from scripts.api import Osu, YouTube
-from scripts.build_index import get_links_html
+from scripts.api import APIs
+from scripts.builder import Builder
 
-api_yt = YouTube()
-osu_app = Osu()
+builder = Builder()
 
-def get_web_data(): 
-    yt_frame = api_yt.get_frame()
+def get_web_data():
+    app_apis = APIs()
+    
+    # -- YT Frame --
+    yt_data = app_apis.get_data('yt')
+    yt_vid_id = yt_data['newest_vid']['id']
+    yt_vid_name = yt_data['newest_vid']['title']
+    yt_frame = builder.yt_frame(yt_vid_id, yt_vid_name)
+    
+    index_links = builder.index_links()
 
-    osu_data = osu_app.get_data()
+    # -- OSU --
+    osu_data = app_apis.get_data('osu')
     if osu_data is None:
         osu_data = {
             "rank": '-1',
@@ -17,14 +25,12 @@ def get_web_data():
             "acc": 101,
             "play_time": '365 dayS',
             "play_count": 0,
-            "status": 'API is down, here are some funny numbers'
         }
-        
+
     return {
         'YT_FRAME': yt_frame,
         'OSU_DATA': osu_data,
-        'LINKS_CS': get_links_html(lan="cs"),
-        'LINKS_EN': get_links_html(lan="en")
+        'INDEX_LINKS_DIV': index_links, 
     }
 
 if __name__ == "__main__":

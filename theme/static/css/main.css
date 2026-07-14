@@ -88,18 +88,22 @@ footer {
     border-radius: 16px;
 }
 
-.index-btn {
+.index-a {
     width: 100px;
-    height: 100px;
+    height: 100%;
     object-fit: cover;
     display: block;
-    margin: 0px 0;
     background-color: #2d2d2d;
     border-radius: 16px;
     border: transparent;
+    margin: 0px 2.5px;
 }
 
-.index-btn:hover {
+.index-a:active {
+  background-color: #2d2d2d;
+}
+
+.index-a:hover {
   background-color: #3d3d3d;
 }
 

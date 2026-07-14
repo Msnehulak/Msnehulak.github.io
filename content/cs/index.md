@@ -6,7 +6,7 @@ Save_as: index.html
 
 # Vítejte na mém webu!
 
-{{ LINKS_CS }}
+{{ INDEX_LINKS_DIV }}
 
 ## Nejnovější YT video
 {{ YT_FRAME }}
