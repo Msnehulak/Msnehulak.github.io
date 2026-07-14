@@ -3,7 +3,11 @@ import sys
 from pelican import signals
 from jinja2 import Template
 
-# Aby Python viděl build.py v aktuálním adresáři
+sys.path.append(os.curdir)
+from pelicanconf import *
+
+RELATIVE_URLS = True
+
 sys.path.append(os.curdir)
 
 # Importujeme tvou funkci z build.py
