@@ -8,8 +8,7 @@ class Builder:
     def yt_frame(video_id, title): 
         return f'''<iframe width="100%" height="450" 
         src="https://www.youtube-nocookie.com/embed/{video_id}" 
-        title="{title}" 
-        frameborder="0" 
+        title="{title}" frameborder="0" loading="lazy"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
         referrerpolicy="strict-origin-when-cross-origin" 
         allowfullscreen=""></iframe>''' 
@@ -27,8 +26,8 @@ class Builder:
             template =  f'''<a href="{link['link']}" class="index-a"
             target="_blank" rel="noopener noreferrer">
             <img src="{site_url}/images/icon/btrace/{link['img']}" 
-            alt="{link['hover']}" title="{link['hover']}" 
-            class="index-img"> </a>'''
+            alt="{link['hover']}" title="{link['hover']}"
+            class="index-img" loading="lazy"></a>'''
             links.append(template)
 
         links.append('</div>')

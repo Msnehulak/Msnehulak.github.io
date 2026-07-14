@@ -12,12 +12,10 @@ PATH = 'content'
 THEME = 'theme'
 TIMEZONE = 'Europe/Rome'
 DEFAULT_PAGINATION = False
-STATIC_PATHS = ['images', 'robots.txt']
+STATIC_PATHS = ['images']
 TEMPLATE_PAGES = {
     'robots.txt': 'robots.txt'
 }
-
-print(SITEURL)
 
 # Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
