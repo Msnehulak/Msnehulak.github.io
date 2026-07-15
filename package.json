@@ -1,0 +1,25 @@
+{
+  "name": "snehulak",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Msnehulak/Snehulak.tv#readme",
+  "bugs": {
+    "url": "https://github.com/Msnehulak/Snehulak.tv/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Msnehulak/Snehulak.tv.git"
+  },
+  "type": "commonjs",
+  "main": "index.js",
+  "devDependencies": {
+    "esbuild": "^0.28.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  },
+  "scripts": {
+    "ts:watch": "esbuild theme/ts/main.ts --bundle --sourcemap --outdir=theme/static/js --watch",
+    "ts:build": "esbuild theme/ts/main.ts --bundle --minify --outdir=theme/static/js"
+  }
+}

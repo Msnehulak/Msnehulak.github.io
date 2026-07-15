@@ -24,10 +24,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
+      # Load repository
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -36,6 +38,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
     
+      # Node.JS
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Compile TypeScript
+        run: npm run ts:build
+
+      # Web Build
       - name: Build Web Site
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
@@ -46,6 +62,7 @@ jobs:
         run: |
           pelican content -s publishconf.py
 
+      # Web publish
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
@@ -58,6 +75,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
+      # Commit
 #      - name: Commit and push changes
 #        run: |
 #          git config --global user.name "github-actions[bot]"
