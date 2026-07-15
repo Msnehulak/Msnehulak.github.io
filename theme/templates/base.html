@@ -42,9 +42,13 @@
         {% endblock %}
     </main>
 
-
     <footer>
         <p>&copy; 2026 SnehulakTV</p>
     </footer>
+
+    {% if page and page.js is defined and page.js %}
+            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ page.js }}.js" defer></script>
+    {% endif %}
+
 </body>
 </html>

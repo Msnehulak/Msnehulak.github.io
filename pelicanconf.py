@@ -2,6 +2,7 @@ import os
 import sys
 from pelican import signals
 from jinja2 import Template
+import subprocess
 
 sys.path.append(os.curdir)
 
@@ -81,6 +82,8 @@ JINJA_ENVIRONMENT = {
 }
 I18N_TEMPLATES_LANG = 'en'
 
+I18N_TEMPLATES_LANG = None 
+
 I18N_SUBSITES = {}
 for lang_code, site_name in ALL_LANGUAGES.items():
     if lang_code != MAIN_LANG:
@@ -100,6 +103,9 @@ def fill_data_to_md(content_objekt):
     Vezme jeho surový obsah a projede ho přes Jinja2 s daty z build.py.
     """
     if hasattr(content_objekt, '_content') and content_objekt._content:
+        if getattr(content_objekt, '_already_rendered_by_jinja', False):
+            return
+        
         print(f">>> Upravuji Markdown pro soubor: {content_objekt.source_path}")
         
         surovy_text = content_objekt._content
