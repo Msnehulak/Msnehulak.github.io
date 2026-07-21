@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import sys
 from pelican import signals
@@ -17,6 +18,10 @@ STATIC_PATHS = ['images']
 TEMPLATE_PAGES = {
     'robots.txt': 'robots.txt'
 }
+
+year = datetime.now().year
+if year == 2026: FOOTER_YEAR = f"2026"
+else: FOOTER_YEAR = f"2026 - {year}"
 
 # Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
