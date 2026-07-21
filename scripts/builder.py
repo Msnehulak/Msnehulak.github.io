@@ -33,3 +33,34 @@ class Builder:
         links.append('</div>')
 
         return ''.join(links)
+    
+
+    @staticmethod
+    def projects_cards(lan = 'en'):
+        master_links = BASE_DIR / 'data' / 'projects.yaml'
+        with open(master_links, 'r', encoding='utf-8') as f:
+            data = yaml.safe_load(f)
+
+        slides = []
+        for i in data:
+            texts = i['content'][lan]
+            slide_html = (
+                f'<div class="swiper-slide">'
+                f'<h2>{texts["head"]}</h2>'
+                f'<p>{texts["desc"]}</p>'
+                f'</div> \n'
+            )
+            slides.append(slide_html)
+        
+        all_slides = ''.join(slides)
+        
+        full_html = f'''<div class="swiper mySwiper">
+<div class="swiper-wrapper">
+{all_slides}
+</div></div>'''
+
+        return full_html
+if __name__ == '__main__':
+    builder = Builder()
+    i = builder.projects_cards()
+    print(i)

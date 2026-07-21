@@ -34,6 +34,14 @@ a:hover {
     color: #008cad;
 }
 
+footer {
+    text-align: center;
+    padding: 25px 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 .logo {
     color: #ecf0f1;
     font-weight: bold;
@@ -46,8 +54,27 @@ a:hover {
     gap: 20px;
 }
 
+/* Projects Cards */
+.swiper {
+  width: auto;
+  max-width: auto;
+  height: 460px;
+  padding: 20px 0;
+}
 
+.swiper-slide {
+    width: 90%;  /* na mobilu zabere skoro celou šířku, takže se vejde jen jedna */
+    max-width: 320px; /* na PC omezí maximální šířku */
+    background-color: #3e3e3e;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
 
+/* Navigation */
 nav {
     background: var(--primary);
     padding: 15px 30px;
@@ -69,14 +96,6 @@ nav a {
 nav a:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: #fff;
-}
-
-footer {
-    text-align: center;
-    padding: 25px 20px;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Index */
@@ -112,13 +131,13 @@ footer {
 }
 
 main {
-    background-color: var(--bg-card); /* PouÅ¾ije tvoji pÅ™ipravenou Å¡edou */
-    border-radius: var(--radius);     /* PouÅ¾ije tvoje zaoblenÃ­ 12px */
-    padding: 30px;                    /* VnitÅ™nÃ­ odsazenÃ­, aby text nebyl nalepenÃ½ na okrajÃ­ch */
-    margin: 40px auto;                /* OdsazenÃ­ od navigace/footeru a vycentrovÃ¡nÃ­ */
-    max-width: 800px;                 /* OmezÃ­ Å¡Ã­Å™ku textu, aby se dobÅ™e Äetl */
-    width: calc(100% - 40px);         /* ZajistÃ­ responzivitu na mobilech */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* VolitelnÃ©: jemnÃ½ stÃ­n pro lepÅ¡Ã­ vzhled */
+    background-color: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 30px;
+    margin: 40px auto;
+    max-width: 1000px;
+    width: calc(100% - 40px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     line-height: 1.65;
 }
 

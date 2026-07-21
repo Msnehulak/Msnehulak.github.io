@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css?v=1.0">
-    <link rel="preload" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
+    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css?v=1.1">
+    <link rel="preload"    href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <body>
     <nav>
         <div class="logo">SnehulakTV</div>
@@ -47,6 +48,7 @@
         <p>&copy; 2026 SnehulakTV</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     {% if page and page.js is defined and page.js %}
             <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ page.js }}.js" defer></script>
     {% endif %}

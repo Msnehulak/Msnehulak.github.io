@@ -1,0 +1,44 @@
+- name: youtube
+  content:
+    img: None
+    en:
+      head: YouTube
+      desc: My TY chanel
+    cs:
+      head: YouTube
+      desc: Muj YT kanal
+  link: yt
+
+- name: youtube
+  content:
+    img: None
+    en:
+      head: YouTube
+      desc: My TY chanel
+    cs:
+      head: YouTube
+      desc: Muj YT kanal
+  link: yt
+
+- name: website
+  content:
+    img: None
+    en:
+      head: WebSite
+      desc: My TY chanel
+    cs:
+      head: WebSite
+      desc: My TY chanel
+  link: yt
+
+- name: website
+  content:
+    img: None
+    en:
+      head: WebSite
+      desc: My TY chanel
+    cs:
+      head: WebSite
+      desc: My TY chanel
+  link: yt
+
