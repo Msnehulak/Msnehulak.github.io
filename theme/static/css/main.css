@@ -56,10 +56,11 @@ footer {
 
 /* Projects Cards */
 .swiper {
-  width: auto;
-  max-width: auto;
-  height: 460px;
-  padding: 20px 0;
+    width: auto;
+    max-width: auto;
+    height: 460px;
+    padding: 20px 0;
+    border-radius: 20px;
 }
 
 .swiper-slide {
