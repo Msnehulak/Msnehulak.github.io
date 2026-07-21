@@ -18,12 +18,12 @@ I Mainly use V1, Aquwa and DT ver: [Osu Forum](https://osu.ppy.sh/community/foru
 When I am bored of WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/topics/2004302?n=1) - [Google Drive](https://drive.google.com/drive/folders/1hNagtYyM9fkG3_TvgEn5DhDVvo9n1iqZ)
 
 # Play Style
-### Taping
+### Tapping
 I use both fingers (full alt), but I don't have a dominant finger.
 Both can start a burst and have no problem with single taping.
 
 ### Aim
-To aim i use tablet (Sorry mouse players). 
+To aim I use tablet (Sorry mouse players). 
 Tablet in my left hand is CTL-672. I like it and love it.
 I use tablet area 65x42mm. Hover main.
 
