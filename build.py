@@ -35,7 +35,6 @@ def get_web_data():
         'en': builder.projects_cards(lan='en')
     }
 
-
     return {
         'YT_FRAME': yt_frame,
         'OSU_DATA': osu_data,

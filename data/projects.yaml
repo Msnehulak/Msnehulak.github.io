@@ -2,43 +2,54 @@
   content:
     img: None
     en:
-      head: YouTube
-      desc: My TY chanel
+      head: Test Project 1
+      desc: Test Peoject 1
     cs:
-      head: YouTube
-      desc: Muj YT kanal
-  link: yt
+      head: Test Projekt 1
+      desc: Test Projekt 1
+    link: None
 
 - name: youtube
   content:
     img: None
     en:
-      head: YouTube
-      desc: My TY chanel
+      head: Test Project 2
+      desc: Test Peoject 2
     cs:
-      head: YouTube
-      desc: Muj YT kanal
-  link: yt
+      head: Test Projekt 2
+      desc: Test Projekt 2
+    link: None
 
-- name: website
+- name: youtube
   content:
     img: None
     en:
-      head: WebSite
-      desc: My TY chanel
+      head: Test Project 3
+      desc: Test Peoject 3
     cs:
-      head: WebSite
-      desc: My TY chanel
-  link: yt
+      head: Test Projekt 3
+      desc: Test Projekt 3
+    link: None
 
-- name: website
+- name: youtube
   content:
     img: None
     en:
-      head: WebSite
-      desc: My TY chanel
+      head: Test Project 4
+      desc: Test Peoject 4
     cs:
-      head: WebSite
-      desc: My TY chanel
-  link: yt
+      head: Test Projekt 4
+      desc: Test Projekt 4
+    link: None
+
+- name: youtube
+  content:
+    img: None
+    en:
+      head: Test Project 5
+      desc: Test Peoject 5
+    cs:
+      head: Test Projekt 5
+      desc: Test Projekt 5
+    link: None
 

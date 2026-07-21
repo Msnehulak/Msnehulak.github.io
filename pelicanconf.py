@@ -20,7 +20,8 @@ TEMPLATE_PAGES = {
 }
 
 year = datetime.now().year
-if year == 2026: FOOTER_YEAR = f"2026"
+start_year = 2026
+if year == start_year: FOOTER_YEAR = f"2026"
 else: FOOTER_YEAR = f"2026 - {year}"
 
 # Vypneme generování zbytečných prázdných stránek pro blog
@@ -85,7 +86,6 @@ PAGE_PATHS = ['en', 'cs', 'images']
 JINJA_ENVIRONMENT = {
     'extensions': ['jinja2.ext.i18n']
 }
-I18N_TEMPLATES_LANG = 'en'
 
 I18N_TEMPLATES_LANG = None 
 
@@ -98,8 +98,8 @@ for lang_code, site_name in ALL_LANGUAGES.items():
             'I18N_TEMPLATES_LANG': None,
         }
 
-from pelicanconf import *
 from build import get_web_data
+from pelicanconf import *
 
 WEB_DATA = get_web_data()
 def fill_data_to_md(content_objekt):
