@@ -23,9 +23,10 @@ class Builder:
         new_window = 'target="_blank" rel="noopener noreferrer"'
 
         for link in data:
+            link_img = f'{site_url}/images/icon/{link['img']}'
             template =  f'''<a href="{link['link']}" class="index-a"
             target="_blank" rel="noopener noreferrer">
-            <img src="{site_url}/images/icon/btrace/{link['img']}" 
+            <img src="{link_img}" 
             alt="{link['hover']}" title="{link['hover']}"
             class="index-img" loading="lazy"></a>'''
             links.append(template)
