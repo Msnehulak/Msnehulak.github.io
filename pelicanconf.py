@@ -14,7 +14,7 @@ PATH = 'content'
 THEME = 'theme'
 TIMEZONE = 'Europe/Rome'
 DEFAULT_PAGINATION = False
-STATIC_PATHS = ['images']
+STATIC_PATHS = ['images', 'favicon.ico']
 TEMPLATE_PAGES = {
     'robots.txt': 'robots.txt'
 }
