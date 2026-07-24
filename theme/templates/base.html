@@ -19,23 +19,23 @@
     <a href="{{ SITEURL }}/about_me/">About Me</a>
     <a href="{{ SITEURL }}/projects/">Projects</a>
 
-{% if page %}
-    {% for lang_code, lang_url in lang_siteurls.items() %}
-        {% if lang_code != DEFAULT_LANG %}
-            
-            {% if lang_code == 'en' %}
-                <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                    🌐 {{ lang_code | upper }}
-                </a>
-            {% else %}
-                <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                    🌐 {{ lang_code | upper }}
-                </a>
-            {% endif %}
+    {% if page %}
+        {% for lang_code, lang_url in lang_siteurls.items() %}
+            {% if lang_code != DEFAULT_LANG %}
+                
+                {% if lang_code == 'en' %}
+                    <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                        🌐 {{ lang_code | upper }}
+                    </a>
+                {% else %}
+                    <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                        🌐 {{ lang_code | upper }}
+                    </a>
+                {% endif %}
 
-        {% endif %}
-    {% endfor %}
-{% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
 </div>
 

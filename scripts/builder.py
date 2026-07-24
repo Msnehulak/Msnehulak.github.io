@@ -1,5 +1,5 @@
-import yaml
 from pathlib import Path
+from . import sweb
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -15,9 +15,8 @@ class Builder:
 
     @staticmethod
     def index_links(site_url=''):
-        master_links = BASE_DIR / 'data' / 'links.yaml'
-        with open(master_links, 'r') as f:
-            data = yaml.safe_load(f)
+        data = sweb.data['links']
+
 
         links = ['<div class="links-index">']
         new_window = 'target="_blank" rel="noopener noreferrer"'
@@ -34,13 +33,10 @@ class Builder:
         links.append('</div>')
 
         return ''.join(links)
-    
 
     @staticmethod
     def projects_cards(lan = 'en'):
-        master_links = BASE_DIR / 'data' / 'projects.yaml'
-        with open(master_links, 'r', encoding='utf-8') as f:
-            data = yaml.safe_load(f)
+        data = sweb.data['projects']
 
         slides = []
         for i in data:

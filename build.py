@@ -5,6 +5,7 @@ from datetime import datetime
 from scripts.api import APIs
 from scripts.builder import Builder
 from pelicanconf import SITEURL
+from scripts import sweb
 
 BASE_DIR = Path(__file__).resolve().parent
 builder = Builder()
@@ -21,9 +22,7 @@ def get_web_data():
     index_links = builder.index_links(site_url=SITEURL)
 
     # -- OSU --
-    osu_path = BASE_DIR / 'data' / 'osu_stats.yaml'
-    with open(osu_path, 'r') as f:
-        osu_row = yaml.safe_load(f)
+    osu_row = sweb.data['osu']
     if not osu_row:
         osu_row = { "osu": {
             "offset": {
