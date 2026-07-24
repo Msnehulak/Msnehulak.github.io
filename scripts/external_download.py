@@ -14,6 +14,10 @@ def download_cnd(url, path):
 
 def external_download():
     lib = sweb.data['exlib']
+
+    dir_path = Path(EXTRA_PATH)
+    dir_path.mkdir(parents=True, exist_ok=True)
+
     for i in lib:
         name = i['name']
         cnd = i['cdn']
