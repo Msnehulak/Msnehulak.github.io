@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css?v=0.1">
-    <link rel="preload"    href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap"></noscript>
 
     {% if page and page.css is defined and page.css %}
         {% for lib in page.css.split(',') %}
@@ -60,7 +62,7 @@
         {% for lib in page.js_lib.split(',') %}
             {% set filename = lib.strip() %}
             {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
-            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
+            <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
         {% endfor %}
     {% endif %}
 
@@ -68,7 +70,7 @@
         {% for script in page.js.split(',') %}
             {% set filename = script.strip() %}
             {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
-            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ file_path }}"></script>
+            <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ file_path }}"></script>
         {% endfor %}
     {% endif %}
 
