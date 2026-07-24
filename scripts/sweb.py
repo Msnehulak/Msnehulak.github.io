@@ -10,6 +10,7 @@ LOAD_FOROM_DATA = [
     {'type': 'yaml', 'name': 'links', 'file': 'links'},
     {'type': 'yaml', 'name': 'osu', 'file': 'osu_stats'},
     {'type': 'yaml', 'name': 'projects', 'file': 'projects'},
+    {'type': 'yaml', 'name': 'exlib', 'file': 'external_download'},
 ]
 
 class DataFolder:

@@ -1,0 +1,6 @@
+- name: swiper_js
+  type: js
+  cdn: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js'
+- name: swiper_css
+  type: css
+  cdn: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css'

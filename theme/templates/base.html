@@ -4,12 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
-    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css?v=1.1">
+    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css?v=0.1">
     <link rel="preload"    href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    {% if page and page.css is defined and page.css %}
+        {% for lib in page.css.split(',') %}
+            {% set filename = lib.strip() %}
+            {% set file_path = filename if filename.endswith('.css') else filename + '.css' %}
+            <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
+        {% endfor %}
+    {% endif %}
 <body>
     <nav>
         <div class="logo">SnehulakTV</div>
@@ -19,23 +26,23 @@
     <a href="{{ SITEURL }}/about_me/">About Me</a>
     <a href="{{ SITEURL }}/projects/">Projects</a>
 
-    {% if page %}
-        {% for lang_code, lang_url in lang_siteurls.items() %}
-            {% if lang_code != DEFAULT_LANG %}
-                
-                {% if lang_code == 'en' %}
-                    <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                        🌐 {{ lang_code | upper }}
-                    </a>
-                {% else %}
-                    <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                        🌐 {{ lang_code | upper }}
-                    </a>
-                {% endif %}
-
+{% if page %}
+    {% for lang_code, lang_url in lang_siteurls.items() %}
+        {% if lang_code != DEFAULT_LANG %}
+            
+            {% if lang_code == 'en' %}
+                <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                    🌐 {{ lang_code | upper }}
+                </a>
+            {% else %}
+                <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
+                    🌐 {{ lang_code | upper }}
+                </a>
             {% endif %}
-        {% endfor %}
-    {% endif %}
+
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 </div>
 
@@ -49,9 +56,20 @@
         <p>&copy; {{ FOOTER_YEAR }} {{ AUTHOR }}</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    {% if page and page.js_lib is defined and page.js_lib %}
+        {% for lib in page.js_lib.split(',') %}
+            {% set filename = lib.strip() %}
+            {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
+            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
+        {% endfor %}
+    {% endif %}
+
     {% if page and page.js is defined and page.js %}
-            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ page.js }}.js" defer></script>
+        {% for script in page.js.split(',') %}
+            {% set filename = script.strip() %}
+            {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
+            <script src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ file_path }}"></script>
+        {% endfor %}
     {% endif %}
 
 </body>

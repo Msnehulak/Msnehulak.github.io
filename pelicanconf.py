@@ -99,6 +99,7 @@ for lang_code, site_name in ALL_LANGUAGES.items():
         }
 
 from build import get_web_data
+from scripts.external_download import external_download
 from pelicanconf import *
 
 WEB_DATA = get_web_data()
@@ -120,5 +121,16 @@ def fill_data_to_md(content_objekt):
         
         content_objekt._content = upraveny_text
 
+_ALREADY_STARTED = False
+
+def first_start(pelican_obj):
+    global _ALREADY_STARTED
+    if _ALREADY_STARTED:
+        return
+    _ALREADY_STARTED = True
+
+    external_download()
+
 signals.content_object_init.connect(fill_data_to_md)
+signals.initialized.connect(first_start)
 

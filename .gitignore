@@ -6,4 +6,4 @@ output/
 digest.txt
 cache/
 node_modules/
-
+theme/static/extra/
