@@ -138,7 +138,7 @@ class APIs:
                 "play_time_s": stats.play_time,
                 "play_time": str(timedelta(seconds=stats.play_time)),
                 "play_count": stats.play_count,
-                "avatar": user.avatar_url
+                "avatar": user.avatar_url,
             } 
             
             self._update_cache('osu', new_data)

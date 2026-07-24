@@ -25,7 +25,6 @@ Both can start a burst and have no problem with single taping.
 ### Aim
 To aim I use tablet (Sorry mouse players). 
 Tablet in my left hand is CTL-672. I like it and love it.
-I use tablet area 65x42mm. Hover main.
-
+I use tablet area {{ OSU_DATA.area.w }}x{{ OSU_DATA.area.h }}mm. Hover main.
 
 

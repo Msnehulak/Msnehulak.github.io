@@ -1,0 +1,8 @@
+osu:
+  offset:
+    x: 75
+    y: 50
+  area:
+    w: 65
+    h: 45
+  sr: 6.2

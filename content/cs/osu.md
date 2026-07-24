@@ -21,7 +21,7 @@ Když jsem unavený z WhiteCat: [Osu Forum](https://osu.ppy.sh/community/forums/
 # Herní Styl
 ### Míření 
 K míření používám svůj CTL-672 tablet. 
-Moje area je 65x45mm a jsem hover hráč. 
+Moje area je {{ OSU_DATA.area.w }}x{{ OSU_DATA.area.h }}mm a jsem hover hráč. 
 
 ### Klikání
 Používám oba dva prsty (full alt), ale nemam dominantní prst. 
