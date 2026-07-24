@@ -24,8 +24,15 @@ def get_web_data():
     osu_path = BASE_DIR / 'data' / 'osu_stats.yaml'
     with open(osu_path, 'r') as f:
         osu_row = yaml.safe_load(f)
+    if not osu_row:
+        osu_row = { "osu": {
+            "offset": {
+                "x": 75, "y": 50
+            }, "area": {
+                "w": 65, "h": 45
+            }, "sr": 6.2}}
 
-    osu_stats = osu_row['osu']
+    osu_stats = osu_row['osu'] 
     osu_data = app_apis.get_data('osu')
     if osu_data is None:
         osu_data = {
@@ -41,8 +48,8 @@ def get_web_data():
         "y": osu_stats['offset']['y'],
     }
     osu_data["area"] = {
-        "h": osu_stats['area']['w'],
-        "w": osu_stats['area']['h'],
+        "h": osu_stats['area']['h'],
+        "w": osu_stats['area']['w'],
     }
 
     # -- Projects Cards --
