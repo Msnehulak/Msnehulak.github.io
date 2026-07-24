@@ -1,6 +1,9 @@
 .pyc
 .env
+.gitingestignore
+
 **/__pycache__/
+
 web/
 output/
 digest.txt
