@@ -60,6 +60,8 @@ SITEMAP = {
         'pages': 'monthly',
     },
     'exclude': [
+        'index/',
+        'cs/index/',
         'index.html',
         'cs/index.html',
         'robots.txt',
