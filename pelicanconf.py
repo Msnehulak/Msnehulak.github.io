@@ -51,14 +51,20 @@ SITEMAP = {
     'format': 'xml',
     'priorities': {
         'articles': 0.5,
-        'indexes': 0.5,
-        'pages': 0.5,
+        'indexes': 0.8,
+        'pages': 0.7,
     },
     'changefreqs': {
         'articles': 'monthly',
         'indexes': 'daily',
         'pages': 'monthly',
     },
+    'exclude': [
+        'index.html',
+        'cs/index.html',
+        'robots.txt',
+        'cs/robots.txt'
+    ]
 }
 
 RELATIVE_PATH = True
