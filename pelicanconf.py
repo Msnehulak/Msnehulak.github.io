@@ -108,6 +108,7 @@ for lang_code, site_name in ALL_LANGUAGES.items():
 
 from build import get_web_data
 from scripts.external_download import external_download
+import xml.etree.ElementTree as ET
 from pelicanconf import *
 
 WEB_DATA = get_web_data()
@@ -139,6 +140,51 @@ def first_start(pelican_obj):
 
     external_download()
 
+
+
+def clean_sitemap(pelican_obj):
+    sitemap_path = os.path.join(pelican_obj.output_path, 'sitemap.xml')
+    if not os.path.exists(sitemap_path):
+        return
+
+    # Načtení a oprava chybného atributu 'ref' -> 'href'
+    with open(sitemap_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    content = content.replace(' ref="', ' href="')
+
+    # Načtení XML a odstranění duplicitních <url> bloků
+    ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
+    ET.register_namespace('xhtml', 'http://www.w3.org/1999/xhtml')
+    
+    tree = ET.ElementTree(ET.fromstring(content))
+    root = tree.getroot()
+    
+    ns = {
+        'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9',
+        'xhtml': 'http://www.w3.org/1999/xhtml'
+    }
+
+    urls_by_loc = {}
+    
+    for url_tag in root.findall('sm:url', ns):
+        loc = url_tag.find('sm:loc', ns).text
+        # Pokud už URL máme a nová má i18n odkaz (xhtml:link), nahradíme ji
+        has_xhtml = url_tag.find('xhtml:link', ns) is not None
+        if loc not in urls_by_loc or has_xhtml:
+            urls_by_loc[loc] = url_tag
+
+    # Sestavení čistého XML
+    root.clear()
+    for url_tag in urls_by_loc.values():
+        root.append(url_tag)
+
+    tree.write(sitemap_path, encoding='utf-8', xml_declaration=True)
+    print(">>> Sitemap byla úspěšně vyčištěna od duplicit a opravena!")
+
+
+signals.finalized.connect(clean_sitemap)
 signals.content_object_init.connect(fill_data_to_md)
 signals.initialized.connect(first_start)
+
 
