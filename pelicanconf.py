@@ -109,7 +109,6 @@ for lang_code, site_name in ALL_LANGUAGES.items():
 from build import get_web_data
 from scripts.external_download import external_download
 import xml.etree.ElementTree as ET
-from pelicanconf import *
 
 WEB_DATA = get_web_data()
 def fill_data_to_md(content_objekt):
