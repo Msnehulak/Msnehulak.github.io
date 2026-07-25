@@ -139,45 +139,53 @@ def first_start(pelican_obj):
 
     external_download()
 
-
-
 def clean_sitemap(pelican_obj):
     sitemap_path = os.path.join(pelican_obj.output_path, 'sitemap.xml')
     if not os.path.exists(sitemap_path):
         return
 
-    # Načtení a oprava chybného atributu 'ref' -> 'href'
+    # 1. Oprava atributu ref=" -> href="
     with open(sitemap_path, 'r', encoding='utf-8') as f:
         content = f.read()
     
     content = content.replace(' ref="', ' href="')
 
-    # Načtení XML a odstranění duplicitních <url> bloků
+    # 2. Načtení XML
     ET.register_namespace('', 'http://www.sitemaps.org/schemas/sitemap/0.9')
     ET.register_namespace('xhtml', 'http://www.w3.org/1999/xhtml')
     
     tree = ET.ElementTree(ET.fromstring(content))
     root = tree.getroot()
-    
-    ns = {
-        'sm': 'http://www.sitemaps.org/schemas/sitemap/0.9',
-        'xhtml': 'http://www.w3.org/1999/xhtml'
-    }
 
-    urls_by_loc = {}
-    
-    for url_tag in root.findall('sm:url', ns):
-        loc = url_tag.find('sm:loc', ns).text
-        # Pokud už URL máme a nová má i18n odkaz (xhtml:link), nahradíme ji
-        has_xhtml = url_tag.find('xhtml:link', ns) is not None
-        if loc not in urls_by_loc or has_xhtml:
-            urls_by_loc[loc] = url_tag
+    urls_map = {}
 
-    # Sestavení čistého XML
+    # Projdeme všechny <url> elementy bez ohledu na namespace předponu
+    for url_elem in list(root):
+        loc_elem = None
+        has_link = False
+
+        for child in url_elem:
+            # Najdeme prvek <loc>
+            if child.tag.endswith('loc'):
+                loc_elem = child
+            # Zjistíme, zda blok obsahuje <xhtml:link> nebo jakýkoliv link
+            elif child.tag.endswith('link'):
+                has_link = True
+
+        if loc_elem is not None and loc_elem.text:
+            url_loc = loc_elem.text.strip()
+            
+            # Pokud danou URL ještě nemáme, NEBO pokud tato nová verze obsahuje xhtml:link,
+            # uložíme si ji (upřednostníme blok s jazykovou mutací)
+            if url_loc not in urls_map or has_link:
+                urls_map[url_loc] = url_elem
+
+    # Vyprázdníme staré elementy a vložíme pouze Unikátní/Sloučené
     root.clear()
-    for url_tag in urls_by_loc.values():
-        root.append(url_tag)
+    for clean_url_elem in urls_map.values():
+        root.append(clean_url_elem)
 
+    # Uložení opravené sitemap.xml
     tree.write(sitemap_path, encoding='utf-8', xml_declaration=True)
     print(">>> Sitemap byla úspěšně vyčištěna od duplicit a opravena!")
 
