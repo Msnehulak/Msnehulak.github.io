@@ -169,10 +169,42 @@ iframe {
     }
 }
 
-@media (max-width: 435px) {
-    .index-btn {
-        width: 80px;
-        height: 80px;
+@media (max-width: 702px) {
+.index-a {
+    width: 110px;
+    
     }
 }
+
+@media (max-width: 650px) {
+.index-a {
+    width: 100px;
+    
+    }
+}
+
+@media (max-width: 602px) {
+.index-a {
+    width: 80px;
+    
+    }
+}
+
+@media (max-width: 488px) {
+.index-a {
+    width: 70px;
+    
+    }
+}
+
+@media (max-width: 450px) {
+.index-a {
+    width: 60px;
+    
+    }
+}
+
+
+
+
 
