@@ -9,5 +9,4 @@ google-api-python-client
 
 pelican
 pelican-i18n-subsites
-pelican-sitemap
 pelican-yaml-metadata
