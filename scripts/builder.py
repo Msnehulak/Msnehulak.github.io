@@ -41,8 +41,13 @@ class Builder:
         slides = []
         for i in data:
             texts = i['content'][lan]
+            
+            if lan == sweb.site_lan:
+                lan_url = '/'
+            else:
+                lan_url = f'/{lan}/'
 
-            link = f'{sweb.site_url}/projects/{i['content']['link']}'
+            link = f'{sweb.site_url}{lan_url}projects/{i['content']['link']}'
             btn_html = ''
             if not i['content']['link'] == 'None':
                 btn_html = f'<a href="{link}" class="card-btn">{texts["btn"]}</a>'

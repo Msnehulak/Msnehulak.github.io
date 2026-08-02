@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 site_url = os.getenv('SITEURL', 'https://example.com').rstrip('/')
+site_lan = 'en'
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
