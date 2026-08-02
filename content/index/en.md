@@ -2,7 +2,6 @@
 title: Home
 slug: index
 lang: en
-save_as: index.html
 js: main
 ---
 

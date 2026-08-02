@@ -32,20 +32,21 @@
     <a href="{{ SITEURL }}/about_me/">About Me</a>
     <a href="{{ SITEURL }}/projects/">Projects</a>
 
-{% if page %}
+{% if page and page.translations %}
+    {# 1. Pokud existuje přímá přeložená verze aktuální stránky #}
+    {% for trans in page.translations %}
+        <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher">
+            🌐 {{ trans.lang | upper }}
+        </a>
+    {% endfor %}
+{% elif lang_siteurls %}
+    {# 2. Fallback: Pokud tato konkrétní stránka překlad nemá, pošleme uživatele na homepage daného jazyka #}
     {% for lang_code, lang_url in lang_siteurls.items() %}
-        {% if lang_code != DEFAULT_LANG %}
-            
-            {% if lang_code == 'en' %}
-                <a href="/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                    🌐 {{ lang_code | upper }}
-                </a>
-            {% else %}
-                <a href="{{ lang_url }}/{{ page.slug + '/' if page.slug != 'index' else '' }}" class="lang-switcher">
-                    🌐 {{ lang_code | upper }}
-                </a>
-            {% endif %}
-
+        {% set current_lang = page.lang if page else DEFAULT_LANG %}
+        {% if lang_code != current_lang %}
+            <a href="{{ lang_url }}/" class="lang-switcher">
+                🌐 {{ lang_code | upper }}
+            </a>
         {% endif %}
     {% endfor %}
 {% endif %}

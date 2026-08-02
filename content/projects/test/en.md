@@ -1,13 +1,12 @@
 ---
-title: test_1
-slug: test_1
+title: test
+slug: test
 lang: en
 js: projects
 js_lib: swiper_js
 css: swiper_css
+folder: projects
 ---
 
-# My projects 
-
-{{ PROJECTS.en }}
+# EN test 1 
 

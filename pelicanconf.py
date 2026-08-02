@@ -187,7 +187,26 @@ def clean_sitemap(pelican_obj):
     tree.write(sitemap_path, encoding='utf-8', xml_declaration=True)
     print(">>> Sitemap byla úspěšně vyčištěna od duplicit a opravena!")
 
+def set_custom_page_urls(content_obj):
+    if not hasattr(content_obj, 'slug'):
+        return
 
+    if hasattr(content_obj, 'metadata') and content_obj.metadata:
+        # 1. Speciální případ pro hlavní stranu (index)
+        if content_obj.slug == 'index':
+            content_obj.override_url = ''
+            content_obj.override_save_as = 'index.html'
+            return
+
+        # 2. Vlastní složka pro ostatní stránky (např. folder: projects)
+        folder = content_obj.metadata.get('folder')
+        if folder:
+            folder = folder.strip('/')
+            content_obj.override_url = f"{folder}/{content_obj.slug}/"
+            content_obj.override_save_as = f"{folder}/{content_obj.slug}/index.html"
+            return
+
+signals.content_object_init.connect(set_custom_page_urls)
 signals.finalized.connect(clean_sitemap)
 signals.content_object_init.connect(fill_data_to_md)
 signals.initialized.connect(first_start)

@@ -5,10 +5,9 @@ lang: cs
 js: projects
 js_lib: swiper_js
 css: swiper_css
+folder: projects
 ---
 
-# Moje projekty 
-
-{{ PROJECTS.cs }}
+# CS Test 1 
 
 
