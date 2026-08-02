@@ -102,7 +102,7 @@ nav a:hover {
 /* Index */
 .links-index {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
     gap: 12px;
     width: 100%;
 }

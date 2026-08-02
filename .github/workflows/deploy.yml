@@ -30,13 +30,18 @@ jobs:
         uses: actions/checkout@v4
 
       # Python
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+ 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.14.6'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv pip install --system -r requirements.txt
 
       # Web Build
       - name: Build Web Site
