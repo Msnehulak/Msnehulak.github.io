@@ -41,10 +41,17 @@ class Builder:
         slides = []
         for i in data:
             texts = i['content'][lan]
+
+            link = f'{sweb.site_url}/projects/{i['content']['link']}'
+            btn_html = ''
+            if not i['content']['link'] == 'None':
+                btn_html = f'<a href="{link}" class="card-btn">{texts["btn"]}</a>'
+
             slide_html = (
                 f'<div class="swiper-slide">'
                 f'<h2>{texts["head"]}</h2>'
-                f'<p>{texts["desc"]}</p>'
+                f'<p>{texts["desc"]}</p>' 
+                f'{btn_html}'
                 f'</div> \n'
             )
             slides.append(slide_html)

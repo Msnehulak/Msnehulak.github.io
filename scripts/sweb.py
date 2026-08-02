@@ -1,7 +1,15 @@
 from datetime import datetime, timedelta
 import json
+import os
 import yaml
+import time
 from pathlib import Path
+from contextlib import contextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
+
+site_url = os.getenv('SITEURL', 'https://example.com').rstrip('/')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
@@ -61,3 +69,9 @@ class DataFolder:
 _app_data_folder = DataFolder()
 data = _app_data_folder.data
 
+@contextmanager
+def timer(name):
+    start = time.perf_counter()
+    yield
+    elapsed = time.perf_counter() - start
+    print(f"⏱️ [{name}] take {elapsed:.3f} s")

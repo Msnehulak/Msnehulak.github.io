@@ -66,13 +66,32 @@ footer {
 .swiper-slide {
     width: 90%;  /* na mobilu zabere skoro celou šířku, takže se vejde jen jedna */
     max-width: 320px; /* na PC omezí maximální šířku */
+    height: 100% !important;
     background-color: #3e3e3e;
     border-radius: 20px;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.card-btn {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 6px;
+    margin-top: auto;
+    width: 80%;
+    background-color: var(--primary);
+    transition: var(--transition);
+}
+
+.card-btn:hover {
+    color: var(--text-muted);
+    background-color: var(--primary-dark);
 }
 
 /* Navigation */
@@ -111,8 +130,9 @@ nav a:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%; /* Zabere 100 % šířky své mřížky */
-    aspect-ratio: 1 / 1; /* Udrží čtvercový poměr stran */
+    width: 100%; 
+    max-width: 150px;
+    aspect-ratio: 1 / 1; 
     background-color: #2d2d2d;
     border-radius: 16px;
     border: none;
@@ -165,6 +185,9 @@ iframe {
     }
     main {
         padding: 15px;
+    }
+    .index-img {
+        width: 95%;
     }
 }
 

@@ -30,7 +30,6 @@ start_year = 2026
 if year == start_year: FOOTER_YEAR = f"2026"
 else: FOOTER_YEAR = f"2026 - {year}"
 
-# Vypneme generování zbytečných prázdných stránek pro blog
 ARTICLE_PATHS = []
 ARTICLE_SAVE_AS = ''
 ARTICLE_LANG_SAVE_AS = ''
@@ -76,7 +75,7 @@ DEFAULT_LANG = MAIN_LANG
 PAGE_PATHS = ['', 'images']
 
 JINJA_ENVIRONMENT = {
-    'extensions': ['jinja2.ext.i18n']
+#    'extensions': ['jinja2.ext.i18n']
 }
 
 JINJA_GLOBALS = {

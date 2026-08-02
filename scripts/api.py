@@ -6,6 +6,10 @@ from ossapi import Ossapi
 from diskcache import Cache
 from googleapiclient.discovery import build
 from datetime import timedelta
+if __name__ == '__main__': 
+    import sweb
+else: 
+    from . import sweb
 
 load_dotenv()
 

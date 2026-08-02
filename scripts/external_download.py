@@ -25,7 +25,8 @@ def external_download():
 
         path = EXTRA_PATH / f'{name}.{ftype}'
 
-        download_cnd(cnd, path)
+        with sweb.timer('name'):
+            download_cnd(cnd, path)
         print(f'>>> Download {name} form {cnd}')
 
 if __name__ == '__main__':
