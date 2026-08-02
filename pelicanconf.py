@@ -45,6 +45,7 @@ AUTHOR_FEED_RSS = None
 PLUGINS = [
     'pelican.plugins.i18n_subsites',
     'pelican.plugins.sitemap',
+    'yaml_metadata',
 ]
 
 SITEMAP = {
@@ -89,7 +90,7 @@ ALL_LANGUAGES = {
 
 DEFAULT_LANG = MAIN_LANG
 
-PAGE_PATHS = ['en', 'cs', 'images'] 
+PAGE_PATHS = ['', 'images'] 
 
 JINJA_ENVIRONMENT = {
     'extensions': ['jinja2.ext.i18n']
@@ -97,14 +98,11 @@ JINJA_ENVIRONMENT = {
 
 I18N_TEMPLATES_LANG = None 
 
-I18N_SUBSITES = {}
-for lang_code, site_name in ALL_LANGUAGES.items():
-    if lang_code != MAIN_LANG:
-        I18N_SUBSITES[lang_code] = {
-            'PAGE_PATHS': [lang_code],
-            'SITENAME': site_name,
-            'I18N_TEMPLATES_LANG': None,
-        }
+I18N_SUBSITES = {
+    'cs': {
+        'SITENAME': 'Snehulak (CS)',
+    }
+}
 
 from build import get_web_data
 from scripts.external_download import external_download

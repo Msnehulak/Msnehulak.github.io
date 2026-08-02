@@ -1,11 +1,14 @@
-Title: Projekty
-Slug: projects
-Lang: cs
+---
+title: test
+slug: test
+lang: cs
 js: projects
 js_lib: swiper_js
 css: swiper_css
+---
 
 # Moje projekty 
 
 {{ PROJECTS.cs }}
+
 

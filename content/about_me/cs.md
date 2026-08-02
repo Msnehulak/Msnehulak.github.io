@@ -1,6 +1,8 @@
-Title: O mně
-Slug: about_me
-Lang: cs
+---
+title: O mně
+slug: about_me
+lang: cs
+---
 
 
 # O mně 

@@ -1,7 +1,10 @@
-Title: Home
-Slug: index
-Lang: en
-Save_as: index.html
+---
+title: Home
+slug: index
+lang: en
+save_as: index.html
+js: main
+---
 
 
 # Welcome to my website!

@@ -1,6 +1,8 @@
-Title: My Osu
-Slug: osu
-Lang: cs
+---
+title: My Osu
+slug: osu
+lang: cs
+---
 
 # Můj osu! profil
 

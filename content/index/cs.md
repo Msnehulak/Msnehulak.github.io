@@ -1,9 +1,10 @@
-Title: Home
-Slug: index
-Lang: cs
-Save_as: index.html
+---
+title: Home
+slug: index
+lang: cs
+save_as: index.html
 js: main
-
+---
 
 # Vítejte na mém webu!
 
