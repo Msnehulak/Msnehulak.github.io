@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 
 SVG_NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", SVG_NS)
+IMG_BUILD_PATH = sweb.BASE_DIR / 'content' / 'images' / 'build'
 
 def fix_namespace(element):
     if not element.tag.startswith('{'):
@@ -51,8 +52,9 @@ def create_svg_sprite(input_folder, output_file):
     print(f">>> Sprite úspěšně vytvořen: {output_file}")
 
 def image_main():
+    IMG_BUILD_PATH.mkdir(parents=True, exist_ok=True)
     imgs_path = sweb.BASE_DIR / 'content' / 'images' / 'icon'
-    img_path = sweb.BASE_DIR / 'content' / 'images' / 'build' / 'icon.svg'
+    img_path = IMG_BUILD_PATH / 'icon.svg'
     create_svg_sprite(imgs_path, img_path)
 
 if __name__ == '__main__':
