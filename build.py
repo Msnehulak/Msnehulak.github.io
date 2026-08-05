@@ -4,7 +4,6 @@ from pathlib import Path
 from datetime import datetime
 from scripts.api import APIs
 from scripts.builder import Builder
-from pelicanconf import SITEURL
 from scripts import sweb
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -19,7 +18,7 @@ def get_web_data():
     yt_vid_name = yt_data['newest_vid']['title']
     yt_frame = builder.yt_frame(yt_vid_id, yt_vid_name)
 
-    index_links = builder.index_links(site_url=SITEURL)
+    index_links = builder.index_links()
 
     # -- OSU --
     osu_row = sweb.data['osu']

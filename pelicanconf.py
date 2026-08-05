@@ -100,6 +100,7 @@ for lan, val in i18n_all_subsites.items():
     if not lan == MAIN_LANG:
         I18N_SUBSITES[lan] = val
 
+import scripts.sweb as sweb
 from build import get_web_data
 from scripts.external_download import external_download
 from scripts.image import image_main
@@ -127,6 +128,7 @@ def first_start(pelican_obj):
         return
     _ALREADY_STARTED = True
 
+    sweb.create_paths()
     image_main()
     external_download()
 

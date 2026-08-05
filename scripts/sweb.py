@@ -15,6 +15,7 @@ site_lan = 'en'
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 
+
 LOAD_FOROM_DATA = [
     {'type': 'yaml', 'name': 'links', 'file': 'links'},
     {'type': 'yaml', 'name': 'osu', 'file': 'osu_stats'},
@@ -66,9 +67,17 @@ class DataFolder:
         except Exception as e:
             print(f"Error loading JSON {file}: {e}")
             return None
-
 _app_data_folder = DataFolder()
 data = _app_data_folder.data
+
+CREATE_PATHS = [
+    {'name': 'img content build', 'path': BASE_DIR / 'content' / 'images' / 'build'},
+]
+
+def create_paths():
+    for path in CREATE_PATHS:
+        path['path'].mkdir(parents=True, exist_ok=True)
+        print(f">>> create path: {path['path']}")
 
 @contextmanager
 def timer(name):

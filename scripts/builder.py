@@ -1,5 +1,6 @@
 from pathlib import Path
-from . import sweb
+if __name__ == '__main__': import sweb
+else: from . import sweb
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -7,22 +8,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 class Builder:
     @staticmethod
     def yt_frame(video_id, title): 
-        return f'''<iframe width="100%" height="450" 
-        src="https://www.youtube-nocookie.com/embed/{video_id}" 
-        title="{title}" frameborder="0" loading="lazy"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-        referrerpolicy="strict-origin-when-cross-origin" 
-        allowfullscreen=""></iframe>''' 
+        thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
+        return f'''<div class="yt-lazy-wrapper" data-video-id="{video_id}" data-title="{title}">
+            <img src="{thumbnail_url}" alt="{title}" class="yt-lazy-thumbnail" loading="lazy">
+            <button class="yt-lazy-play-btn" aria-label="Přehrát video">
+            </button>
+        </div>'''
 
     @staticmethod
-    def index_links(site_url=''):
+    def index_links():
         data = sweb.data['links']
         links = ['<div class="links-index">']
 
         for link in data:
             # 1. Získání ID (odstraníme koncovku .svg z links.yaml, např. youtube.svg -> youtube)
             symbol_id = os.path.splitext(link['img'])[0]
-            sprite_path = f"{site_url}/images/build/icon.svg#{symbol_id}"
+            sprite_path = f"{sweb.site_url}/images/build/icon.svg#{symbol_id}"
             
             # 2. Vykreslení pomocí <svg><use></use></svg> místo <img>
             template = f'''<a href="{link['link']}" class="index-a" target="_blank" rel="noopener noreferrer" title="{link['hover']}">
