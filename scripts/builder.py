@@ -10,7 +10,7 @@ class Builder:
     def yt_frame(video_id, title): 
         thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
         return f'''<div class="yt-lazy-wrapper" data-video-id="{video_id}" data-title="{title}">
-            <img src="{thumbnail_url}" alt="{title}" class="yt-lazy-thumbnail" loading="lazy">
+            <img src="{thumbnail_url}" alt="{title}" class="yt-lazy-thumbnail" fetchpriority=high>
             <button class="yt-lazy-play-btn" aria-label="Přehrát video">
             </button>
         </div>'''
