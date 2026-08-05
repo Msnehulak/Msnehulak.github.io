@@ -2,14 +2,14 @@
   content:
     img: None
     en:
-      head: Test Project 1
+      head: Osu as a mp4 player
       desc: Test Peoject 1
       btn: test
     cs:
-      head: Test Projekt 1
+      head: Osu jako mp4 prehravac
       desc: Test Projekt 1
       btn: test
-    link: test
+    link: osu-as-player
 
 - name: youtube
   content:
