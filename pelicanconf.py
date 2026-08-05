@@ -102,13 +102,10 @@ for lan, val in i18n_all_subsites.items():
 
 from build import get_web_data
 from scripts.external_download import external_download
+from scripts.image import image_main
 
 WEB_DATA = get_web_data()
 def fill_data_to_md(content_objekt):
-    """
-    Tato funkce se spustí pokaždé, když Pelican otevře a načte jakýkoli .md soubor.
-    Vezme jeho surový obsah a projede ho přes Jinja2 s daty z build.py.
-    """
     if hasattr(content_objekt, '_content') and content_objekt._content:
         if getattr(content_objekt, '_already_rendered_by_jinja', False):
             return
@@ -130,6 +127,7 @@ def first_start(pelican_obj):
         return
     _ALREADY_STARTED = True
 
+    image_main()
     external_download()
 
 def set_custom_page_urls(content_obj):

@@ -1,5 +1,6 @@
 from pathlib import Path
 from . import sweb
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,22 +17,22 @@ class Builder:
     @staticmethod
     def index_links(site_url=''):
         data = sweb.data['links']
-
-
         links = ['<div class="links-index">']
-        new_window = 'target="_blank" rel="noopener noreferrer"'
 
         for link in data:
-            link_img = f'{site_url}/images/icon/{link['img']}'
-            template =  f'''<a href="{link['link']}" class="index-a"
-            target="_blank" rel="noopener noreferrer">
-            <img src="{link_img}" 
-            alt="{link['hover']}" title="{link['hover']}"
-            class="index-img" loading="lazy"></a>'''
+            # 1. Získání ID (odstraníme koncovku .svg z links.yaml, např. youtube.svg -> youtube)
+            symbol_id = os.path.splitext(link['img'])[0]
+            sprite_path = f"{site_url}/images/build/icon.svg#{symbol_id}"
+            
+            # 2. Vykreslení pomocí <svg><use></use></svg> místo <img>
+            template = f'''<a href="{link['link']}" class="index-a" target="_blank" rel="noopener noreferrer" title="{link['hover']}">
+                <svg class="index-img" aria-hidden="true">
+                    <use href="{sprite_path}"></use>
+                </svg>
+            </a>'''
             links.append(template)
 
         links.append('</div>')
-
         return ''.join(links)
 
     @staticmethod
