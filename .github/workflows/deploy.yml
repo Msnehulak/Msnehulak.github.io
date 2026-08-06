@@ -46,7 +46,7 @@ jobs:
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          SITEURL: {{ vars.SITE_URL }}
+          SITEURL: ${{ vars.SITE_URL }}
         run: |
           pelican content -s publishconf.py
 
