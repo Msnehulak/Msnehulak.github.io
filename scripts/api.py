@@ -1,21 +1,19 @@
+if __name__ == '__main__': import sweb
+else: from . import sweb
 import os
 import sys
 from pathlib import Path
-from dotenv import load_dotenv
 from ossapi import Ossapi
 from diskcache import Cache
-from googleapiclient.discovery import build
+from dotenv import load_dotenv
 from datetime import timedelta
-if __name__ == '__main__': 
-    import sweb
-else: 
-    from . import sweb
+from googleapiclient.discovery import build
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "cache" / "diskcache"
-YT_CHANEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
+YT_CHANNEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
 
 ENV_VAL = {
     "osu_client_id": os.getenv("OSU_CLIENT_ID"),
@@ -60,7 +58,7 @@ class APIs:
         if api in self.apis:
             return self.apis[api]['data']
         else:
-            print(f"API data '{api}' dont exist")
+            print(f"API data '{api}' dosen't exist")
 
     def _update_cache(self, api, data):
         if data and api in self.apis:
@@ -74,7 +72,7 @@ class APIs:
         try:
             channel_request = youtube.channels().list(
                 part='contentDetails,snippet',
-                id=YT_CHANEL_ID
+                id=YT_CHANNEL_ID
             )
             channel_response = channel_request.execute()
 

@@ -35,7 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14' # Změněno na stabilní verzi (3.14 ještě oficiálně neexistuje a zpomaluje setup)
+          python-version: '3.14'
 
       - name: Install dependencies
         run: uv pip install --system -r requirements.txt
@@ -46,7 +46,7 @@ jobs:
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          SITEURL: https://snehulak.dev
+          SITEURL: {{ vars.SITE_URL }}
         run: |
           pelican content -s publishconf.py
 
@@ -56,3 +56,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npx wrangler pages deploy ./output --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
+
+
+
+
