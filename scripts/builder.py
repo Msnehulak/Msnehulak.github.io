@@ -23,14 +23,13 @@ class Builder:
         for link in data:
             # 1. Získání ID (odstraníme koncovku .svg z links.yaml, např. youtube.svg -> youtube)
             symbol_id = os.path.splitext(link['img'])[0]
-            sprite_path = f"{sweb.site_url}/images/build/icon.svg#{symbol_id}"
+            sprite_path = f"{sweb.site_url}/index/images/sprite.svg#{symbol_id}"
             
             # 2. Vykreslení pomocí <svg><use></use></svg> místo <img>
             template = f'''<a href="{link['link']}" class="index-a" target="_blank" rel="noopener noreferrer" title="{link['hover']}">
                 <svg class="index-img" aria-hidden="true">
                     <use href="{sprite_path}"></use>
-                </svg>
-            </a>'''
+                </svg></a>'''
             links.append(template)
 
         links.append('</div>')

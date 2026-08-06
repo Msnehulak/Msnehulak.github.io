@@ -71,7 +71,7 @@ _app_data_folder = DataFolder()
 data = _app_data_folder.data
 
 CREATE_PATHS = [
-    {'name': 'img content build', 'path': BASE_DIR / 'content' / 'images' / 'build'},
+
 ]
 
 def create_paths():

@@ -7,6 +7,7 @@ import subprocess
 import re
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
@@ -62,6 +63,11 @@ PAGE_SAVE_AS = '{slug}/index.html'
 PAGE_LANG_URL = '{lang}/{slug}/'
 PAGE_LANG_SAVE_AS = '{lang}/{slug}/index.html'
 
+content_dir = Path(PATH)
+for img_dir in content_dir.rglob('images'):
+    if img_dir.is_dir():
+        STATIC_PATHS.append(str(img_dir.relative_to(content_dir)))
+
 INDEX_SAVE_AS = 'index.html'
 MAIN_LANG = 'en'
 
@@ -100,10 +106,8 @@ for lan, val in i18n_all_subsites.items():
     if not lan == MAIN_LANG:
         I18N_SUBSITES[lan] = val
 
-import scripts.sweb as sweb
 from build import get_web_data
-from scripts.external_download import external_download
-from scripts.image import image_main
+from scripts import sweb, image, external_download
 
 WEB_DATA = get_web_data()
 def fill_data_to_md(content_objekt):
@@ -121,7 +125,6 @@ def fill_data_to_md(content_objekt):
         content_objekt._content = upraveny_text
 
 _ALREADY_STARTED = False
-
 def first_start(pelican_obj):
     global _ALREADY_STARTED
     if _ALREADY_STARTED:
@@ -129,8 +132,7 @@ def first_start(pelican_obj):
     _ALREADY_STARTED = True
 
     sweb.create_paths()
-    image_main()
-    external_download()
+    external_download.external_download()
 
 def set_custom_page_urls(content_obj):
     if not hasattr(content_obj, 'slug'):
@@ -152,6 +154,12 @@ def set_custom_page_urls(content_obj):
         else:
             content_obj.override_url = f"{content_obj.slug}/"
             content_obj.override_save_as = f"{content_obj.slug}/index.html"
+
+def on_finalized(pelican_obj):
+    app_image = image.Images()
+    app_image.optimize_output()
+
+signals.finalized.connect(on_finalized)
 
 def on_initialized(pelican_obj):
     first_start(pelican_obj)
