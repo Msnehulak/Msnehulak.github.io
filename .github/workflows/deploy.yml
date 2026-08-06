@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -9,9 +9,9 @@ on:
   workflow_dispatch: 
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
+  deployments: write
+  pull-requests: write
 
 concurrency:
   group: "pages"
@@ -19,9 +19,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +33,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
- 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -45,35 +42,24 @@ jobs:
       - name: Install dependencies
         run: uv pip install --system -r requirements.txt
 
-      # Web Build
+      # Web Build (Pelican)
       - name: Build Web Site
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-          SITEURL: https://msnehulak.github.io
+          SITEURL: https://snehulak.dev
         run: |
           pelican content -s publishconf.py
 
-      # Web publish
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      # Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages
+        uses: andykenward/github-actions-cloudflare-pages@v3.5.0
         with:
-          path: './output'
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      # Commit
-#      - name: Commit and push changes
-#        run: |
-#          git config --global user.name "github-actions[bot]"
-#          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-#          git add content/en/osu.md content/cs/osu.md content/de/osu.md
-#          git commit -m "Web update [skip ci]" || exit 0
-#          git push
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          directory: './output' # Výstupní složka Pelicanu
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-environment: ${{ (github.ref == 'refs/heads/main' && 'production') || 'preview' }}
