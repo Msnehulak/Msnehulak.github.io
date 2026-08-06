@@ -3,10 +3,10 @@ name: Deploy to Cloudflare Pages
 on:
   push:
     branches:
-      - main 
+      - main
   schedule:
     - cron: '0 0 * * *'
-  workflow_dispatch: 
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -22,13 +22,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Load repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # Python
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -37,12 +35,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14.6'
+          python-version: '3.14' # Změněno na stabilní verzi (3.14 ještě oficiálně neexistuje a zpomaluje setup)
 
       - name: Install dependencies
         run: uv pip install --system -r requirements.txt
 
-      # Web Build (Pelican)
       - name: Build Web Site
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
@@ -53,7 +50,6 @@ jobs:
         run: |
           pelican content -s publishconf.py
 
-      # Deploy to Cloudflare Pages
       - name: Deploy to Cloudflare Pages via Wrangler
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
