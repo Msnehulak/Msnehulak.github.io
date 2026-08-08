@@ -51,6 +51,7 @@ AUTHOR_FEED_RSS = None
 PLUGINS = [
     'pelican.plugins.i18n_subsites',
     'yaml_metadata',
+    'pelican_katex',
 ]
 
 RELATIVE_PATH = False 
@@ -129,6 +130,8 @@ def first_start(pelican_obj):
     global _ALREADY_STARTED
     if _ALREADY_STARTED:
         return
+    if os.environ.get('PELICAN_RUNNING_RELOAD') == 'true':
+        pass
     _ALREADY_STARTED = True
 
     sweb.create_paths()
@@ -159,11 +162,11 @@ def on_finalized(pelican_obj):
     app_image = image.Images()
     app_image.optimize_output()
 
-signals.finalized.connect(on_finalized)
-
 def on_initialized(pelican_obj):
-    first_start(pelican_obj)
+    if not _ALREADY_STARTED:
+        first_start(pelican_obj)
 
+signals.finalized.connect(on_finalized)
 signals.initialized.connect(on_initialized)
 signals.content_object_init.connect(set_custom_page_urls)
 signals.content_object_init.connect(fill_data_to_md)

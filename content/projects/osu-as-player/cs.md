@@ -2,6 +2,7 @@
 title: Osu jako mp4 prehravac
 slug: osu-as-player
 lang: cs
+css: katex
 folder: projects
 template: project
 ---
@@ -37,7 +38,9 @@ ze bych rad udelal program ktery prevede video na osu beat map kde jedna nota = 
 ### .osz generator
 Kdyz jsem resil jaky osz generator pouzit nenasel jsou zadny dobry tak jsem nakonec postavil vlasni
 
+## Rovnice
 
+$x^2 - 3$
 
 
 

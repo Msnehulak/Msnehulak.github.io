@@ -38,7 +38,7 @@
 
             {% if page and page.translations %}
                 {% for trans in page.translations %}
-                    <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher">
+                    <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn">
                         🌐 {{ trans.lang | upper }}
                     </a>
                 {% endfor %}
@@ -46,7 +46,7 @@
                 {% for lang_code, lang_url in lang_siteurls.items() %}
                     {% set current_lang = page.lang if page else DEFAULT_LANG %}
                     {% if lang_code != current_lang %}
-                        <a href="{{ lang_url }}/" class="lang-switcher">
+                        <a href="{{ lang_url }}/" class="lang-switcher btn">
                             🌐 {{ lang_code | upper }}
                         </a>
                     {% endif %}

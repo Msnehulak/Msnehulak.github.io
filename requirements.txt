@@ -3,6 +3,8 @@ python-dotenv
 jinja2
 diskcache
 PyYAML
+tqdm
+
 
 ossapi
 google-api-python-client
@@ -10,3 +12,7 @@ google-api-python-client
 pelican
 pelican-i18n-subsites
 pelican-yaml-metadata
+pelican-katex
+
+
+

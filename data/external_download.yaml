@@ -4,3 +4,18 @@
 - name: swiper_css
   type: css
   cdn: 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css'
+- name: katex
+  type: css
+  cdn: 'https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css'
+- name: KaTeX_Math-Italic
+  type: woff2
+  cdn: 'https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/fonts/KaTeX_Math-Italic.woff2'
+  extra:
+    save_as: 'fonts/'
+- name: KaTeX_Main-Regular
+  type: woff2
+  cdn: 'https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/fonts/KaTeX_Main-Regular.woff2'
+  extra:
+    save_as: 'fonts/'
+
+
