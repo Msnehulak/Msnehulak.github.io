@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} | {{ SITENAME }}{% endblock %}
+
+{% block content %}
+    {# Tlačítko/Odkaz pro návrat zpět na seznam projektů #}
+    <div class="project-return">
+        <a href="{{ SITEURL }}/projects/" class="return-btn">
+            &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
+        </a>
+    </div>
+
+    {# Hlavní obsah Markdown souboru #}
+    <article class="project-content">
+        {{ page.content }}
+    </article>
+
+    {# Volitelné: Druhé tlačítko pro návrat dole pod článkem #}
+    <div class="project-return bottom">
+        <a href="{{ SITEURL }}/projects/" class="return-btn">
+            &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
+        </a>
+    </div>
+{% endblock %}

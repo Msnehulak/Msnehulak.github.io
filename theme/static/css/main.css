@@ -243,5 +243,28 @@ iframe {
 
 
 
+.project-return {
+    margin-bottom: 20px;
+}
 
+.project-return.bottom {
+    margin-top: 30px;
+    margin-bottom: 0;
+}
+
+.return-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--primary);
+    color: var(--text-main);
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.return-btn:hover {
+    background-color: var(--primary-dark);
+    color: var(--text-main);
+}
 
