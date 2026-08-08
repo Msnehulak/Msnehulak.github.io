@@ -23,8 +23,6 @@ def main():
 
     for url in urls:
         path = url.split("://")[-1].split("/", 1)[-1]
-        if not path:
-            continue
         
         # Odstraníme koncový lomítko pro správný název složky
         dir_path = path.strip("/")

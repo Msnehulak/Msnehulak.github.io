@@ -55,14 +55,12 @@ jobs:
         run: |
           pelican content -s publishconf.py
 
-      # Uložíme plný web pro Cloudflare
       - name: Upload Cloudflare Output Artifact
         uses: actions/upload-artifact@v4
         with:
           name: cloudflare-output
           path: './output'
 
-      # Uložíme přesměrování pro GitHub Pages
       - name: Upload GitHub Redirects Artifact
         uses: actions/upload-pages-artifact@v3
         with:
