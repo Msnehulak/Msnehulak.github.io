@@ -39,9 +39,20 @@ ze bych rad udelal program ktery prevede video na osu beat map kde jedna nota = 
 Kdyz jsem resil jaky osz generator pouzit nenasel jsou zadny dobry tak jsem nakonec postavil vlasni
 
 ## Rovnice
+### CS to size
+- r = polomer kruhu
+- CS = CS
 
-$x^2 - 3$
+$r = 54,4 - 4,48 \times \text{CS}$
 
+### AR to ms
+#### Main
+- $T_{\text{celkem}} = T_{\text{preempt}} + W_{50}$
 
+#### Preempt 
+- Pro AR < 5 = $T_{\text{preempt}} = 1200 + 120 \times (5 - \text{AR}) \text{ [ms]}$
+- Pro AR = 5 = $T_{\text{preempt}} = 1200 \text{ ms}$
+- Pro AR > 5 = $T_{\text{preempt}} = 1200 - 150 \times (\text{AR} - 5) \text{ [ms]}$
 
-
+#### W 50
+- $W_{50} = 200 - 10 \times \text{OD} \text{ [ms]}$
