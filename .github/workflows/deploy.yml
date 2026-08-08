@@ -57,6 +57,18 @@ jobs:
         run: |
           npx wrangler pages deploy ./output --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
 
+      # Deploy redirects
+      - name: Setup redirects
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './redirect'
+
+      - name: Deploy to GitHub Pages as redirects
+        id: deployment
+        uses: actions/deploy-pages@v4
 
 
 

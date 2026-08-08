@@ -108,7 +108,7 @@ for lan, val in i18n_all_subsites.items():
         I18N_SUBSITES[lan] = val
 
 from build import get_web_data
-from scripts import sweb, image, external_download
+from scripts import sweb, image, external_download, create_redirects
 
 WEB_DATA = get_web_data()
 def fill_data_to_md(content_objekt):
@@ -161,6 +161,7 @@ def set_custom_page_urls(content_obj):
 def on_finalized(pelican_obj):
     app_image = image.Images()
     app_image.optimize_output()
+    create_redirects.main()
 
 def on_initialized(pelican_obj):
     if not _ALREADY_STARTED:

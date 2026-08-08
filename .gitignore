@@ -6,6 +6,7 @@
 
 web/
 output/
+redirect/
 digest.txt
 cache/
 node_modules/
