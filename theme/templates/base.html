@@ -28,31 +28,30 @@
     {% endif %}
 <body>
     <nav>
-        <div class="logo">SnehulakTV</div>
-<div class="links">
-    <a href="{{ SITEURL }}/">Home</a>
-    <a href="{{ SITEURL }}/osu/">My Osu</a>
-    <a href="{{ SITEURL }}/about_me/">About Me</a>
-    <a href="{{ SITEURL }}/projects/">Projects</a>
+        <div class="nav-logo">SnehulakTV</div>
 
-{% if page and page.translations %}
-    {# 1. Pokud existuje přímá přeložená verze aktuální stránky #}
-    {% for trans in page.translations %}
-        <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher">
-            🌐 {{ trans.lang | upper }}
-        </a>
-    {% endfor %}
-{% elif lang_siteurls %}
-    {# 2. Fallback: Pokud tato konkrétní stránka překlad nemá, pošleme uživatele na homepage daného jazyka #}
-    {% for lang_code, lang_url in lang_siteurls.items() %}
-        {% set current_lang = page.lang if page else DEFAULT_LANG %}
-        {% if lang_code != current_lang %}
-            <a href="{{ lang_url }}/" class="lang-switcher">
-                🌐 {{ lang_code | upper }}
-            </a>
-        {% endif %}
-    {% endfor %}
-{% endif %}
+        <div class="nav-links">
+            <a class="btn" href="{{ SITEURL }}/">Home</a>
+            <a class="btn" href="{{ SITEURL }}/osu/">My Osu</a>
+            <a class="btn" href="{{ SITEURL }}/about_me/">About Me</a>
+            <a class="btn" href="{{ SITEURL }}/projects/">Projects</a>
+
+            {% if page and page.translations %}
+                {% for trans in page.translations %}
+                    <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher">
+                        🌐 {{ trans.lang | upper }}
+                    </a>
+                {% endfor %}
+            {% elif lang_siteurls %}
+                {% for lang_code, lang_url in lang_siteurls.items() %}
+                    {% set current_lang = page.lang if page else DEFAULT_LANG %}
+                    {% if lang_code != current_lang %}
+                        <a href="{{ lang_url }}/" class="lang-switcher">
+                            🌐 {{ lang_code | upper }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
 
 </div>
 

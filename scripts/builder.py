@@ -26,8 +26,8 @@ class Builder:
             sprite_path = f"{sweb.site_url}/index/images/sprite.svg#{symbol_id}"
             
             # 2. Vykreslení pomocí <svg><use></use></svg> místo <img>
-            template = f'''<a href="{link['link']}" class="index-a" target="_blank" rel="noopener noreferrer" title="{link['hover']}">
-                <svg class="index-img" aria-hidden="true">
+            template = f'''<a href="{link['link']}" target="_blank" rel="noopener noreferrer" title="{link['hover']}">
+                <svg aria-hidden="true">
                     <use href="{sprite_path}"></use>
                 </svg></a>'''
             links.append(template)
@@ -51,7 +51,7 @@ class Builder:
             link = f'{sweb.site_url}{lan_url}projects/{i['content']['link']}'
             btn_html = ''
             if not i['content']['link'] == 'None':
-                btn_html = f'<a href="{link}" class="card-btn">{texts["btn"]}</a>'
+                btn_html = f'<a href="{link}" class="card-btn btn">{texts["btn"]}</a>'
 
             slide_html = (
                 f'<div class="swiper-slide">'

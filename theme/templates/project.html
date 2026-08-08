@@ -5,7 +5,7 @@
 {% block content %}
     {# Tlačítko/Odkaz pro návrat zpět na seznam projektů #}
     <div class="project-return">
-        <a href="{{ SITEURL }}/projects/" class="return-btn">
+        <a href="{{ SITEURL }}/projects/" class="project-return-btn btn">
             &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
         </a>
     </div>
@@ -17,7 +17,7 @@
 
     {# Volitelné: Druhé tlačítko pro návrat dole pod článkem #}
     <div class="project-return bottom">
-        <a href="{{ SITEURL }}/projects/" class="return-btn">
+        <a href="{{ SITEURL }}/projects/" class="project-return-btn btn">
             &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
         </a>
     </div>

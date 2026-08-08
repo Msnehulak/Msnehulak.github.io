@@ -34,24 +34,23 @@ a:hover {
     color: #008cad;
 }
 
+.btn {
+    color: var(--text-main);
+    transition: var(--transition);
+    background-color: var(--primary);
+}
+
+.btn:hover {
+    color: var(--text-main);
+    background-color: var(--primary-dark);
+}
+
 footer {
     text-align: center;
     padding: 25px 20px;
     color: var(--text-muted);
     font-size: 0.9rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.logo {
-    color: #ecf0f1;
-    font-weight: bold;
-    font-size: 1.3rem;
-    letter-spacing: 1px;
-}
-
-.links {
-    display: flex;
-    gap: 20px;
 }
 
 /* Projects Cards */
@@ -64,8 +63,8 @@ footer {
 }
 
 .swiper-slide {
-    width: 90%;  /* na mobilu zabere skoro celou šířku, takže se vejde jen jedna */
-    max-width: 320px; /* na PC omezí maximální šířku */
+    width: 90%;
+    max-width: 320px; 
     height: 100% !important;
     background-color: #3e3e3e;
     border-radius: 20px;
@@ -85,19 +84,12 @@ footer {
     border-radius: 6px;
     margin-top: auto;
     width: 80%;
-    background-color: var(--primary);
-    transition: var(--transition);
 }
-
-.card-btn:hover {
-    color: var(--text-muted);
-    background-color: var(--primary-dark);
-}
-
+    
 /* Navigation */
 nav {
     background: var(--primary);
-    padding: 15px 30px;
+    padding: 20px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -113,9 +105,17 @@ nav a {
     transition: var(--transition);
 }
 
-nav a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
+.nav-logo {
+    color: var(--text-main);
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 10px;
+    font-size: clamp(0.1rem, 2.5vw, 1rem);
 }
 
 /* Index */
@@ -126,7 +126,7 @@ nav a:hover {
     width: 100%;
 }
 
-.index-a {
+.links-index a {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -140,7 +140,7 @@ nav a:hover {
     transition: var(--transition);
 }
 
-.index-img {
+.links-index svg {
     width: 80%;
     height: auto;
     aspect-ratio: 1 / 1;
@@ -148,14 +148,11 @@ nav a:hover {
     display: block;
 }
 
-.index-a:active {
-  background-color: #2d2d2d;
+.links-index a:hover {
+    background-color: #3d3d3d;
 }
 
-.index-a:hover {
-  background-color: #3d3d3d;
-}
-
+/* YouTube */
 .yt-lazy-wrapper {
     position: relative;
     width: 100%;
@@ -181,7 +178,7 @@ nav a:hover {
     transform: scale(1.02);
 }
 
-/* Červené YouTube tlačítko */
+/* YouTube */
 .yt-lazy-play-btn {
     position: absolute;
     width: 68px;
@@ -204,6 +201,19 @@ nav a:hover {
 
 .yt-lazy-wrapper:hover .yt-lazy-play-btn {
     background-color: #ff0000;
+}
+
+/*Projects*/
+.project-return {
+    margin-bottom: 20px;
+}
+
+.project-return-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
 }
 
 main {
@@ -241,30 +251,4 @@ iframe {
     }
 }
 
-
-
-.project-return {
-    margin-bottom: 20px;
-}
-
-.project-return.bottom {
-    margin-top: 30px;
-    margin-bottom: 0;
-}
-
-.return-btn {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: var(--primary);
-    color: var(--text-main);
-    text-decoration: none;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: var(--transition);
-}
-
-.return-btn:hover {
-    background-color: var(--primary-dark);
-    color: var(--text-main);
-}
 
