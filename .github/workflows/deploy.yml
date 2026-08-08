@@ -12,6 +12,8 @@ permissions:
   contents: read
   deployments: write
   pull-requests: write
+  id-token: write
+  pages: write
 
 concurrency:
   group: "pages"
