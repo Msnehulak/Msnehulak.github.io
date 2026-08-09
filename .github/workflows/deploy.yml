@@ -32,15 +32,25 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.14'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "requirements.txt"
+
+      - name: Cache cache/ folder 
+        id: cache-custom
+        uses: actions/cache@v4
+        with:
+          path: cache
+          key: ${{ runner.os }}-custom-${{ hashFiles('config.json') }}
+          restore-keys: |
+            ${{ runner.os }}-custom-
 
       - name: Install dependencies
         run: uv pip install --system -r requirements.txt
