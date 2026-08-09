@@ -1,11 +1,11 @@
 markdown
-python-dotenv
 jinja2
+python-dotenv
 diskcache
 PyYAML
 tqdm
 
-
+requests
 ossapi
 google-api-python-client
 

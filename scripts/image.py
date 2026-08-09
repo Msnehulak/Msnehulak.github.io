@@ -1,5 +1,6 @@
 if __name__ == '__main__': import sweb
 else: from . import sweb
+import logging
 import os
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -72,14 +73,14 @@ class Images:
                         symbol.append(child)
                     root_svg.append(symbol)
                 except ET.ParseError as e:
-                    print(f"Chyba při zpracování {filename}: {e}")
+                    logging.error(f"While working on {filename}: {e}")
 
         sprite_tree = ET.ElementTree(root_svg)
         self.clear_from_svg()
         sprite_tree.write(
             output_file, encoding="utf-8", xml_declaration=True
         )
-        print(f">>> Sprite úspěšně vytvořen: {output_file}")
+        logging.info(f">>> Sprite created: {output_file}")
 
     def clear_from_svg(self):
         for svg in self.svg_list:

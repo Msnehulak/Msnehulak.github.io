@@ -5,7 +5,6 @@ from pathlib import Path
 import re
 import logging
 import sys
-from tqdm import tqdm
 import shutil
 
 DOWNLOAD_TO_PATH = sweb.BASE_DIR / 'cache' / 'extra'
@@ -28,35 +27,34 @@ def external_download():
     dir_path = Path(DOWNLOAD_TO_PATH)
     dir_path.mkdir(parents=True, exist_ok=True)
 
-    with tqdm(total=len(lib), desc="Downloaded form cnd", unit="download") as pbar:
-        for i in lib:
-            name = i['name']
-            cdn = i['cdn']
-            ftype = i['type']
-            extra = i.get('extra', None)
-            save_as = ''
+    for i in lib:
+        name = i['name']
+        cdn = i['cdn']
+        ftype = i['type']
+        extra = i.get('extra', None)
+        save_as = ''
+        file_name = f'{name}.{ftype}'
 
-            if not _validate_file_name(f'{name}{ftype}'):
-                logging.error(f"'{name}.{ftype}' contains invalid characters, please fix it in data/external_download.yaml")
-                sys.exit(1) 
+        if not _validate_file_name(file_name):
+            logging.error(f"'{name}.{ftype}' contains invalid characters, please fix it in data/external_download.yaml")
+            sys.exit(1) 
 
-            if extra is not None and extra['save_as']:
-                save_as = extra['save_as']
-                if '..' in save_as:
-                    logging.error(f"'{name} save as' contains invalid characters, please fix it in data/external_download.yaml")
-                    sys.exit(1)
-           
-            path = DOWNLOAD_TO_PATH / save_as 
-            file_path = path / f'{name}.{ftype}'
-            path.mkdir(parents=True, exist_ok=True)
+        if extra is not None and extra['save_as']:
+            save_as = extra['save_as']
+            if '..' in save_as:
+                logging.error(f"'{name} save as' contains invalid characters, please fix it in data/external_download.yaml")
+                sys.exit(1)
+       
+        path = DOWNLOAD_TO_PATH / save_as 
+        file_path = path / file_name
+        path.mkdir(parents=True, exist_ok=True)
 
-            if file_path.exists():
-                pbar.update(1)
-                continue
+        logging.info(f'download file {file_name}, from {cdn}')
 
-            download_cdn(cdn, file_path)
+        if file_path.exists():
+            continue
 
-            pbar.update(1)
+        download_cdn(cdn, file_path)
 
 def move_file():
     if not DOWNLOAD_TO_PATH.exists():

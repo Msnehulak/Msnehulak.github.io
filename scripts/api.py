@@ -1,16 +1,22 @@
-if __name__ == '__main__': import sweb
-else: from . import sweb
+if __name__ == '__main__':
+    import sweb
+else:
+    from . import sweb
+
+import logging
 import os
 import sys
+from datetime import timedelta
 from pathlib import Path
-from ossapi import Ossapi
+
 from diskcache import Cache
 from dotenv import load_dotenv
-from datetime import timedelta
 from googleapiclient.discovery import build
+from ossapi import Ossapi
 
 load_dotenv()
 
+_NO_EXPIRE = '_no_expire'
 BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "cache" / "diskcache"
 YT_CHANNEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
@@ -18,13 +24,12 @@ YT_CHANNEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
 ENV_VAL = {
     "osu_client_id": os.getenv("OSU_CLIENT_ID"),
     "osu_client_secret": os.getenv("OSU_CLIENT_SECRET"),
-    "github_token": os.getenv("GIT_HUB_TOKEN"),
     "youtube_api_key": os.getenv("YOUTUBE_API_KEY"),
 }
 
-for i, x in ENV_VAL.items():
-    if x is None:
-        print(f'missing {i}')
+for name, key in ENV_VAL.items():
+    if key is None:
+        logging.error(f'missing env: {name}')
         sys.exit(1)
 
 class APIs:
@@ -45,79 +50,90 @@ class APIs:
         self.update_data()
 
     def update_data(self):
-        for api in self.apis.keys():
-            cached_data = self.cache.get(api)
+        for name, content in self.apis.items():
+            cached_data = self.cache.get(name)
 
             if cached_data is None:
-                print(f"Cache pro '{api}' neexistuje nebo vypršela. Spouštím update...")
-                self.apis[api]['update']()
+                logging.debug(f"Cache pro '{name}' neexistuje nebo vypršela. Spouštím update...")
+                
+                try:
+                    new_data = content['update']()
+                    if not new_data:
+                        raise ValueError(f"Funkce update pro {name} vrátila prázdná data.")
+                except Exception as e:
+                    logging.warning(f"Chyba při aktualizaci {name}: {e}. Zkouším načíst stará data...")
+                    new_data = self.cache.get(f'{name}{_NO_EXPIRE}') 
+                    
+                    if new_data is None:
+                        logging.error(f"Chybí stará data i v záložní cache pro {name}")
+                        sys.exit(1)
+                   
+                self._update_cache(name, new_data)
             else:
-                self.apis[api]['data'] = cached_data
+                logging.info(f'for {name} is used cache')
+                content['data'] = cached_data
 
     def get_data(self, api):
         if api in self.apis:
             return self.apis[api]['data']
         else:
-            print(f"API data '{api}' dosen't exist")
+            logging.error(f"API data '{api}' doesn't exist")
+            sys.exit(1)
 
     def _update_cache(self, api, data):
         if data and api in self.apis:
             expire_seconds = self.apis[api]['refresh']
             self.cache.set(api, data, expire=expire_seconds)
+            self.cache.set(f'{api}{_NO_EXPIRE}', data, expire=None)
             self.apis[api]['data'] = data
-            print(f"Update cache for '{api}'")
+            logging.info(f"Update cache for '{api}' and '{api}{_NO_EXPIRE}'")
 
     def update_yt(self):
         youtube = build('youtube', 'v3', developerKey=ENV_VAL['youtube_api_key'])
-        try:
-            channel_request = youtube.channels().list(
-                part='contentDetails,snippet',
-                id=YT_CHANNEL_ID
-            )
-            channel_response = channel_request.execute()
+        
+        channel_request = youtube.channels().list(
+            part='contentDetails,snippet',
+            id=YT_CHANNEL_ID
+        )
+        channel_response = channel_request.execute()
 
-            if not channel_response.get('items'):
-                print("Kanál s tímto ID nebyl nalezen.")
-                return
+        if not channel_response.get('items'):
+            raise RuntimeError("Kanál s tímto ID nebyl nalezen.")
 
-            channel_title = channel_response['items'][0]['snippet']['title']
-            channel_tag = channel_response['items'][0]['snippet']['customUrl']
-            uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-            
-            playlist_request = youtube.playlistItems().list(
-                part='snippet',
-                playlistId=uploads_playlist_id,
-                maxResults=1 
-            )
-            playlist_response = playlist_request.execute()
+        channel_title = channel_response['items'][0]['snippet']['title']
+        channel_tag = channel_response['items'][0]['snippet']['customUrl']
+        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        
+        playlist_request = youtube.playlistItems().list(
+            part='snippet',
+            playlistId=uploads_playlist_id,
+            maxResults=1 
+        )
+        playlist_response = playlist_request.execute()
 
-            if not playlist_response.get('items'):
-                print("V playlistu nahraných videí nebyla nalezena žádná videa. Přeskakuji uložení.")
-                return
+        if not playlist_response.get('items'):
+            raise RuntimeError("V playlistu nahraných videí nebyla nalezena žádná videa.")
 
-            latest_video = playlist_response['items'][0]
-            video_title = latest_video['snippet']['title']
-            video_id = latest_video['snippet']['resourceId']['videoId']
-            published_at = latest_video['snippet']['publishedAt']
-            video_url = f"https://www.youtube.com/watch?v={video_id}"
-            video_url_embed = f"https://www.youtube-nocookie.com/embed/{video_id}"
+        latest_video = playlist_response['items'][0]
+        video_title = latest_video['snippet']['title']
+        video_id = latest_video['snippet']['resourceId']['videoId']
+        published_at = latest_video['snippet']['publishedAt']
+        video_url = f"https://www.youtube.com/watch?v={video_id}"
+        video_url_embed = f"https://www.youtube-nocookie.com/embed/{video_id}"
 
-            new_data = {
-                'profile': {
-                    'title': channel_title,
-                    'tag': channel_tag,
-                },
-                'newest_vid': {
-                    'title': video_title,
-                    'id': video_id,
-                    'released_date': published_at,
-                    'url': video_url,
-                    'embed': video_url_embed
-                }
+        return {
+            'profile': {
+                'title': channel_title,
+                'tag': channel_tag,
+            },
+            'newest_vid': {
+                'title': video_title,
+                'id': video_id,
+                'released_date': published_at,
+                'url': video_url,
+                'embed': video_url_embed
             }
-            self._update_cache('yt', new_data)
-        except Exception as e:
-            print(f"Došlo k chybě: {e}")
+        }
 
     def update_osu(self):
         client_id = ENV_VAL['osu_client_id']
@@ -125,25 +141,18 @@ class APIs:
         username = "SnehulakTV_"
 
         if not client_id or not client_secret:
-            print("Chyba: Chybí OSU_client_id nebo OSU_CLIENT_SECRET v .env. Přeskakuji.")
-            return
+            raise ValueError("Chybí OSU_CLIENT_ID nebo OSU_CLIENT_SECRET v .env.")
 
-        try:
-            api = Ossapi(int(client_id), client_secret)
-            user = api.user(username)
-            stats = user.statistics
+        api = Ossapi(int(client_id), client_secret)
+        user = api.user(username)
+        stats = user.statistics
 
-            new_data = {
-                "rank": stats.global_rank,
-                "pp": stats.pp,
-                "acc": stats.hit_accuracy,
-                "play_time_s": stats.play_time,
-                "play_time": str(timedelta(seconds=stats.play_time)),
-                "play_count": stats.play_count,
-                "avatar": user.avatar_url,
-            } 
-            
-            self._update_cache('osu', new_data)
-            
-        except Exception as e:
-            print(f"Chyba při komunikaci s osu! API: {e}")
+        return {
+            "rank": stats.global_rank,
+            "pp": stats.pp,
+            "acc": stats.hit_accuracy,
+            "play_time_s": stats.play_time,
+            "play_time": str(timedelta(seconds=stats.play_time)),
+            "play_count": stats.play_count,
+            "avatar": user.avatar_url,
+        }

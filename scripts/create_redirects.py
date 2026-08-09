@@ -1,5 +1,6 @@
 if __name__ == '__main__': import sweb
 else: from . import sweb
+import logging
 import xml.etree.ElementTree as ET
 import os
 from pathlib import Path
@@ -9,7 +10,7 @@ OUTPUT_PATH = sweb.BASE_DIR / 'redirect'
 
 def main():
     if not PATH.exists():
-        print(f">>> Soubor {PATH} zatím neexistuje, přeskakuji přesměrování.")
+        logging.debug(f">>> Soubor {PATH} zatím neexistuje, přeskakuji přesměrování.")
         return
     tree = ET.parse(PATH)
     root = tree.getroot()
@@ -44,7 +45,7 @@ def main():
         with open(os.path.join(dir_path, "index.html"), "w", encoding="utf-8") as f:
             f.write(html_content)
 
-    print("Složky a přesměrování byly úspěšně vytvořeny!")
+    logging.info("Složky a přesměrování byly úspěšně vytvořeny!")
 
 if __name__ == '__main__':
     main()
