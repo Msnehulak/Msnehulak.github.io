@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import os
 import sys
 from pelican import signals
@@ -116,7 +117,7 @@ def fill_data_to_md(content_objekt):
         if getattr(content_objekt, '_already_rendered_by_jinja', False):
             return
         
-        print(f">>> Upravuji Markdown pro soubor: {content_objekt.source_path}")
+        logging.info(f">>> Editing Markdown: {content_objekt.source_path}")
         
         surovy_text = content_objekt._content
         
@@ -162,6 +163,7 @@ def on_finalized(pelican_obj):
     app_image = image.Images()
     app_image.optimize_output()
     create_redirects.main()
+    external_download.move_file()
 
 def on_initialized(pelican_obj):
     if not _ALREADY_STARTED:

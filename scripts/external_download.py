@@ -6,8 +6,10 @@ import re
 import logging
 import sys
 from tqdm import tqdm
+import shutil
 
-EXTRA_PATH = sweb.BASE_DIR / 'theme' / 'static' / 'extra'
+DOWNLOAD_TO_PATH = sweb.BASE_DIR / 'cache' / 'extra'
+OUTPUT_PATH = sweb.BASE_DIR / 'output' / 'static' / 'extra'
 
 def download_cdn(url, path):
     response = requests.get(url)
@@ -23,7 +25,7 @@ def _validate_file_name(name: str) -> bool:
 def external_download():
     lib = sweb.data['exlib']
 
-    dir_path = Path(EXTRA_PATH)
+    dir_path = Path(DOWNLOAD_TO_PATH)
     dir_path.mkdir(parents=True, exist_ok=True)
 
     with tqdm(total=len(lib), desc="Downloaded form cnd", unit="download") as pbar:
@@ -44,7 +46,7 @@ def external_download():
                     logging.error(f"'{name} save as' contains invalid characters, please fix it in data/external_download.yaml")
                     sys.exit(1)
            
-            path = EXTRA_PATH / save_as 
+            path = DOWNLOAD_TO_PATH / save_as 
             file_path = path / f'{name}.{ftype}'
             path.mkdir(parents=True, exist_ok=True)
 
@@ -55,6 +57,18 @@ def external_download():
             download_cdn(cdn, file_path)
 
             pbar.update(1)
+
+def move_file():
+    if not DOWNLOAD_TO_PATH.exists():
+        logging.warning(f"Path {DOWNLOAD_TO_PATH} don't exist.  maybe for got download?")
+        return
+
+    if OUTPUT_PATH.exists():
+        logging.debug(f'fle {DOWNLOAD_TO_PATH} alrady exists in {OUTPUT_PATH}')
+        return
+
+    shutil.copytree(DOWNLOAD_TO_PATH, OUTPUT_PATH)
+    logging.debug(f'fle {DOWNLOAD_TO_PATH} is move to {OUTPUT_PATH}')
 
 if __name__ == '__main__':
     external_download()
