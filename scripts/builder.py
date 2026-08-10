@@ -71,7 +71,7 @@ class Builder:
             card = f'''
             <article class="game-card" data-name="{name}" data-playtime="{playtime_s}" data-appid="{name}"><div class="card-media">
             <img src="{cover_art}" alt="{name} Cover art" loading="lazy" /></div><div class="card-content">
-            <h3 class="game-title">{name}</h3>
+            <h2 class="game-title">{name}</h2>
             <p class="game-playtime">{play_time_show}</p>
             <a class="game-btn btn" {link}>{btn_text}</a>
             </div></article>
