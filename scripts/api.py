@@ -55,11 +55,11 @@ class APIs:
         }
         self.update_data()
 
-    def update_data(self):
+    def update_data(self, force: bool=False):
         for name, content in self.apis.items():
             cached_data = self.cache.get(name)
 
-            if cached_data is None:
+            if cached_data is None or force:
                 logging.debug(f"Cache pro '{name}' neexistuje nebo vypršela. Spouštím update...")
                 
                 try:
@@ -97,7 +97,7 @@ class APIs:
     def update_steam(self):
         key = ENV_VAL['steam_api']
         uid = STEAM_ID
-        cfg = sweb.data['steam_api']
+        cfg = sweb.data['games']
         api_start = 'https://api.steampowered.com' 
 
         own_games_link = f'{api_start}/IPlayerService/GetOwnedGames/v1/?key={key}&steamid={uid}&include_appinfo=true&include_played_free_games=true&include_free_sub=true'
@@ -106,7 +106,7 @@ class APIs:
        
         games = []
         games_list = own_games['games']
-        block_games = cfg['block_games']
+        block_games = cfg['steam_ignore_games']
         for game in games_list:
             if game['appid'] in block_games:
                 continue
@@ -175,13 +175,16 @@ class APIs:
         user = api.user(username)
         stats = user.statistics
 
+        print(stats.play_time)
+
         return {
             "rank": stats.global_rank,
             "pp": stats.pp,
             "acc": stats.hit_accuracy,
-            "play_time_s": stats.play_time,
-            "play_time": str(timedelta(seconds=stats.play_time)),
+            "play_time": stats.play_time,
             "play_count": stats.play_count,
             "avatar": user.avatar_url,
         }
-
+if __name__ == '__main__':
+    app = APIs()
+    app.update_data(force = True)

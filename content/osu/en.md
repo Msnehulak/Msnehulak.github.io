@@ -9,7 +9,7 @@ lang: en
 - Global Rank: #**{{ OSU_DATA.rank }}**
 - Performance Points: **{{ OSU_DATA.pp }}**pp
 - Accuracy: **{{ OSU_DATA.acc }}**%
-- Play Time: **{{ OSU_DATA.play_time }}**
+- Play Time: **{{ OSU_DATA.play_time.en }}**
 - Play count: **{{ OSU_DATA.play_count }}** maps
 
 # Skins I use

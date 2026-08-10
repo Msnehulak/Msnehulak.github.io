@@ -1,8 +1,8 @@
 from pathlib import Path
-from scripts import sweb, api
+from scripts import sweb, games
 import os
 
-APP_API = api.APIs()
+APP_GAMES = games.Games()
 TRANSLATE = sweb.data['tran']
 
 class Builder:
@@ -35,7 +35,7 @@ class Builder:
         return ''.join(links)
 
     def steam_games(self, lan='en'):
-        tr = {key: value[lan] for key, value in TRANSLATE['steam_games_list'].items()}
+        tr = {key: value[lan] for key, value in TRANSLATE['games_list'].items()}
         html = []
         html.append(f'''<section class="games-section"><header class="controls-bar">
         <div class="search-box"><input type="text" id="game-search" placeholder="{tr['find_game']}" /></div>
@@ -48,22 +48,32 @@ class Builder:
         <option value="name-desc">{tr['z-a']}</option>
         </select></div></header>
         <div class="games-grid" id="games-container">
-        ''')
-        steam_api = APP_API.get_data('steam')
-        games = steam_api['games']
+        ''') 
+        games = APP_GAMES.get_games()
         for game in games:
-            appid = game['appid']
+            gtype = game['type']
             name = game['name']
-            playtime_s = game['playtime_forever']
-            playtime = sweb.s_to_time(m=playtime_s, lan=lan)
-            steam_page = f'https://store.steampowered.com/app/{appid}'
-            cover_art = f'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{appid}/library_600x900.jpg' 
+            playtime_s = game['play_time']
+            playtime = sweb.s_to_time(s=playtime_s, lan=lan)
+            link = self.new_card_r(game['link'])
+            cover_art =  game['art']
+            
+            if playtime_s <= 0:
+                play_time_show = tr['never_play']
+            else:
+                play_time_show = f'{tr['play_time']} <span>{playtime}</span>'
+
+            if gtype == 'steam':
+                btn_text = tr['steam_btn']
+            else:
+                btn_text = tr['other_btn']
+
             card = f'''
-            <article class="game-card" data-name="{name}" data-playtime="{playtime_s}" data-appid="{appid}"><div class="card-media">
+            <article class="game-card" data-name="{name}" data-playtime="{playtime_s}" data-appid="{name}"><div class="card-media">
             <img src="{cover_art}" alt="{name} Cover art" loading="lazy" /></div><div class="card-content">
             <h3 class="game-title">{name}</h3>
-            <p class="game-playtime">{tr['play_time']} <span>{playtime}</span></p>
-            <a class="steam-btn btn" {self.new_card_r(steam_page)}>{tr['steam_btn']}</a>
+            <p class="game-playtime">{play_time_show}</p>
+            <a class="steam-btn btn" {link}>{btn_text}</a>
             </div></article>
             '''
             html.append(card)

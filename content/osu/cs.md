@@ -9,7 +9,7 @@ lang: cs
 - Globální žebříček: #**{{ OSU_DATA.rank }}**
 - Body za výkon: **{{ OSU_DATA.pp }}**pp
 - Přesnost: **{{ OSU_DATA.acc }}**%
-- Doba hraní: **{{ OSU_DATA.play_time }}**
+- Doba hraní: **{{ OSU_DATA.play_time.cs }}**
 - Počet přehrání: **{{ OSU_DATA.play_count }}** maps
 
 # Skiny které používám  

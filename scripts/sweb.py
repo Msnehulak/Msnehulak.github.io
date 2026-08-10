@@ -21,7 +21,7 @@ LOAD_FOROM_DATA = [
     {'type': 'yaml', 'name': 'osu', 'file': 'osu_stats'},
     {'type': 'yaml', 'name': 'projects', 'file': 'projects'},
     {'type': 'yaml', 'name': 'exlib', 'file': 'external_download'},
-    {'type': 'yaml', 'name': 'steam_api', 'file': 'steam_api'},
+    {'type': 'yaml', 'name': 'games', 'file': 'games'},
     {'type': 'yaml', 'name': 'tran', 'file': 'translate'},
 ]
 

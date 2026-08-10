@@ -31,7 +31,8 @@ def get_web_data():
             }, "sr": 6.2}}
 
     osu_stats = osu_row['osu'] 
-    osu_data = app_apis.get_data('osu')
+    osu_api = app_apis.get_data('osu')
+    osu_data = osu_api
     if osu_data is None:
         osu_data = {
             "rank": '-1',
@@ -40,6 +41,11 @@ def get_web_data():
             "play_time": '365 dayS',
             "play_count": 0,
         }
+
+    osu_data["play_time"] = {
+            'cs': sweb.s_to_time(s=osu_api['play_time'], lan='cs'),
+            'en': sweb.s_to_time(s=osu_api['play_time'], lan='en')
+    }
 
     osu_data["offset"] = {
         "x": osu_stats['offset']['x'],

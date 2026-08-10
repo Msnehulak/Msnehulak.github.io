@@ -2,14 +2,14 @@
     --bg-main: #1e1e1e;
     --bg-card: #2d2d2d;
     --card-hi-light: #3e3e3e;
+    --primary-light: #005299;
     --primary: #033663;
     --primary-dark: #022552;
     --text-main: #f1f1f1;
     --text-muted: #aaaaaa;
     --accent: #3498db;
     --radius: 12px;
-
-    --transition: transform 0.2s ease, box-shadow 0.2s ease;
+    --transition: all 0.3s ease;
 }
 
 body {
@@ -26,6 +26,62 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh; 
+}
+
+select {
+    padding: 7px;
+    color: var(--text-main);
+    background-color: var(--primary);
+    border: none;
+    border-radius: var(--radius);
+    transition: var(--transition);   
+}
+
+select::placeholder {
+    color: var(--text-mute);
+}
+
+select:hover,
+select:focus {
+    background-color: var(--primary-light);
+}
+
+select:focus-visible {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
+}
+
+select:picker {
+  border: 10px solid #ff0000;
+  background: #ff0000;
+  padding: 50px;
+}
+
+select option:checked {
+  font-weight: bold;
+}
+
+input {
+    padding: 7px;
+    color: var(--text-main);
+    background-color: var(--primary);
+    border: none;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+input::placeholder {
+    color: var(--text-mute);
+}
+
+input:hover,
+input:focus {
+    background-color: var(--primary-light);
+}
+
+input:focus-visible {
+    outline: 2px solid var(--text-main);
+    outline-offset: 2px;
 }
 
 a {
@@ -45,7 +101,7 @@ a:hover {
 
 .btn:hover {
     color: var(--text-main);
-    background-color: var(--primary-dark);
+    background-color: var(--primary-light)
 }
 
 footer {
@@ -217,7 +273,7 @@ nav a {
 
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
@@ -237,13 +293,13 @@ nav a {
 }
 
 .card-media {
-  aspect-ratio: 6 / 9;
   width: 100%;
   background: var(--card-hi-light);
 }
 
 .card-media img {
   width: 100%;
+  aspect-ratio: 2.18 / 1;
   height: 100%;
   object-fit: cover;
 }
@@ -269,8 +325,7 @@ nav a {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 100%; 
-    max-width: 300px;
+    width: 100%;
     height: 25px;
     border: none;
     text-decoration: none;
@@ -325,4 +380,3 @@ iframe {
         width: 95%;
     }
 }
-
