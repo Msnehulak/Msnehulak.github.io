@@ -1,11 +1,10 @@
 ---
-title: Games
+title: Hry
 slug: games
-lang: en
+lang: cs
 js: steam_card
 ---
 
-# Owned games
-{{ STEAM.en }}
-
+# Vlastněné hry
+{{ STEAM.cs }}
 

@@ -273,7 +273,7 @@ nav a {
 
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
   gap: 1.5rem;
 }
 
@@ -321,12 +321,12 @@ nav a {
   text-overflow: ellipsis;
 }
 
-.steam-btn {
+.game-btn {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    height: 25px;
+    height: 30px;
     border: none;
     text-decoration: none;
     transition: var(--transition);

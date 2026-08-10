@@ -117,6 +117,7 @@ def s_to_time(s: int = 0, m: int = 0, h: int = 0, d: int = 0, lan: str = 'en') -
 
     out = [format_unit(val, trans) for val, trans in units if val > 0]
     return ', '.join(out)
+
 @contextmanager
 def timer(name):
     start = time.perf_counter()

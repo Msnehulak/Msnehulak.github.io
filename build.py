@@ -64,8 +64,8 @@ def get_web_data():
 
     # -- Steam --
     steam = {
-        'cs': builder.steam_games(lan='cs'),
-        'en': builder.steam_games(lan='en')
+        'cs': builder.games_list(lan='cs'),
+        'en': builder.games_list(lan='en')
     }
 
     return {

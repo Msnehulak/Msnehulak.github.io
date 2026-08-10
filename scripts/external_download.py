@@ -7,7 +7,7 @@ import sys
 import shutil
 
 DOWNLOAD_TO_PATH = sweb.BASE_DIR / 'cache' / 'extra'
-OUTPUT_PATH = sweb.BASE_DIR / 'output' / 'static' / 'extra'
+OUTPUT_PATH = sweb.BASE_DIR / 'output' / 'theme' / 'extra'
 
 def download_cdn(url, path):
     response = requests.get(url)

@@ -34,7 +34,7 @@ class Builder:
         links.append('</div>')
         return ''.join(links)
 
-    def steam_games(self, lan='en'):
+    def games_list(self, lan='en'):
         tr = {key: value[lan] for key, value in TRANSLATE['games_list'].items()}
         html = []
         html.append(f'''<section class="games-section"><header class="controls-bar">
@@ -73,7 +73,7 @@ class Builder:
             <img src="{cover_art}" alt="{name} Cover art" loading="lazy" /></div><div class="card-content">
             <h3 class="game-title">{name}</h3>
             <p class="game-playtime">{play_time_show}</p>
-            <a class="steam-btn btn" {link}>{btn_text}</a>
+            <a class="game-btn btn" {link}>{btn_text}</a>
             </div></article>
             '''
             html.append(card)
