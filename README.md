@@ -22,16 +22,25 @@ pip install -r requirements.txt
 Copy `.env.example` to `.env` (or create a new `.env` file) and fill in your tokens:
 
 ```env
-# OSU API (get here: [https://osu.ppy.sh/home/account/edit](https://osu.ppy.sh/home/account/edit))
+# OSU API (get here: https://osu.ppy.sh/home/account/edit)
 OSU_CLIENT_ID=
 OSU_CLIENT_SECRET=
 
-# YouTube API (get here: [https://console.cloud.google.com/apis/api/youtube.googleapis.com](https://console.cloud.google.com/apis/api/youtube.googleapis.com))
+# YouTube API (get here: https://console.cloud.google.com/apis/api/youtube.googleapis.com)
 YOUTUBE_API_KEY=
 
-# Site URL (e.g. [http://127.0.0.1:8000](http://127.0.0.1:8000) for local testing)
-SITEURL="[http://127.0.0.1:8000](http://127.0.0.1:8000)"
+# Steam API (get here: https://steamcommunity.com/dev/apikey)
+STEAM_API=
+
+# Site URL (e.g. http://127.0.0.1:8000) for local testing)
+SITEURL="http://127.0.0.1:8000"
 ```
+
+##### Links
+- [osu](https://osu.ppy.sh/home/account/edit)
+- [YT](https://console.cloud.google.com/apis/api/youtube.googleapis.com)
+- [steam](https://steamcommunity.com/dev/apikey)
+
 
 ### 3. Build Web Site
 ```
