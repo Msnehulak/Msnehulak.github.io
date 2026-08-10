@@ -21,6 +21,8 @@ LOAD_FOROM_DATA = [
     {'type': 'yaml', 'name': 'osu', 'file': 'osu_stats'},
     {'type': 'yaml', 'name': 'projects', 'file': 'projects'},
     {'type': 'yaml', 'name': 'exlib', 'file': 'external_download'},
+    {'type': 'yaml', 'name': 'steam_api', 'file': 'steam_api'},
+    {'type': 'yaml', 'name': 'tran', 'file': 'translate'},
 ]
 
 class DataFolder:
@@ -79,6 +81,42 @@ def create_paths():
         path['path'].mkdir(parents=True, exist_ok=True)
         print(f">>> create path: {path['path']}")
 
+def s_to_time(s: int = 0, m: int = 0, h: int = 0, d: int = 0, lan: str = 'en') -> str:
+    seconds = s + m*60 + h*3600 + d*86400
+    if seconds == 0:
+        zero_labels = {'en': '0 seconds', 'cs': '0 sekund'}
+        return zero_labels.get(lan, '0 s')
+
+    d, dr = divmod(seconds, 86400)
+    h, hr = divmod(dr, 3600)
+    m, s = divmod(hr, 60)
+
+    units = [
+        (d, {'en': ('day', 'days'), 'cs': ('den', 'dny', 'dní'), 'fallback': 'D'}),
+        (h, {'en': ('hour', 'hours'), 'cs': ('hodina', 'hodiny', 'hodin'), 'fallback': 'h'}),
+        (m, {'en': ('minute', 'minutes'), 'cs': ('minuta', 'minuty', 'minut'), 'fallback': 'm'}),
+        (s, {'en': ('second', 'seconds'), 'cs': ('sekunda', 'sekundy', 'sekund'), 'fallback': 's'}),
+    ]
+
+    def format_unit(value: int, translations: dict) -> str:
+        if lan == 'cs':
+            forms = translations['cs']
+            if value == 1:
+                unit = forms[0]
+            elif 1 < value < 5:
+                unit = forms[1]
+            else:
+                unit = forms[2]
+        elif lan == 'en':
+            forms = translations['en']
+            unit = forms[0] if value == 1 else forms[1]
+        else:
+            unit = translations['fallback']
+            
+        return f'{value} {unit}'
+
+    out = [format_unit(val, trans) for val, trans in units if val > 0]
+    return ', '.join(out)
 @contextmanager
 def timer(name):
     start = time.perf_counter()

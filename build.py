@@ -56,11 +56,18 @@ def get_web_data():
         'en': builder.projects_cards(lan='en')
     }
 
+    # -- Steam --
+    steam = {
+        'cs': builder.steam_games(lan='cs'),
+        'en': builder.steam_games(lan='en')
+    }
+
     return {
         'YT_FRAME': yt_frame,
         'OSU_DATA': osu_data,
         'INDEX_LINKS_DIV': index_links,
         'PROJECTS': projects,
+        'STEAM': steam,
     }
 
 if __name__ == "__main__":

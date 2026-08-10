@@ -80,7 +80,7 @@ ALL_LANGUAGES = {
 
 DEFAULT_LANG = MAIN_LANG
 
-PAGE_PATHS = ['', 'images']
+PAGE_PATHS = ['']
 
 JINJA_ENVIRONMENT = {
 #    'extensions': ['jinja2.ext.i18n']

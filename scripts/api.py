@@ -1,7 +1,4 @@
-if __name__ == '__main__':
-    import sweb
-else:
-    from . import sweb
+from scripts import sweb
 
 import logging
 import os
@@ -13,6 +10,8 @@ from diskcache import Cache
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from ossapi import Ossapi
+import requests
+
 
 load_dotenv()
 
@@ -20,11 +19,13 @@ _NO_EXPIRE = '_no_expire'
 BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "cache" / "diskcache"
 YT_CHANNEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
+STEAM_ID = 76561199435612424
 
 ENV_VAL = {
     "osu_client_id": os.getenv("OSU_CLIENT_ID"),
     "osu_client_secret": os.getenv("OSU_CLIENT_SECRET"),
     "youtube_api_key": os.getenv("YOUTUBE_API_KEY"),
+    "steam_api": os.getenv("STEAM_API"),
 }
 
 for name, key in ENV_VAL.items():
@@ -45,7 +46,12 @@ class APIs:
                 'update': self.update_osu,
                 'refresh': 1 * 60 * 60,
                 'data': None
-            }
+            },
+            'steam': {
+                'update': self.update_steam,
+                'refresh': 1 * 60 * 60,
+                'data': None
+    }
         }
         self.update_data()
 
@@ -87,6 +93,28 @@ class APIs:
             self.cache.set(f'{api}{_NO_EXPIRE}', data, expire=None)
             self.apis[api]['data'] = data
             logging.info(f"Update cache for '{api}' and '{api}{_NO_EXPIRE}'")
+
+    def update_steam(self):
+        key = ENV_VAL['steam_api']
+        uid = STEAM_ID
+        cfg = sweb.data['steam_api']
+        api_start = 'https://api.steampowered.com' 
+
+        own_games_link = f'{api_start}/IPlayerService/GetOwnedGames/v1/?key={key}&steamid={uid}&include_appinfo=true&include_played_free_games=true&include_free_sub=true'
+        own_games_response = requests.get(own_games_link) 
+        own_games = own_games_response.json()['response']
+       
+        games = []
+        games_list = own_games['games']
+        block_games = cfg['block_games']
+        for game in games_list:
+            if game['appid'] in block_games:
+                continue
+            games.append(game)
+
+        return {
+            'games': games
+        }
 
     def update_yt(self):
         youtube = build('youtube', 'v3', developerKey=ENV_VAL['youtube_api_key'])
@@ -156,3 +184,4 @@ class APIs:
             "play_count": stats.play_count,
             "avatar": user.avatar_url,
         }
+

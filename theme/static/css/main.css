@@ -1,13 +1,15 @@
 :root {
     --bg-main: #1e1e1e;
     --bg-card: #2d2d2d;
+    --card-hi-light: #3e3e3e;
     --primary: #033663;
     --primary-dark: #022552;
     --text-main: #f1f1f1;
     --text-muted: #aaaaaa;
     --accent: #3498db;
     --radius: 12px;
-    --transition: all 0.3s ease;
+
+    --transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 body {
@@ -38,6 +40,7 @@ a:hover {
     color: var(--text-main);
     transition: var(--transition);
     background-color: var(--primary);
+    border-radius: var(--radius);
 }
 
 .btn:hover {
@@ -66,8 +69,8 @@ footer {
     width: 90%;
     max-width: 320px; 
     height: 100% !important;
-    background-color: #3e3e3e;
-    border-radius: 20px;
+    background-color: var(--card-hi-light);
+    border-radius: var(--radius);
     display: flex !important;
     flex-direction: column;
     align-items: center;
@@ -149,7 +152,7 @@ nav a {
 }
 
 .links-index a:hover {
-    background-color: #3d3d3d;
+    background-color: var(--card-hi-light);
 }
 
 /* YouTube */
@@ -178,7 +181,6 @@ nav a {
     transform: scale(1.02);
 }
 
-/* YouTube */
 .yt-lazy-play-btn {
     position: absolute;
     width: 68px;
@@ -201,6 +203,79 @@ nav a {
 
 .yt-lazy-wrapper:hover .yt-lazy-play-btn {
     background-color: #ff0000;
+}
+
+/* own games */
+.controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.game-card {
+  background: var(--card-hi-light);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card-media {
+  aspect-ratio: 6 / 9;
+  width: 100%;
+  background: var(--card-hi-light);
+}
+
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.game-title {
+  font-size: 1rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.steam-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; 
+    max-width: 300px;
+    height: 25px;
+    border: none;
+    text-decoration: none;
+    transition: var(--transition);
+    margin-top: auto;
 }
 
 /*Projects*/
@@ -250,5 +325,4 @@ iframe {
         width: 95%;
     }
 }
-
 

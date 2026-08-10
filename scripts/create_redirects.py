@@ -1,5 +1,4 @@
-if __name__ == '__main__': import sweb
-else: from . import sweb
+from scripts import sweb
 import logging
 import xml.etree.ElementTree as ET
 import os

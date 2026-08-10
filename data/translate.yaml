@@ -1,0 +1,32 @@
+
+steam_games_list:
+  find_game:
+    cs: 'Hledat hru...'
+    en: 'Find game...'
+  sort_by:
+    cs: 'Seřadit podle:'
+    en: 'Sort by:'
+  most_played:
+    cs: 'Nejvíce odehráno' 
+    en: 'Most played'
+  least_played:
+    cs: 'Nejméně odehráno'
+    en: 'Least played'
+  a-z:
+    cs: 'A–Z (Název)'
+    en: 'A–Z (Name)'
+  z-a:
+    cs: 'Z-A (Název)'
+    en: 'Z-A (Name)'
+  play_time:
+    cs: 'Odehráno:'
+    en: 'Play Time:'
+  steam_btn:
+    cs: 'Steam stránka'
+    en: 'Steam page'
+  
+
+
+
+
+
