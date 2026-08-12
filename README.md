@@ -1,6 +1,6 @@
 # msnehulak.github.io
 This is my static website built with Pelican.
-**Site:** [msnehulak.github.io](https://msnehulak.github.io)
+**Site:** [snehulak.dev](https://snehulak.dev/)
 
 ## Start developing 
 ### 0. Create .venv (optional)
