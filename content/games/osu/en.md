@@ -2,6 +2,7 @@
 title: My Osu
 slug: osu
 lang: en
+folder: games 
 ---
 
 # My osu! profile

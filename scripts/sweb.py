@@ -12,6 +12,12 @@ load_dotenv()
 site_url = os.getenv('SITEURL', 'https://example.com').rstrip('/')
 site_lan = 'en'
 
+def lan_site_url(lan):
+    if lan == 'en' or lan == '':
+        return site_url
+    else:
+        return f'{site_url}/{lan}'
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_TIME_FORM = "%Y-%m-%d %H:%M:%S"
 

@@ -10,5 +10,5 @@ steam_ignore_games:
 
 osu:
   art: 'https://cdn2.steamgriddb.com/hero_thumb/fa9462ba01ad26f19535be3c4c462a5e.jpg'
-  link: 'https://osu.ppy.sh/home/download'
+  link: '{{ SITEURL }}/games/osu'
 

@@ -28,13 +28,16 @@ class Games:
     def add_osu(self):
         osu_api = APP_API.get_data('osu')
         play_time = osu_api['play_time']
-        osu_data = GAME_DATA['osu'] 
+        osu_data = GAME_DATA['osu']
         self.games.append({
             'type': 'custom',
             'name': 'OSU!',
             'play_time': play_time,
             'link': osu_data['link'],
             'art': osu_data['art'],
+            'more': {
+                'new_tab': False,
+            },
         })
 
 

@@ -2,6 +2,7 @@
 title: My Osu
 slug: osu
 lang: cs
+folder: games
 ---
 
 # Můj osu! profil

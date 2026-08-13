@@ -6,9 +6,14 @@ APP_GAMES = games.Games()
 TRANSLATE = sweb.data['tran']
 
 class Builder:
-    def new_card_r(self, link):
-        return f'href="{link}" target="_blank" rel="noopener noreferrer"'
- 
+    def html_link(self, link: str, new_tab = False, lan=''):
+        if link.startswith('{{ SITEURL }}'):
+            link = link.replace('{{ SITEURL }}', sweb.lan_site_url(lan))
+        if new_tab:
+            return f'href="{link}" target="_blank" rel="noopener noreferrer"'
+        else:
+            return f'href="{link}"'
+
     def yt_frame(self, video_id, title): 
         thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
         return f'''<div class="yt-lazy-wrapper" data-video-id="{video_id}" data-title="{title}">
@@ -55,18 +60,17 @@ class Builder:
             name = game['name']
             playtime_s = game['play_time']
             playtime = sweb.s_to_time(s=playtime_s, lan=lan)
-            link = self.new_card_r(game['link'])
-            cover_art =  game['art']
-            
-            if playtime_s <= 0:
-                play_time_show = tr['never_play']
-            else:
-                play_time_show = f'{tr['play_time']} <span>{playtime}</span>'
+            cover_art = game['art']
+            more = game.get('more') or {}
+            new_tab = more.get('new_tab', True)
+            link = self.html_link(game['link'], lan=lan, new_tab=new_tab)
 
-            if gtype == 'steam':
-                btn_text = tr['steam_btn']
-            else:
-                btn_text = tr['other_btn']
+
+            if playtime_s <= 0: play_time_show = tr['never_play']
+            else:               play_time_show = f'{tr['play_time']} <span>{playtime}</span>'
+
+            if gtype == 'steam':  btn_text = tr['steam_btn']
+            else:                 btn_text = tr['other_btn']
 
             card = f'''
             <article class="game-card" data-name="{name}" data-playtime="{playtime_s}" data-appid="{name}"><div class="card-media">
