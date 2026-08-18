@@ -64,11 +64,6 @@ jobs:
         run: |
           pelican content -s publishconf.py
 
-      - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          configPath: './.lighthouserc.json'
-
       - name: Upload Cloudflare Output Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -104,3 +99,22 @@ jobs:
       - name: Deploy to GitHub Pages as redirects
         id: deployment
         uses: actions/deploy-pages@v4
+
+  lighthouse-test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Cloudflare Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cloudflare-output
+          path: './output'
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: './.lighthouserc.json'
+          uploadArtifacts: true
