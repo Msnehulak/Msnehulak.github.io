@@ -3,14 +3,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
-  {# Projdeme všechny stránky, ale vybereme jen ty, které jsou v hlavním jazyce (DEFAULT_LANG) #}
+{% set SITEURL = SITEURL_ORG %}
   {% for page in pages if page.lang == DEFAULT_LANG %}
-
-    {# Sestavíme absolutní URL – ošetříme prázdnou URL pro hlavní stranu (index) #}
     {% if page.url %}
       {% set canonical_url = SITEURL ~ '/' ~ page.url %}
     {% else %}
-      {# Pro index je url prázdná, použijeme jen SITEURL s lomítkem #}
       {% set canonical_url = SITEURL ~ '/' %}
     {% endif %}
 
@@ -26,8 +23,6 @@
       <changefreq>monthly</changefreq>
       <priority>0.7</priority>
 
-      {# --- Alternativní jazykové verze --- #}
-      {# Projdeme všechny překlady aktuální stránky #}
       {% for trans in page.translations %}
         {# Sestavíme absolutní URL překladu #}
         {% if trans.url %}
