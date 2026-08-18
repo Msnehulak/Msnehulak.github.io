@@ -9,9 +9,8 @@ output/
 redirect/
 digest.txt
 cache/
-node_modules/
-theme/static/extra/
-content/images/build
+testing/
+
 
 
 
