@@ -1,15 +1,20 @@
+{% set current_lang = page.lang if (page and page.lang) else (LANG if LANG else DEFAULT_LANG) %}
+{% set lang_prefix = "" if current_lang == MAIN_LANG else "/" ~ current_lang %} 
+
 <!DOCTYPE html>
 <html lang="{{ page.lang if page else DEFAULT_LANG }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     {% if page and page.description is defined and page.description %}
         <meta name="description" content="{{ page.description }}">
-    {% else %}
-        
+    {% elif SITEDESCRIPTION is defined and SITEDESCRIPTION %}
+        <meta name="description" content="{{ SITEDESCRIPTION }}">
     {% endif %}
 
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
+
     <link rel="preload" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css" as="style">
     <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
     
@@ -26,36 +31,35 @@
             <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}">
         {% endfor %}
     {% endif %}
+</head>
 <body>
     <nav>
         <div class="nav-logo">SnehulakTV</div>
-
+    
         <div class="nav-links">
-            <a class="btn" href="{{ SITEURL }}/">Home</a>
-            <a class="btn" href="{{ SITEURL }}/about_me/">About Me</a>
-            <a class="btn" href="{{ SITEURL }}/projects/">Projects</a>
-            <a class="btn" href="{{ SITEURL }}/games/">Games</a>
+            <a class="btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a>
+            <a class="btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a>
+            <a class="btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a>
+            <a class="btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a>
+        </div>
 
-            {% if page and page.translations %}
-                {% for trans in page.translations %}
-                    <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn">
-                        🌐 {{ trans.lang | upper }}
+        {% if page and page.translations %}
+            {% for trans in page.translations %}
+                <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn">
+                    {{ NAV[current_lang].lang_switch }} {{ trans.lang | upper }}
+                </a>
+            {% endfor %}
+        {% elif lang_siteurls %}
+            {% for lang_code, lang_url in lang_siteurls.items() %}
+                {% if lang_code != current_lang %}
+                    <a href="{{ lang_url }}/" class="lang-switcher btn">
+                        {{ NAV[current_lang].lang_switch }} {{ lang_code | upper }}
                     </a>
-                {% endfor %}
-            {% elif lang_siteurls %}
-                {% for lang_code, lang_url in lang_siteurls.items() %}
-                    {% set current_lang = page.lang if page else DEFAULT_LANG %}
-                    {% if lang_code != current_lang %}
-                        <a href="{{ lang_url }}/" class="lang-switcher btn">
-                            🌐 {{ lang_code | upper }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
-
-</div>
-
+                {% endif %}
+            {% endfor %}
+        {% endif %}
     </nav>
+
     <main>
         {% block content %}
         {% endblock %}
