@@ -46,14 +46,14 @@
         {% if page and page.translations %}
             {% for trans in page.translations %}
                 <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn">
-                    {{ NAV[current_lang].lang_switch }} {{ trans.lang | upper }}
+                    {{ NAV[trans.lang].lang_switch }} {{ trans.lang | upper }}
                 </a>
             {% endfor %}
         {% elif lang_siteurls %}
             {% for lang_code, lang_url in lang_siteurls.items() %}
                 {% if lang_code != current_lang %}
                     <a href="{{ lang_url }}/" class="lang-switcher btn">
-                        {{ NAV[current_lang].lang_switch }} {{ lang_code | upper }}
+                        {{ NAV[lang_code].lang_switch }} {{ lang_code | upper }}
                     </a>
                 {% endif %}
             {% endfor %}

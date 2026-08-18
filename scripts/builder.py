@@ -8,9 +8,11 @@ TRANSLATE = sweb.data["tran"]
 
 
 class Builder:
-    def html_link(self, link: str, new_tab=False, lan=""):
+    def html_link(self, link: str, new_tab=False, lan="", relative: bool = True):
         if link.startswith("{{ SITEURL }}"):
-            link = link.replace("{{ SITEURL }}", sweb.lan_site_url(lan))
+            link = link.replace(
+                "{{ SITEURL }}", sweb.lan_site_url(lan, relative=relative)
+            )
         if new_tab:
             return f'href="{link}" target="_blank" rel="noopener noreferrer"'
         else:
@@ -30,7 +32,7 @@ class Builder:
 
         for link in data:
             symbol_id = os.path.splitext(link["img"])[0]
-            sprite_path = f"{sweb.site_url}/index/images/sprite.svg#{symbol_id}"
+            sprite_path = f"/index/images/sprite.svg#{symbol_id}"
 
             template = f'''<a href="{link["link"]}" target="_blank" rel="noopener noreferrer" title="{link["hover"]}">
                 <svg aria-hidden="true">
@@ -63,8 +65,10 @@ class Builder:
             playtime_s = game["play_time"]
             playtime = sweb.s_to_time(s=playtime_s, lan=lan)
             cover_art = game["art"]
+
             more = game.get("more") or {}
             new_tab = more.get("new_tab", True)
+
             link = self.html_link(game["link"], lan=lan, new_tab=new_tab)
 
             if playtime_s <= 0:
@@ -99,11 +103,11 @@ class Builder:
             texts = i["content"][lan]
 
             if lan == sweb.site_lan:
-                lan_url = "/"
+                lan_url = ""
             else:
-                lan_url = f"/{lan}/"
+                lan_url = f"/{lan}"
 
-            link = f"{sweb.site_url}{lan_url}projects/{i['content']['link']}"
+            link = f"{lan_url}/projects/{i['content']['link']}"
             btn_html = ""
             if not i["content"]["link"] == "None":
                 btn_html = f'<a href="{link}" class="card-btn btn">{texts["btn"]}</a>'
@@ -129,3 +133,5 @@ class Builder:
 
 if __name__ == "__main__":
     builder = Builder()
+    i = builder.index_links()
+    print(i)
