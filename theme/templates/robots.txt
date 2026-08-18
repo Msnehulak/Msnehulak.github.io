@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: {{ _SITEURL }}/sitemap.xml
+Sitemap: {{ SITEURL_ORG }}/sitemap.xml

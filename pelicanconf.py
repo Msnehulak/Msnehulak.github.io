@@ -20,8 +20,8 @@ sys.path.append(os.curdir)
 
 AUTHOR = "Snehulak"
 SITENAME = "Snehulak"
-_SITEURL = os.getenv("SITEURL", "https://example.com").rstrip("/")
-SITEURL = _SITEURL
+SITEURL_ORG = os.getenv("SITEURL", "https://example.com").rstrip("/")
+SITEURL = SITEURL_ORG
 RELATIVE_URLS = True
 PATH = "content"
 THEME = "theme"
