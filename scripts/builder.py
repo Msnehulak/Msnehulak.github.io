@@ -21,7 +21,7 @@ class Builder:
     def yt_frame(self, video_id, title):
         thumbnail_url = f"https://i.ytimg.com/vi/{video_id}/hqdefault.jpg"
         return f'''<div class="yt-lazy-wrapper" data-video-id="{video_id}" data-title="{title}">
-            <img src="{thumbnail_url}" alt="{title}" class="yt-lazy-thumbnail" fetchpriority=high>
+            <img src="{thumbnail_url}" alt="{title}" class="yt-lazy-thumbnail" fetchpriority=high referrerpolicy="no-referrer">
             <button class="yt-lazy-play-btn" aria-label="Přehrát video">
             </button>
         </div>'''
