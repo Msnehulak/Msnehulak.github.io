@@ -1,24 +1,23 @@
-from scripts import sweb
-
 import logging
 import os
 import sys
 from datetime import timedelta
 from pathlib import Path
 
+import requests
 from diskcache import Cache
 from dotenv import load_dotenv
 from googleapiclient.discovery import build
 from ossapi import Ossapi
-import requests
 
+from scripts import sweb
 
 load_dotenv()
 
-_NO_EXPIRE = '_no_expire'
+_NO_EXPIRE = "_no_expire"
 BASE_DIR = Path(__file__).resolve().parent.parent
 CACHE_DIR = BASE_DIR / "cache" / "diskcache"
-YT_CHANNEL_ID = 'UC-SySQOnf_6WygeSQuLnCrQ'
+YT_CHANNEL_ID = "UC-SySQOnf_6WygeSQuLnCrQ"
 STEAM_ID = 76561199435612424
 
 ENV_VAL = {
@@ -30,142 +29,140 @@ ENV_VAL = {
 
 for name, key in ENV_VAL.items():
     if key is None:
-        logging.error(f'missing env: {name}')
+        logging.error(f"missing env: {name}")
         sys.exit(1)
+
 
 class APIs:
     def __init__(self) -> None:
         self.cache = Cache(str(CACHE_DIR))
         self.apis = {
-            'yt': {
-                'update': self.update_yt,
-                'refresh': 1 * 60 * 60,
-                'data': None
+            "yt": {"update": self.update_yt, "refresh": 1 * 60 * 60, "data": None},
+            "osu": {"update": self.update_osu, "refresh": 1 * 60 * 60, "data": None},
+            "steam": {
+                "update": self.update_steam,
+                "refresh": 1 * 60 * 60,
+                "data": None,
             },
-            'osu': {
-                'update': self.update_osu,
-                'refresh': 1 * 60 * 60,
-                'data': None
-            },
-            'steam': {
-                'update': self.update_steam,
-                'refresh': 1 * 60 * 60,
-                'data': None
-    }
         }
         self.update_data()
 
-    def update_data(self, force: bool=False):
+    def update_data(self, force: bool = False):
         for name, content in self.apis.items():
             cached_data = self.cache.get(name)
 
             if cached_data is None or force:
-                logging.debug(f"Cache pro '{name}' neexistuje nebo vypršela. Spouštím update...")
-                
+                logging.debug(
+                    f"Cache pro '{name}' neexistuje nebo vypršela. Spouštím update..."
+                )
+
                 try:
-                    new_data = content['update']()
+                    new_data = content["update"]()
                     if not new_data:
-                        raise ValueError(f"Funkce update pro {name} vrátila prázdná data.")
+                        raise ValueError(
+                            f"Funkce update pro {name} vrátila prázdná data."
+                        )
                 except Exception as e:
-                    logging.warning(f"Chyba při aktualizaci {name}: {e}. Zkouším načíst stará data...")
-                    new_data = self.cache.get(f'{name}{_NO_EXPIRE}') 
-                    
+                    logging.warning(
+                        f"Chyba při aktualizaci {name}: {e}. Zkouším načíst stará data..."
+                    )
+                    new_data = self.cache.get(f"{name}{_NO_EXPIRE}")
+
                     if new_data is None:
                         logging.error(f"Chybí stará data i v záložní cache pro {name}")
                         sys.exit(1)
-                   
+
                 self._update_cache(name, new_data)
             else:
-                logging.info(f'for {name} is used cache')
-                content['data'] = cached_data
+                logging.info(f"for {name} is used cache")
+                content["data"] = cached_data
 
     def get_data(self, api):
         if api in self.apis:
-            return self.apis[api]['data']
+            return self.apis[api]["data"]
         else:
             logging.error(f"API data '{api}' doesn't exist")
             sys.exit(1)
 
     def _update_cache(self, api, data):
         if data and api in self.apis:
-            expire_seconds = self.apis[api]['refresh']
+            expire_seconds = self.apis[api]["refresh"]
             self.cache.set(api, data, expire=expire_seconds)
-            self.cache.set(f'{api}{_NO_EXPIRE}', data, expire=None)
-            self.apis[api]['data'] = data
+            self.cache.set(f"{api}{_NO_EXPIRE}", data, expire=None)
+            self.apis[api]["data"] = data
             logging.info(f"Update cache for '{api}' and '{api}{_NO_EXPIRE}'")
 
     def update_steam(self):
-        key = ENV_VAL['steam_api']
+        key = ENV_VAL["steam_api"]
         uid = STEAM_ID
-        cfg = sweb.data['games']
-        api_start = 'https://api.steampowered.com' 
+        cfg = sweb.data["games"]
+        api_start = "https://api.steampowered.com"
 
-        own_games_link = f'{api_start}/IPlayerService/GetOwnedGames/v1/?key={key}&steamid={uid}&include_appinfo=true&include_played_free_games=true&include_free_sub=true'
-        own_games_response = requests.get(own_games_link) 
-        own_games = own_games_response.json()['response']
-       
+        own_games_link = f"{api_start}/IPlayerService/GetOwnedGames/v1/?key={key}&steamid={uid}&include_appinfo=true&include_played_free_games=true&include_free_sub=true"
+        own_games_response = requests.get(own_games_link)
+        own_games = own_games_response.json()["response"]
+
         games = []
-        games_list = own_games['games']
-        block_games = cfg['steam_ignore_games']
+        games_list = own_games["games"]
+        block_games = cfg["steam_ignore_games"]
         for game in games_list:
-            if game['appid'] in block_games:
+            if game["appid"] in block_games:
                 continue
             games.append(game)
 
-        return {
-            'games': games
-        }
+        return {"games": games}
 
     def update_yt(self):
-        youtube = build('youtube', 'v3', developerKey=ENV_VAL['youtube_api_key'])
-        
+        youtube = build("youtube", "v3", developerKey=ENV_VAL["youtube_api_key"])
+
         channel_request = youtube.channels().list(
-            part='contentDetails,snippet',
-            id=YT_CHANNEL_ID
+            part="contentDetails,snippet", id=YT_CHANNEL_ID
         )
         channel_response = channel_request.execute()
 
-        if not channel_response.get('items'):
+        if not channel_response.get("items"):
             raise RuntimeError("Kanál s tímto ID nebyl nalezen.")
 
-        channel_title = channel_response['items'][0]['snippet']['title']
-        channel_tag = channel_response['items'][0]['snippet']['customUrl']
-        uploads_playlist_id = channel_response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
-        
+        channel_title = channel_response["items"][0]["snippet"]["title"]
+        channel_tag = channel_response["items"][0]["snippet"]["customUrl"]
+        uploads_playlist_id = channel_response["items"][0]["contentDetails"][
+            "relatedPlaylists"
+        ]["uploads"]
+
         playlist_request = youtube.playlistItems().list(
-            part='snippet',
-            playlistId=uploads_playlist_id,
-            maxResults=1 
+            part="snippet", playlistId=uploads_playlist_id, maxResults=1
         )
         playlist_response = playlist_request.execute()
 
-        if not playlist_response.get('items'):
-            raise RuntimeError("V playlistu nahraných videí nebyla nalezena žádná videa.")
+        if not playlist_response.get("items"):
+            raise RuntimeError(
+                "V playlistu nahraných videí nebyla nalezena žádná videa."
+            )
 
-        latest_video = playlist_response['items'][0]
-        video_title = latest_video['snippet']['title']
-        video_id = latest_video['snippet']['resourceId']['videoId']
-        published_at = latest_video['snippet']['publishedAt']
+        latest_video = playlist_response["items"][0]
+        video_title = latest_video["snippet"]["title"]
+        video_id = latest_video["snippet"]["resourceId"]["videoId"]
+        published_at = latest_video["snippet"]["publishedAt"]
         video_url = f"https://www.youtube.com/watch?v={video_id}"
         video_url_embed = f"https://www.youtube-nocookie.com/embed/{video_id}"
 
         return {
-            'profile': {
-                'title': channel_title,
-                'tag': channel_tag,
+            "profile": {
+                "title": channel_title,
+                "tag": channel_tag,
             },
-            'newest_vid': {
-                'title': video_title,
-                'id': video_id,
-                'released_date': published_at,
-                'url': video_url,
-                'embed': video_url_embed
-            }
+            "newest_vid": {
+                "title": video_title,
+                "id": video_id,
+                "released_date": published_at,
+                "url": video_url,
+                "embed": video_url_embed,
+            },
         }
 
     def update_osu(self):
-        client_id = ENV_VAL['osu_client_id']
-        client_secret = ENV_VAL['osu_client_secret']
+        client_id = ENV_VAL["osu_client_id"]
+        client_secret = ENV_VAL["osu_client_secret"]
         username = "SnehulakTV_"
 
         if not client_id or not client_secret:
@@ -185,6 +182,8 @@ class APIs:
             "play_count": stats.play_count,
             "avatar": user.avatar_url,
         }
-if __name__ == '__main__':
+
+
+if __name__ == "__main__":
     app = APIs()
-    app.update_data(force = True)
+    app.update_data(force=True)

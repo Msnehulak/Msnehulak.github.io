@@ -1,11 +1,13 @@
-from scripts import sweb
 import logging
-import xml.etree.ElementTree as ET
 import os
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
-PATH = sweb.BASE_DIR / 'output' / 'sitemap.xml'
-OUTPUT_PATH = sweb.BASE_DIR / 'redirect' 
+from scripts import sweb
+
+PATH = sweb.BASE_DIR / "output" / "sitemap.xml"
+OUTPUT_PATH = sweb.BASE_DIR / "redirect"
+
 
 def main():
     if not PATH.exists():
@@ -23,13 +25,13 @@ def main():
 
     for url in urls:
         path = url.split("://")[-1].split("/", 1)[-1]
-        
+
         # Odstraníme koncový lomítko pro správný název složky
         dir_path = path.strip("/")
         dir_path = OUTPUT_PATH / dir_path
-        
+
         os.makedirs(dir_path, exist_ok=True)
-        
+
         html_content = f"""<!DOCTYPE html>
     <html>
     <head>
@@ -40,11 +42,12 @@ def main():
         <p>Pokud nebudete přesměrováni, klikněte <a href="{url}">zde</a>.</p>
     </body>
     </html>"""
-        
+
         with open(os.path.join(dir_path, "index.html"), "w", encoding="utf-8") as f:
             f.write(html_content)
 
     logging.info("Složky a přesměrování byly úspěšně vytvořeny!")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
