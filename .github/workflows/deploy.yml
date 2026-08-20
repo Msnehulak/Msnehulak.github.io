@@ -64,6 +64,11 @@ jobs:
         run: |
           pelican content -s publishconf.py
 
+      - name: gitingest sorce
+        run: |
+          chmod +x bash/gitingest.sh
+          ./bash/gitingest.sh
+
       - name: Upload Cloudflare Output Artifact
         uses: actions/upload-artifact@v4
         with:

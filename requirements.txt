@@ -4,6 +4,7 @@ python-dotenv
 diskcache
 PyYAML
 tqdm
+gitingest
 
 requests
 ossapi
