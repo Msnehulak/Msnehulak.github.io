@@ -34,30 +34,33 @@
 </head>
 <body>
     <nav>
-        <div class="nav-logo">SnehulakTV</div>
-    
-        <div class="nav-links">
-            <a class="btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a>
-            <a class="btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a>
-            <a class="btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a>
-            <a class="btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a>
-        </div>
+        <div class="nav-logo">
+             <a class="btn" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
+        </div>  
+
+<ul class="nav-container">
+        <li><a class="btn nav-link" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
+        <li><a class="btn nav-link" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
+        <li><a class="btn nav-link" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
+        <li><a class="btn nav-link" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
+
 
         {% if page and page.translations %}
             {% for trans in page.translations %}
-                <a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn">
-                    {{ NAV[trans.lang].lang_switch }} {{ trans.lang | upper }}
-                </a>
+            <li><a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn nav-link">
+                    {{ NAV[trans.lang].lang_switch }}
+                </a></li>
             {% endfor %}
         {% elif lang_siteurls %}
             {% for lang_code, lang_url in lang_siteurls.items() %}
                 {% if lang_code != current_lang %}
-                    <a href="{{ lang_url }}/" class="lang-switcher btn">
-                        {{ NAV[lang_code].lang_switch }} {{ lang_code | upper }}
-                    </a>
+                <li><a href="{{ lang_url }}/" class="lang-switcher btn nav-link">
+                        {{ NAV[lang_code].lang_switch }}
+                    </a></li>
                 {% endif %}
             {% endfor %}
         {% endif %}
+</ul>
     </nav>
 
     <main>
