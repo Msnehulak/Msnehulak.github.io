@@ -4,41 +4,34 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
 {% set SITEURL = SITEURL_ORG %}
-  {% for page in pages if page.lang == DEFAULT_LANG %}
-    {% if page.url %}
-      {% set canonical_url = SITEURL ~ '/' ~ page.url %}
-    {% else %}
-      {% set canonical_url = SITEURL ~ '/' %}
-    {% endif %}
 
-    <url>
-      <loc>{{ canonical_url }}</loc>
+  {% for main_page in pages %}
+    {% set all_variants = [main_page] + main_page.translations %}
 
-    {% set last_date = page.modified or page.date or None %}
-    {% if last_date %}
-      <lastmod>{{ last_date.strftime('%Y-%m-%d') }}</lastmod>
-    {% endif %}
+    {% for page in all_variants %}
+      {% set canonical_url = (SITEURL ~ '/' ~ page.url) if page.url else (SITEURL ~ '/') %}
 
-      {# Frekvence a priorita – můžete nechat pevně nebo číst z metadat #}
-      <changefreq>monthly</changefreq>
-      <priority>0.7</priority>
+      <url>
+        <loc>{{ canonical_url }}</loc>
 
-      {% for trans in page.translations %}
-        {# Sestavíme absolutní URL překladu #}
-        {% if trans.url %}
-          {% set trans_url = SITEURL ~ '/' ~ trans.url %}
-        {% else %}
-          {% set trans_url = SITEURL ~ '/' %}
+        {% set last_date = page.modified or page.date or None %}
+        {% if last_date %}
+          <lastmod>{{ last_date.strftime('%Y-%m-%d') }}</lastmod>
         {% endif %}
-        <xhtml:link rel="alternate" hreflang="{{ trans.lang }}" href="{{ trans_url }}"/>
-      {% endfor %}
 
-      {# Důležité: přidáme i odkaz na sebe sama (self-referencing), ale jen pokud existují jiné jazyky #}
-      {# To pomáhá vyhledávačům pochopit, že tato stránka je hlavní verzí #}
-      {% if page.translations %}
-        <xhtml:link rel="alternate" hreflang="{{ page.lang }}" href="{{ canonical_url }}"/>
-      {% endif %}
+          <changefreq>monthly</changefreq>
+        {% if page and page.sitemap_priority is defined and page.sitemap_priority %}
+          <priority>{{ page.sitemap_priority }}</priority>
+        {% else %}
+          <priority>0.7</priority>
+        {% endif %}
 
-    </url>
+        {% for link_page in all_variants %}
+          {% set link_url = (SITEURL ~ '/' ~ link_page.url) if link_page.url else (SITEURL ~ '/') %}
+          <xhtml:link rel="alternate" hreflang="{{ link_page.lang }}" href="{{ link_url }}"/>
+        {% endfor %}
+
+      </url>
+    {% endfor %}
   {% endfor %}
 </urlset>

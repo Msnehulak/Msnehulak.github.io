@@ -4,6 +4,7 @@ slug: index
 lang: en
 js: main
 description: Main page of site msnehulak.github.io
+sitemap_priority: 1.0
 ---
 
 # Welcome to my website!

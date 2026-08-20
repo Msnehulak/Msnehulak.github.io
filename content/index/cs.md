@@ -4,6 +4,7 @@ slug: index
 lang: cs
 js: main
 description: Hlavni stranka webu msnehulak.github.io
+sitemap_priority: 1.0
 ---
 
 # Vítejte na mém webu!

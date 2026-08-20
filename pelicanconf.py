@@ -4,6 +4,7 @@ import sys
 
 sys.path.append(os.curdir)
 
+import subprocess
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
@@ -182,11 +183,35 @@ def on_finalized(pelican_obj):
     external_download.move_file()
 
 
+def set_file_modified_date(content_obj):
+    if hasattr(content_obj, "source_path") and content_obj.source_path:
+        source_file = Path(content_obj.source_path)
+        if source_file.exists():
+            try:
+                # Načte Unix timestamp posledního Git commitu daného .md souboru
+                res = subprocess.run(
+                    ["git", "log", "-1", "--format=%ct", str(source_file)],
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                if res.stdout.strip():
+                    timestamp = int(res.stdout.strip())
+                    content_obj.modified = datetime.fromtimestamp(timestamp)
+                    return
+            except Exception:
+                pass
+
+            # Záložní řešení: systémový čas poslední změny souboru (mtime)
+            content_obj.modified = datetime.fromtimestamp(source_file.stat().st_mtime)
+
+
 def on_initialized(pelican_obj):
     if not _ALREADY_STARTED:
         first_start(pelican_obj)
 
 
+signals.content_object_init.connect(set_file_modified_date)
 signals.finalized.connect(on_finalized)
 signals.initialized.connect(on_initialized)
 signals.content_object_init.connect(set_custom_page_urls)
