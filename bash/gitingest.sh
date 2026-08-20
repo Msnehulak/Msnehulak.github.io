@@ -10,7 +10,7 @@ if ! command -v gitingest &> /dev/null; then
 fi
 
 # 2. Vytvoření cílové složky, pokud neexistuje
-OUTPUT_DIR="output/.gitingest"
+OUTPUT_DIR="output/gitingest"
 mkdir -p "$OUTPUT_DIR"
 
 echo "⏳ Generuji gitingest soubory v '$OUTPUT_DIR'..."
