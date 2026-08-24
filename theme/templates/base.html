@@ -15,8 +15,7 @@
 
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
 
-    <link rel="preload" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css" as="style">
-    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
+
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,19 +30,23 @@
             <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}">
         {% endfor %}
     {% endif %}
+
+    <link rel="preload" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css" as="style">
+    <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
 </head>
-<body>
-    <nav>
-        <div class="nav-logo">
-             <a class="btn" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
-        </div>  
+<body><div class="no-scrollbar">
 
-<ul class="nav-container">
-        <li><a class="btn nav-link" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
-        <li><a class="btn nav-link" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
-        <li><a class="btn nav-link" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
-        <li><a class="btn nav-link" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
 
+<nav class="navbar">
+    <a class="btn navbar-name" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
+    
+    <input type="checkbox" id="menu-toggle" />
+    <label for="menu-toggle" class="menu-icon">&#9776; Menu</label>
+    <ul>
+        <li><a class="btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
+        <li><a class="btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
+        <li><a class="btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
+        <li><a class="btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
 
         {% if page and page.translations %}
             {% for trans in page.translations %}
@@ -60,8 +63,8 @@
                 {% endif %}
             {% endfor %}
         {% endif %}
-</ul>
-    </nav>
+    </ul>
+</nav>
 
     <main>
         {% block content %}
@@ -88,5 +91,6 @@
         {% endfor %}
     {% endif %}
 
+    </div>
 </body>
 </html>

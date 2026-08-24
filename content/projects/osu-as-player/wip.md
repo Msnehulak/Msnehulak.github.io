@@ -62,3 +62,5 @@ S modem HD Pouze pouzit t a vynasobit ho 0.7
 
 - $T_{\text{s hd}} = T_{\text{preempt}} \times 0.7$
 
+osu play filed resolution si 512x384
+
