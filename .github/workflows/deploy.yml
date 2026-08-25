@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'README.md'
+      - 'doc/**'
+      
+      - 'bash/**'
+      - '.env.example'
+      - '.lighthouserc.json'
+      
+      - '.github/.FUNDING.yml'
+      - '.gitignore'
+      - '.gitattributes'
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
