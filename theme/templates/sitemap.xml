@@ -4,8 +4,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
 
 {% set SITEURL = SITEURL_ORG %}
-
-  {% for main_page in pages %}
+    {% for main_page in pages %}
     {% set all_variants = [main_page] + main_page.translations %}
 
     {% for page in all_variants %}

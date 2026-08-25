@@ -5,6 +5,7 @@ folder: projects/osu-as-player
 lang: en
 css: katex
 template: project
+dont_index: true
 ---
 
 # Osu jako mp4 prehravac
