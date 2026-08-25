@@ -1,4 +1,5 @@
 # Page meta data documentation
+Documentation witch metadata hold page
 
 ## from mark down (.md)
  - title: str `title of page`
@@ -12,9 +13,28 @@
  - css: str `add to page css from` `page: /theme/extra/{{ name }}.css` `folder: /theme/static/extra/` **`is use only for code aces`**
  - sitemap_priority: float `level of priority for sitemap` `use 0.0 - 1.0`
 
- ## form git 
+ ## Form git 
   - date: Unix Timestamp `Preation of page`
   - modified: Unix Timestamp `last modify of page`
+
+## Example
+```markdown
+---
+title: Title of page
+description: A text of 150 world to describe a Test page
+slug: test
+lan: en
+template: test
+folder test/test
+js: main
+js_lib: external_js
+css: external_css
+stemap_prioryty: 0.1
+---
+ ```
+
+
+
 
 
 

@@ -118,26 +118,7 @@ for lan, val in i18n_all_subsites.items():
     if not lan == MAIN_LANG:
         I18N_SUBSITES[lan] = val
 
-from build import get_web_data
-from scripts import create_redirects, external_download, image, sweb
-
-WEB_DATA = get_web_data()
-
-
-def fill_data_to_md(content_objekt):
-    if hasattr(content_objekt, "_content") and content_objekt._content:
-        if getattr(content_objekt, "_already_rendered_by_jinja", False):
-            return
-
-        logging.info(f">>> Editing Markdown: {content_objekt.source_path}")
-
-        surovy_text = content_objekt._content
-
-        sablona = Template(surovy_text)
-        upraveny_text = sablona.render(**WEB_DATA)
-
-        content_objekt._content = upraveny_text
-
+from scripts import create_redirects, external_download, image, sweb, update_page
 
 _ALREADY_STARTED = False
 
@@ -154,33 +135,6 @@ def first_start(pelican_obj):
     external_download.external_download()
 
 
-def set_custom_page_urls(content_obj):
-    if not hasattr(content_obj, "slug"):
-        return
-
-    lang = getattr(content_obj, "lang", MAIN_LANG)
-    lang_prefix = f"{lang}/" if lang != MAIN_LANG else ""
-
-    if hasattr(content_obj, "metadata") and content_obj.metadata:
-        # 1. Hlavní strana (index)
-        if content_obj.slug == "index":
-            content_obj.override_url = lang_prefix
-            content_obj.override_save_as = f"{lang_prefix}index.html"
-            return
-
-        # 2. Vlastní složka pro ostatní stránky (např. folder: projects)
-        folder = content_obj.metadata.get("folder")
-        if folder:
-            folder = folder.strip("/")
-            content_obj.override_url = f"{lang_prefix}{folder}/{content_obj.slug}/"
-            content_obj.override_save_as = (
-                f"{lang_prefix}{folder}/{content_obj.slug}/index.html"
-            )
-        else:
-            content_obj.override_url = f"{lang_prefix}{content_obj.slug}/"
-            content_obj.override_save_as = f"{lang_prefix}{content_obj.slug}/index.html"
-
-
 def on_finalized(pelican_obj):
     app_image = image.Images()
     app_image.optimize_output()
@@ -188,36 +142,11 @@ def on_finalized(pelican_obj):
     external_download.move_file()
 
 
-def set_file_modified_date(content_obj):
-    if hasattr(content_obj, "source_path") and content_obj.source_path:
-        source_file = Path(content_obj.source_path)
-        if source_file.exists():
-            try:
-                # Načte Unix timestamp posledního Git commitu daného .md souboru
-                res = subprocess.run(
-                    ["git", "log", "-1", "--format=%ct", str(source_file)],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-                if res.stdout.strip():
-                    timestamp = int(res.stdout.strip())
-                    content_obj.modified = datetime.fromtimestamp(timestamp)
-                    return
-            except Exception:
-                pass
-
-            # Záložní řešení: systémový čas poslední změny souboru (mtime)
-            content_obj.modified = datetime.fromtimestamp(source_file.stat().st_mtime)
-
-
 def on_initialized(pelican_obj):
     if not _ALREADY_STARTED:
         first_start(pelican_obj)
 
 
-signals.content_object_init.connect(set_file_modified_date)
 signals.finalized.connect(on_finalized)
 signals.initialized.connect(on_initialized)
-signals.content_object_init.connect(set_custom_page_urls)
-signals.content_object_init.connect(fill_data_to_md)
+signals.content_object_init.connect(update_page.update_page)
