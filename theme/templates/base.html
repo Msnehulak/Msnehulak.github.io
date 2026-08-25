@@ -6,7 +6,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
+    {% set canonical_path = page.url if (page and page.url) else "" %}
+    <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
+
     {% if page and page.description is defined and page.description %}
         <meta name="description" content="{{ page.description }}">
     {% elif SITEDESCRIPTION is defined and SITEDESCRIPTION %}
@@ -14,8 +17,6 @@
     {% endif %}
 
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
-
-
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -91,6 +92,5 @@
         {% endfor %}
     {% endif %}
 
-    </div>
-</body>
+</div></body>
 </html>
