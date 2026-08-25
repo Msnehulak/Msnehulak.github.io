@@ -158,22 +158,27 @@ def set_custom_page_urls(content_obj):
     if not hasattr(content_obj, "slug"):
         return
 
+    lang = getattr(content_obj, "lang", MAIN_LANG)
+    lang_prefix = f"{lang}/" if lang != MAIN_LANG else ""
+
     if hasattr(content_obj, "metadata") and content_obj.metadata:
         # 1. Hlavní strana (index)
         if content_obj.slug == "index":
-            content_obj.override_url = ""
-            content_obj.override_save_as = "index.html"
+            content_obj.override_url = lang_prefix
+            content_obj.override_save_as = f"{lang_prefix}index.html"
             return
 
         # 2. Vlastní složka pro ostatní stránky (např. folder: projects)
         folder = content_obj.metadata.get("folder")
         if folder:
             folder = folder.strip("/")
-            content_obj.override_url = f"{folder}/{content_obj.slug}/"
-            content_obj.override_save_as = f"{folder}/{content_obj.slug}/index.html"
+            content_obj.override_url = f"{lang_prefix}{folder}/{content_obj.slug}/"
+            content_obj.override_save_as = (
+                f"{lang_prefix}{folder}/{content_obj.slug}/index.html"
+            )
         else:
-            content_obj.override_url = f"{content_obj.slug}/"
-            content_obj.override_save_as = f"{content_obj.slug}/index.html"
+            content_obj.override_url = f"{lang_prefix}{content_obj.slug}/"
+            content_obj.override_save_as = f"{lang_prefix}{content_obj.slug}/index.html"
 
 
 def on_finalized(pelican_obj):

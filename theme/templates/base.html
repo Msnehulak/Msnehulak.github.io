@@ -7,8 +7,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {% set canonical_path = page.url if (page and page.url) else "" %}
-    <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
+{% if page %}
+        {% set canonical_path = page.url if page.url else "" %}
+        <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
+
+        {% set all_variants = [page] + (page.translations if page.translations else []) %}
+        {% for variant in all_variants %}
+            <link rel="alternate" hreflang="{{ variant.lang }}" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
+            {% if variant.lang == MAIN_LANG %}
+                <link rel="alternate" hreflang="x-default" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     {% if page and page.description is defined and page.description %}
         <meta name="description" content="{{ page.description }}">
