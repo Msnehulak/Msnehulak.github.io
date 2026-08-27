@@ -5,6 +5,8 @@ lang: cs
 js: main
 description: Hlavni stranka webu msnehulak.github.io
 sitemap_priority: 1.0
+save_as: index.html
+url: ""
 ---
 
 # Vítejte na mém webu!

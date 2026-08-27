@@ -76,7 +76,6 @@ for img_dir in content_dir.rglob("images"):
     if img_dir.is_dir():
         STATIC_PATHS.append(str(img_dir.relative_to(content_dir)))
 
-INDEX_SAVE_AS = "index.html"
 MAIN_LANG = "en"
 
 ALL_LANGUAGES = {

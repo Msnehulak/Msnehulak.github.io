@@ -76,7 +76,7 @@
           {% elif lang_siteurls %}
             {% for lang_code, lang_url in lang_siteurls.items() %}
               {% if lang_code != current_lang %}
-                <li><a href="{{ lang_url }}/" class="btn nav-btn nav-lang-btn"> {{ NAV[lang_code].lang_switch }} </a></li>
+                <li><a href="{{ lang_url }}" class="btn nav-btn nav-lang-btn"> {{ NAV[lang_code].lang_switch }} </a></li>
               {% endif %}
             {% endfor %}
           {% endif %}
