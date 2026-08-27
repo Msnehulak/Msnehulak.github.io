@@ -16,7 +16,10 @@ site_lan = "en"
 
 def lan_site_url(lan, relative=True):
     if relative:
-        url = "/"
+        if lan == site_lan:
+            url = ""
+        else:
+            url = "/"
     else:
         url = f"{site_url}/"
 

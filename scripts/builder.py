@@ -11,7 +11,7 @@ class Builder:
     def html_link(self, link: str, new_tab=False, lan="", relative: bool = True):
         if link.startswith("{{ SITEURL }}"):
             link = link.replace(
-                "{{ SITEURL }}/", sweb.lan_site_url(lan, relative=relative)
+                "{{ SITEURL }}", sweb.lan_site_url(lan, relative=relative)
             )
         if new_tab:
             return f'href="{link}" target="_blank" rel="noopener noreferrer"'
