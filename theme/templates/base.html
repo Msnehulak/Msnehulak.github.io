@@ -1,33 +1,33 @@
 {% set current_lang = page.lang if (page and page.lang) else (LANG if LANG else DEFAULT_LANG) %}
-{% set lang_prefix = "" if current_lang == MAIN_LANG else "/" ~ current_lang %} 
+{% set lang_prefix = "" if current_lang == MAIN_LANG else "/" ~ current_lang %}
 
 <!DOCTYPE html>
 <html lang="{{ page.lang if page else DEFAULT_LANG }}">
-<head>
+  <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% if page %}
-        {% set canonical_path = page.url if page.url else "" %}
-        <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
+    {% if page %}
+      {% set canonical_path = page.url if page.url else "" %}
+      <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
 
-        {% set all_variants = [page] + (page.translations if page.translations else []) %}
-        {% for variant in all_variants %}
-            <link rel="alternate" hreflang="{{ variant.lang }}" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
-            {% if variant.lang == MAIN_LANG %}
-                <link rel="alternate" hreflang="x-default" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
-            {% endif %}
-        {% endfor %}
+      {% set all_variants = [page] + (page.translations if page.translations else []) %}
+      {% for variant in all_variants %}
+        <link rel="alternate" hreflang="{{ variant.lang }}" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
+        {% if variant.lang == MAIN_LANG %}
+          <link rel="alternate" hreflang="x-default" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
+        {% endif %}
+      {% endfor %}
     {% endif %}
 
     {% if page and page.description is defined and page.description %}
-        <meta name="description" content="{{ page.description }}">
+      <meta name="description" content="{{ page.description }}">
     {% elif SITEDESCRIPTION is defined and SITEDESCRIPTION %}
-        <meta name="description" content="{{ SITEDESCRIPTION }}">
+      <meta name="description" content="{{ SITEDESCRIPTION }}">
     {% endif %}
 
     <title>{% block title %}{{ SITENAME }}{% endblock %}</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -35,72 +35,72 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tilt+Neon&display=swap"></noscript>
 
     {% if page and page.css is defined and page.css %}
-        {% for lib in page.css.split(',') %}
-            {% set filename = lib.strip() %}
-            {% set file_path = filename if filename.endswith('.css') else filename + '.css' %}
-            <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}">
-        {% endfor %}
+      {% for lib in page.css.split(',') %}
+        {% set filename = lib.strip() %}
+        {% set file_path = filename if filename.endswith('.css') else filename + '.css' %}
+        <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}">
+      {% endfor %}
     {% endif %}
 
     <link rel="preload" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css" as="style">
     <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
-</head>
-<body><div class="no-scrollbar">
+  </head>
+  <body><div class="no-scrollbar">
 
 
-<nav class="navbar">
-    <a class="btn navbar-name" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
-    
-    <input type="checkbox" id="menu-toggle" />
-    <label for="menu-toggle" class="menu-icon">&#9776; Menu</label>
-    <ul>
+    <nav class="navbar">
+      <a class="btn navbar-name" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
+
+      <input type="checkbox" id="menu-toggle" />
+      <label for="menu-toggle" class="menu-icon">&#9776; Menu</label>
+      <ul>
         <li><a class="btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
         <li><a class="btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
         <li><a class="btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
         <li><a class="btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
 
         {% if page and page.translations %}
-            {% for trans in page.translations %}
+          {% for trans in page.translations %}
             <li><a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn nav-link">
-                    {{ NAV[trans.lang].lang_switch }}
-                </a></li>
-            {% endfor %}
+              {{ NAV[trans.lang].lang_switch }}
+            </a></li>
+          {% endfor %}
         {% elif lang_siteurls %}
-            {% for lang_code, lang_url in lang_siteurls.items() %}
-                {% if lang_code != current_lang %}
-                <li><a href="{{ lang_url }}/" class="lang-switcher btn nav-link">
-                        {{ NAV[lang_code].lang_switch }}
-                    </a></li>
-                {% endif %}
-            {% endfor %}
+          {% for lang_code, lang_url in lang_siteurls.items() %}
+            {% if lang_code != current_lang %}
+              <li><a href="{{ lang_url }}/" class="lang-switcher btn nav-link">
+                {{ NAV[lang_code].lang_switch }}
+              </a></li>
+            {% endif %}
+          {% endfor %}
         {% endif %}
-    </ul>
-</nav>
+      </ul>
+    </nav>
 
     <main>
-        {% block content %}
-        {% endblock %}
+      {% block content %}
+      {% endblock %}
     </main>
 
     <footer>
-        <p>&copy; {{ FOOTER_YEAR }} {{ AUTHOR }}</p>
+      <p>&copy; {{ FOOTER_YEAR }} {{ AUTHOR }}</p>
     </footer>
 
     {% if page and page.js_lib is defined and page.js_lib %}
-        {% for lib in page.js_lib.split(',') %}
-            {% set filename = lib.strip() %}
-            {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
-            <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
-        {% endfor %}
+      {% for lib in page.js_lib.split(',') %}
+        {% set filename = lib.strip() %}
+        {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
+        <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/extra/{{ file_path }}"></script>
+      {% endfor %}
     {% endif %}
 
     {% if page and page.js is defined and page.js %}
-        {% for script in page.js.split(',') %}
-            {% set filename = script.strip() %}
-            {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
-            <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ file_path }}"></script>
-        {% endfor %}
+      {% for script in page.js.split(',') %}
+        {% set filename = script.strip() %}
+        {% set file_path = filename if filename.endswith('.js') else filename + '.js' %}
+        <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/{{ file_path }}"></script>
+      {% endfor %}
     {% endif %}
 
-</div></body>
+  </div></body>
 </html>
