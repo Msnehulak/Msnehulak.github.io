@@ -1,7 +1,6 @@
 ---
 title: Osu jako mp4 prehravac
-slug: wip
-folder: projects/osu-as-player
+slug: projects/osu-as-player/wip
 lang: en
 css: katex
 template: project

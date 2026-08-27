@@ -1,9 +1,8 @@
 ---
 title: Osu as a mp4 player
-slug: osu-as-player
+slug: projects/osu-as-player
 lang: en
 css: katex
-folder: projects
 template: project
 ---
 

@@ -1,11 +1,12 @@
 {% set current_lang = page.lang if (page and page.lang) else (LANG if LANG else DEFAULT_LANG) %}
 {% set lang_prefix = "" if current_lang == MAIN_LANG else "/" ~ current_lang %}
 {% if page is defined %}
-  {% set this_page_url = (SITEURL_ORG ~ lang_prefix ~ '/' ~ page.url) if page.url else (SITEURL_ORG ~ '/') %}
+  {% set this_page_url = SITEURL_ORG ~ lang_prefix ~ '/' ~ page.url %}
 {% endif %}
 
 <!DOCTYPE html>
 <html lang="{{ page.lang if page else DEFAULT_LANG }}">
+
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,7 +48,6 @@
     <link rel="stylesheet" href="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/css/main.css">
   </head>
   <body><div class="no-scrollbar">
-
     <nav class="navbar">
       <div class="nav-header">
         <a href="{{ SITEURL }}/" class="nav-logo btn">

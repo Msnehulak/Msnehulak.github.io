@@ -30,27 +30,6 @@ def get_git_metadata(file_path):
         return {"error": "Git není v systému nainstalován nebo dostupný."}
 
 
-def set_custom_page_urls(content_obj):
-    if not hasattr(content_obj, "slug"):
-        return
-
-    if hasattr(content_obj, "metadata") and content_obj.metadata:
-        # 1. Hlavní strana (index)
-        if content_obj.slug == "index":
-            content_obj.override_url = ""
-            content_obj.override_save_as = "index.html"
-            return
-
-        folder = content_obj.metadata.get("folder")
-        if folder:
-            folder = folder.strip("/")
-            content_obj.override_url = f"{folder}/{content_obj.slug}/"
-            content_obj.override_save_as = f"{folder}/{content_obj.slug}/index.html"
-        else:
-            content_obj.override_url = f"{content_obj.slug}/"
-            content_obj.override_save_as = f"{content_obj.slug}/index.html"
-
-
 def fill_data_to_md(content_objekt):
     if hasattr(content_objekt, "_content") and content_objekt._content:
         if getattr(content_objekt, "_already_rendered_by_jinja", False):
@@ -81,5 +60,4 @@ def update_date(content_obj):
 
 def update_page(content_obj):
     update_date(content_obj)
-    set_custom_page_urls(content_obj)
     fill_data_to_md(content_obj)

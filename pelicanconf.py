@@ -68,8 +68,8 @@ DELETE_OUTPUT_DIRECTORY = True
 PAGE_URL = "{slug}/"
 PAGE_SAVE_AS = "{slug}/index.html"
 
-PAGE_LANG_URL = "{slug}/"
-PAGE_LANG_SAVE_AS = "{slug}/index.html"
+PAGE_LANG_URL = "{lang}/{slug}/"
+PAGE_LANG_SAVE_AS = "{lang}/{slug}/index.html"
 
 content_dir = Path(PATH)
 for img_dir in content_dir.rglob("images"):

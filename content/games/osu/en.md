@@ -1,8 +1,7 @@
 ---
 title: My Osu
-slug: osu
+slug: games/osu
 lang: en
-folder: games 
 ---
 
 # My osu! profile
