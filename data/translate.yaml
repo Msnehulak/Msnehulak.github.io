@@ -48,4 +48,6 @@ nav:
   lang_switch:
     cs: '🇨🇿'
     en: '🇬🇧' # 🇺🇸
-
+  search: 
+    cs: 'Hledat . . .'
+    en: 'Search . . .'

@@ -1,5 +1,8 @@
 {% set current_lang = page.lang if (page and page.lang) else (LANG if LANG else DEFAULT_LANG) %}
 {% set lang_prefix = "" if current_lang == MAIN_LANG else "/" ~ current_lang %}
+{% if page is defined %}
+  {% set this_page_url = (SITEURL_ORG ~ lang_prefix ~ '/' ~ page.url) if page.url else (SITEURL_ORG ~ '/') %}
+{% endif %}
 
 <!DOCTYPE html>
 <html lang="{{ page.lang if page else DEFAULT_LANG }}">
@@ -8,16 +11,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {% if page %}
-      {% set canonical_path = page.url if page.url else "" %}
-      <link rel="canonical" href="{{ SITEURL_ORG }}/{{ canonical_path }}">
+      {% set canonical_path = page.url %}
+      <link rel="canonical" href="{{ this_page_url }}">
 
-      {% set all_variants = [page] + (page.translations if page.translations else []) %}
-      {% for variant in all_variants %}
-        <link rel="alternate" hreflang="{{ variant.lang }}" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
-        {% if variant.lang == MAIN_LANG %}
-          <link rel="alternate" hreflang="x-default" href="{{ SITEURL_ORG }}/{{ variant.url if variant.url else '' }}">
-        {% endif %}
+      {% for link_page in page.translations  %}
+        {% set link_url = (SITEURL_ORG ~ '/' ~ link_page.url) if link_page.url else (SITEURL_ORG ~ '/') %}
+        <link rel="alternate" hreflang="{{ link_page.lang }}" href="{{ link_url }}">
       {% endfor %}
+      <link rel="alternate" hreflang="{{ page.lang }}" href="{{ this_page_url }}">
     {% endif %}
 
     {% if page and page.description is defined and page.description %}
@@ -47,36 +48,50 @@
   </head>
   <body><div class="no-scrollbar">
 
-
     <nav class="navbar">
-      <a class="btn navbar-name" href="{{ SITEURL }}/">{{ AUTHOR }}</a>
+      <div class="nav-header">
+        <a href="{{ SITEURL }}/" class="nav-logo btn">
+          <svg aria-hidden="true">
+            <use href="/images/sprite.svg#logo"></use>
+          </svg>
+          <span>{{ AUTHOR }}</span>
+        </a>
 
-      <input type="checkbox" id="menu-toggle" />
-      <label for="menu-toggle" class="menu-icon">&#9776; Menu</label>
-      <ul>
-        <li><a class="btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
-        <li><a class="btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
-        <li><a class="btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
-        <li><a class="btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
+        <button type="button" class="hamburger-btn" id="menu-toggle" aria-label="Toggle menu">
+          <span class="hamburger-icon">&#9776;</span>
+          <span class="close-icon">&times;</span>
+        </button>
+      </div>
 
-        {% if page and page.translations %}
-          {% for trans in page.translations %}
-            <li><a href="{{ SITEURL }}/{{ trans.url }}" class="lang-switcher btn nav-link">
-              {{ NAV[trans.lang].lang_switch }}
-            </a></li>
-          {% endfor %}
-        {% elif lang_siteurls %}
-          {% for lang_code, lang_url in lang_siteurls.items() %}
-            {% if lang_code != current_lang %}
-              <li><a href="{{ lang_url }}/" class="lang-switcher btn nav-link">
-                {{ NAV[lang_code].lang_switch }}
-              </a></li>
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-      </ul>
+      <div class="nav-links" id="nav-links">
+        <ul>
+          <li><a class="btn nav-btn" href="{{ SITEURL }}/">{{ NAV[current_lang].home }}</a></li>
+          <li><a class="btn nav-btn" href="{{ SITEURL }}/about_me/">{{ NAV[current_lang].about_me }}</a></li>
+          <li><a class="btn nav-btn" href="{{ SITEURL }}/projects/">{{ NAV[current_lang].projects }}</a></li>
+          <li><a class="btn nav-btn" href="{{ SITEURL }}/games/">{{ NAV[current_lang].games }}</a></li>
+          {% if page and page.translations %}
+            {% for trans in page.translations %}
+              <li><a href="{{ SITEURL }}/{{ trans.url }}" class="btn nav-btn nav-lang-btn"> {{ NAV[trans.lang].lang_switch }} </a></li>
+            {% endfor %}
+          {% elif lang_siteurls %}
+            {% for lang_code, lang_url in lang_siteurls.items() %}
+              {% if lang_code != current_lang %}
+                <li><a href="{{ lang_url }}/" class="btn nav-btn nav-lang-btn"> {{ NAV[lang_code].lang_switch }} </a></li>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </ul>
+      </div>
+
+      <div class="nav-search">
+        {#
+        <svg aria-hidden="true" class="search-icon">
+          <use href="{{ SITEURL }}/images/sprite.svg#search"></use>
+        </svg>
+        #}
+        <input type="text" placeholder="{{ NAV[current_lang].search }}" aria-label="Search" />
+      </div>
     </nav>
-
     <main>
       {% block content %}
       {% endblock %}
