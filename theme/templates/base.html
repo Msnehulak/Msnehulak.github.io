@@ -109,6 +109,8 @@
       {% endfor %}
     {% endif %}
 
+    <script defer src="{{ SITEURL }}/{{ THEME_STATIC_DIR }}/js/main.js"></script>
+
     {% if page and page.js is defined and page.js %}
       {% for script in page.js.split(',') %}
         {% set filename = script.strip() %}

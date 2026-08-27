@@ -2,7 +2,6 @@
 title: Home
 slug: index
 lang: en
-js: main
 description: Main page of site msnehulak.github.io
 sitemap_priority: 1.0
 save_as: index.html
