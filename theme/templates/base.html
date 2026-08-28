@@ -12,11 +12,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     {% if page %}
-      {% set canonical_path = page.url %}
       <link rel="canonical" href="{{ this_page_url }}">
 
-      {% for link_page in page.translations  %}
-        {% set link_url = (SITEURL_ORG ~ '/' ~ link_page.url) if link_page.url else (SITEURL_ORG ~ '/') %}
+      {% for link_page in page.translations %}
+        {% if link_page.url.startswith('../') %}
+          {% set clean_url = link_page.url[3:] %}
+        {% else %}
+          {% set clean_url = link_page.url %}
+        {% endif %}
+        {% set link_url = (SITEURL_ORG ~ '/' ~ clean_url) if clean_url else (SITEURL_ORG ~ '/') %}
         <link rel="alternate" hreflang="{{ link_page.lang }}" href="{{ link_url }}">
       {% endfor %}
       <link rel="alternate" hreflang="{{ page.lang }}" href="{{ this_page_url }}">
