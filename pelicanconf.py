@@ -28,7 +28,7 @@ PATH = "content"
 THEME = "theme"
 TIMEZONE = "Europe/Rome"
 DEFAULT_PAGINATION = False
-STATIC_PATHS = ["favicon.ico", "images"]
+STATIC_PATHS = ["favicon.svg", "images"]
 TEMPLATE_PAGES = {"robots.txt": "robots.txt", "sitemap.xml": "sitemap.xml"}
 
 year = datetime.now().year

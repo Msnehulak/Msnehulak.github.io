@@ -12,6 +12,7 @@ BUILD_IMG_PATH = sweb.BASE_DIR / "content" / "images" / "build"
 OUTPUT_PATH = sweb.BASE_DIR / "output"
 RASTER_IMGES_TYPES = (".png", ".jpeg", ".webp", ".jpg")
 SVG_OUTPUT_NAME = "sprite.svg"
+IGNORE_FILES = []
 
 
 class Images:
@@ -40,7 +41,11 @@ class Images:
         self.raster_list = []
 
         for file in files:
-            if file.endswith(RASTER_IMGES_TYPES):
+            file_path = folder / file
+
+            if file_path in IGNORE_FILES:
+                print(f"find ignore file {file}")
+            elif file.endswith(RASTER_IMGES_TYPES):
                 self.raster_list.append(file)
             elif file.endswith(".svg"):
                 self.svg_list.append(file)
