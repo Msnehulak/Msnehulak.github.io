@@ -2,8 +2,6 @@ name: Deploy Web & Redirects
 
 on:
   push:
-    branches-ignore:
-      - main
     paths-ignore:
       - 'README.md'
       - 'doc/**'
