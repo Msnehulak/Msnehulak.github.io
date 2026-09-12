@@ -1,3 +1,9 @@
+{% set current_lang = page.lang if (page and page.lang) else (LANG if LANG else DEFAULT_LANG) %}
+{% set lang_prefix = "/" if current_lang == MAIN_LANG else "/" ~ current_lang %}
+{% if page is defined %}
+  {% set this_page_url = SITEURL_ORG ~ lang_prefix ~ '/' ~ page.url %}
+{% endif %}
+
 {% extends "base.html" %}
 
 {% block title %}{{ page.title }} | {{ SITENAME }}{% endblock %}
@@ -5,7 +11,7 @@
 {% block content %}
     {# Tlačítko/Odkaz pro návrat zpět na seznam projektů #}
   <div class="project-return">
-    <a href="{{ SITEURL }}/projects/" class="project-return-btn btn">
+    <a href="/{{ SITEURL }}projects/" class="project-return-btn btn">
       &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
     </a>
   </div>
@@ -17,7 +23,7 @@
 
     {# Volitelné: Druhé tlačítko pro návrat dole pod článkem #}
   <div class="project-return bottom">
-    <a href="{{ SITEURL }}/projects/" class="project-return-btn btn">
+    <a href="/{{ lang_prefix }}projects/" class="project-return-btn btn">
       &larr; {% if page.lang == 'cs' %}Zpět na projekty{% else %}Back to projects{% endif %}
     </a>
   </div>
