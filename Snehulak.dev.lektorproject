@@ -1,0 +1,13 @@
+[project]
+name = Snehulak.dev
+
+[alternatives.en]
+name = English
+primary = yes
+locale = en_US
+
+[alternatives.cs]
+name = Čeština
+url_prefix = /cs/
+locale = cs_CZ
+

@@ -1,0 +1,17 @@
+.pyc
+.env
+.gitingestignore
+
+**/__pycache__/
+
+node_modules/
+web/
+output/
+redirect/
+digest.txt
+cache/
+testing/
+
+
+
+

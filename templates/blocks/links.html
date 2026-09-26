@@ -1,0 +1,28 @@
+{% set items = this.data | from_yaml %}
+{% set type = this.type %}
+
+{% if items %}
+  {% if type == "block" %}
+    <!-- Použití CSS Gridu s automatickým přizpůsobením šířce sloupce -->
+    <div class="flex flex-wrap justify-left gap-4 max-w-4xl mx-auto w-full">
+      {% for item in items %}
+        <a href="{{ item.link }}" title="{{ item.hover }}" target="_blank"
+           class="flex-1 min-w-[20px] max-w-[128px] aspect-square flex items-center justify-center p-2 rounded-lg hover:bg-neutral-800 transition duration-150 ease-in-out">
+          <svg aria-hidden="true" class="w-full h-full">
+            <use href="{{ ('/' ~ item.img ~ '.svg')|url }}"></use>
+          </svg>
+        </a>
+      {% endfor %}
+    </div>
+
+  {% else %}
+    <!-- Seznamová verze (např. pro menší ikonky) -->
+    <div class="flex flex-wrap gap-4 items-center">
+      {% for item in items %}
+        <a href="{{ item.link }}" title="{{ item.hover }}" target="_blank" class="hover:opacity-80 transition">
+          <img src="{{ ('/' ~ item.img ~ '.svg')|url }}" alt="{{ item.name }}" class="w-8 h-8">
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endif %}

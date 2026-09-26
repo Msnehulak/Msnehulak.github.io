@@ -1,0 +1,2 @@
+[lektor.plugins]
+jinja-yaml = lektor_jinja_yaml:JinjaYamlPlugin

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="{{ this.alt }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ '/static/style.css'|url }}">
+    <link rel="stylesheet" href="{{ '/static/TiltNeon.ttf'|url }}" media="all" onload="this.media='all'">
+  </head>
+  <body class="bg-neutral-900 text-white min-h-screen font-tiltneon text-base">
+
+    {% include "components/navbar.html" %}
+
+    <main class="w-full max-w-4xl mx-auto p-4 bg-steal-800">
+      {% block body %}{% endblock %}
+    </main>
+
+    <footer class="text-center py-4 text-gray-500">
+      &copy; Copyright 2026 by snehulak.
+    </footer>
+  </body>
+</html>

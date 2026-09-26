@@ -1,0 +1,21 @@
+@import url("/static/TiltNeon.ttf");
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Tilt Neon";
+  src: url("/static/TiltNeon.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-brand: #033663;
+  --font-tiltneon: "Tilt Neon", sans-serif;
+}
+
+@layer base {
+  html {
+    font-size: 112.5%;
+  }
+}
