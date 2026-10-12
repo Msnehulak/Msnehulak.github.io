@@ -12,7 +12,9 @@ def build_page(file_path):
 
     template = env.get_template("base.html")
 
-    output = template.render(content=html_content, **post.metadata)
+    jija_values = {"page": post.metadata}
+
+    output = template.render(content=html_content, **jija_values)
 
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(output)
