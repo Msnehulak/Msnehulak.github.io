@@ -6,7 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "Snehulak.dev"
 version = "0.1.0"
 dependencies = [
-    "jinja2",
+    "minijinja",
     "python-frontmatter",
     "markdown",
+    "sqlmodel",
+    "jinja2",
+    "python-dotenv",
 ]   

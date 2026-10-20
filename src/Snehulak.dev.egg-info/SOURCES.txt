@@ -1,7 +1,0 @@
-README.md
-pyproject.toml
-src/Snehulak.dev.egg-info/PKG-INFO
-src/Snehulak.dev.egg-info/SOURCES.txt
-src/Snehulak.dev.egg-info/dependency_links.txt
-src/Snehulak.dev.egg-info/requires.txt
-src/Snehulak.dev.egg-info/top_level.txt

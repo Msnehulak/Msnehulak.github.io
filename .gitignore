@@ -3,8 +3,13 @@
 .pyc
 .env
 .gitingestignore
+ssg.db
+
+src/*.egg-info
 
 **/__pycache__/
+*.egg-info
+
 
 web/
 output/
@@ -12,7 +17,6 @@ redirect/
 digest.txt
 cache/
 testing/
-
-
-
+build/
+__pycache__/
 
