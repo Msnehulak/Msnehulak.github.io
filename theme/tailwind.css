@@ -1,6 +1,42 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
-/* Skenuj vygenerovaný web… */
 @source "../output";
-/* …a šablony, kde mohou být Tailwind třídy napsané ručně. */
 @source "./";
+
+@font-face {
+  font-family: "Tilt Neon";
+  src: url("/static/Tilt_Neon/TiltNeo.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@theme {
+  --font-tiltneo: "Tilt Neon", sans-serif;
+}
+
+@theme {
+  /* Brand colors (Modrá paleta) */
+  --color-brand-50: #e6f0fa;
+  --color-brand-100: #cce1f5;
+  --color-brand-200: #99c3eb;
+  --color-brand-300: #66a5e0;
+  --color-brand-400: #3498db; /* Původní akcentní světlá modrá */
+  --color-brand-500: #033663; /* Původní střední modrá */
+  --color-brand-600: #005299; /* Vaše hlavní původní modrá */
+  --color-brand-700: #022552; /* Původní tmavá modrá */
+  --color-brand-800: #011838;
+  --color-brand-900: #010d1f;
+
+  /* Neutral / Gray colors (Šedá paleta) */
+  --color-dark-50: #f6f7f9;
+  --color-dark-100: #e2e5eb;
+  --color-dark-200: #c5cbd6;
+  --color-dark-300: #8893a7;
+  --color-dark-400: #586375;
+  --color-dark-500: #3e3e3e; /* Vaše původní nejsvětlejší šedá */
+  --color-dark-600: #2d2d2d; /* Vaše původní střední šedá */
+  --color-dark-700: #1e1e1e; /* Vaše původní nejtmavší šedá */
+  --color-dark-800: #141414;
+  --color-dark-900: #0a0a0a;
+}

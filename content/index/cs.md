@@ -21,6 +21,5 @@ Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 ![this is source](i like this source with out meta data)
 
 ```python
-
 i like code
 ```
