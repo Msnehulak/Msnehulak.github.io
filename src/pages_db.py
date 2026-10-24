@@ -16,7 +16,9 @@ class Page(SQLModel, table=True):
 
     tags: List[str] = Field(default=[], sa_column=Column(JSON))
     lang_versions: dict = Field(default={}, sa_column=Column(JSON))
-    dependencys: List[str] = Field(default=[], sa_column=Column(JSON))
+    jija_dependencys: List[str] = Field(default=[], sa_column=Column(JSON))
+    md_link_dependencys: List[dict] = Field(default=[], sa_column=Column(JSON))
+    md_source_dependencys: List[dict] = Field(default=[], sa_column=Column(JSON))
 
     save_as: str
     url: str
