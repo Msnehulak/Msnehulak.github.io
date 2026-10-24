@@ -10,7 +10,7 @@ save_as: index
 
 Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 
-{{ hello }}
+## >>> {{ hello }} <<<
 
 - Rychlé
 - Přehledné
@@ -19,3 +19,8 @@ Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 [this is link](https://example.com)
 ![this is source](i like this source){class="pepa"}
 ![this is source](i like this source with out meta data)
+
+```python
+
+i like code
+```

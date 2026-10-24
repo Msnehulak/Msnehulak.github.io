@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.title }}</title>
     <meta name="description" content="{{ page.description }}">
+
+    <link rel="canonical" href="{{ page.url }}">
+    <link rel="stylesheet" href="/assets/tailwind.css">
   </head>
   <body>
+    {{ hello }}
     {{ content | safe }}
   </body>
 </html>

@@ -112,9 +112,3 @@ class IndexContent:  # Opraveno: velká počáteční písmena (konvence pro tř
             session.add(page_row)
             session.commit()
             print(f"Záznam '{slug}' úspěšně přidán!")
-
-
-# Spuštění pro test:
-if __name__ == "__main__":
-    indexer = IndexContent()
-    indexer.main()

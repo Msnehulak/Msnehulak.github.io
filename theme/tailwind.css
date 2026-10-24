@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Skenuj vygenerovaný web… */
+@source "../output";
+/* …a šablony, kde mohou být Tailwind třídy napsané ručně. */
+@source "./";
