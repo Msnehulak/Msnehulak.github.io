@@ -28,6 +28,14 @@ class PagesBuilder:
         for page in pages:
             self.build_page(page)
 
+    @staticmethod
+    def clear_link(link: str):
+        link = link.strip("/")
+        link = f"/{link}/"
+        while "//" in link:
+            link = link.replace("//", "/")
+        return link
+
     def build_page(self, page: pages_db.Page):
         # jv = jinja variabls
         jv_global = {
@@ -36,7 +44,9 @@ class PagesBuilder:
                 "description": page.description,
                 "url": page.url,
                 "lang": page.lang,
-            }
+                "trans": page.lang_versions,
+            },
+            "link": self.clear_link,
         }
         jv_page = {
             **jv_global,

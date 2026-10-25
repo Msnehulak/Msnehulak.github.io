@@ -6,40 +6,26 @@
 
     <div class="flex items-center space-x-4">
       <ul class="flex space-x-1">
-        <li><a href="/"
+        <li><a href="{{ link(lang ~ "/")}}"
                class="hover:bg-brand-500 p-3 rounded-lg transition duration-300 ease-in-out">
           Home
         </a></li>
-        <li><a href="/about"
+        <li><a href="{{ link(lang ~ "/about_me/")}} "
                class="hover:bg-brand-500 p-3 rounded-lg transition duration-300 ease-in-out">
           About me
         </a></li>
       </ul>
 
-      <div class="relative inline-block">
-        <button
-          type="button"
-          onclick="this.nextElementSibling.classList.toggle('hidden')"
-          class="hover:bg-brand-500 p-2 rounded-lg transition duration-300 ease-in-out"
-        >
-          lang
-        </button>
-          {#
-        <ul class="hidden absolute mt-2 bg-brand rounded-md shadow-lg py-2">
-          {% for lang in get_alts(this) %}
-            {% set translated_page = site.get(this._path, alt=lang) %}
-            <li>
-              <a
-                href="{{ translated_page | url(alt=lang) }}"
-                class="block px-5 py-2 text-sm hover:bg-sky-800 transition text-center"
-              >
-                {{ lang }}
-              </a>
-            </li>
-          {% endfor %}
-        </ul>
-        #} 
-      </div>
+      <ul class="mt-2 bg-brand rounded-md shadow-lg py-2">
+        {% for lang_ver in page.trans %}
+          <li>
+            <a href="{{ link(lang_ver.path) }}" class="block px-5 py-2 text-sm hover:bg-sky-800 transition text-center">
+              {{ lang_ver.lang | upper }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+
     </div>
   </div>
 </nav>
