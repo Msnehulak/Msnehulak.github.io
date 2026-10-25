@@ -2,11 +2,14 @@ import os
 import shutil
 from pathlib import Path
 
-from src import pages_bulder, pages_db, pages_worker, run_node
+from src import index_content, mearge_page, pages_bulder, pages_db, run_node
 
 pages_db.init_sqlite_DB()
 
-app = pages_worker.IndexContent()
+index_content.IndexContent()
+
+mearge_page.link_language_versions()
+
 pages_bulder.PagesBuilder().main()
 
 # Tailwind až nakonec, nad hotovým output/

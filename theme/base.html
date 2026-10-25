@@ -10,8 +10,10 @@
     <link rel="stylesheet" href="/assets/tailwind.css">
   </head>
   <body class="font-tiltneo bg-dark-700">
-    {{ hello }}
-    <main class="prose prose-invert max-w-none p-6 bg-dark-600 rounded">
+
+    {% include "components/navbar.html" %}
+
+    <main class="prose prose-invert w-full max-w-6xl mx-auto p-6 bg-dark-600 rounded rounded-xl">
       {{ content | safe }}
     </main>
   </body>

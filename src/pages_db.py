@@ -22,6 +22,7 @@ class Page(SQLModel, table=True):
 
     save_as: str
     url: str
+    path: str
 
 
 def init_sqlite_DB():

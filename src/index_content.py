@@ -106,6 +106,7 @@ class IndexContent:  # Opraveno: velká počáteční písmena (konvence pro tř
             md_source_dependencys=md_source_deps,
             url=page_url,
             save_as=str(page_save_as),
+            path=page_path,
         )
 
         with Session(self.db_engine) as session:

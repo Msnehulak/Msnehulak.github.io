@@ -35,6 +35,7 @@ class PagesBuilder:
                 "title": page.title,
                 "description": page.description,
                 "url": page.url,
+                "lang": page.lang,
             }
         }
         jv_page = {
