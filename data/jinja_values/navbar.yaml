@@ -1,0 +1,16 @@
+lang:
+  trans:
+    cs: "čeština"
+    en: "english"
+
+nav:
+  - link: "/"
+    trans:
+      cs: "domů"
+      en: "home"
+  - link: "/about_me/"
+    trans:
+      cs: "o mně"
+      en: "about me"
+
+

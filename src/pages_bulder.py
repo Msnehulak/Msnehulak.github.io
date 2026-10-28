@@ -1,6 +1,8 @@
+import json
 from pathlib import Path
 
 import markdown
+import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlmodel import Session, create_engine, select
 
@@ -8,6 +10,7 @@ from . import pages_db
 
 root_dir = Path(__file__).parent.parent.resolve()
 theme_dir = root_dir / "theme"
+jinja_values_dir = root_dir / "data" / "jinja_values"
 
 MD_EXTENSIONS = ["extra", "fenced_code", "tables", "attr_list"]
 
@@ -54,9 +57,9 @@ class PagesBuilder:
         }
         jv_html = {
             **jv_global,
+            **self.load_jinja_values(),
             "hello": "hello htlm",
         }
-        ctx = {name: self.get_variable(name) for name in page.jija_dependencys}
         content_md = self.content_env.from_string(page.content).render(**jv_page)
 
         # 2) Markdown -> HTML
@@ -72,7 +75,19 @@ class PagesBuilder:
         out_path.write_text(html, encoding="utf-8")
         print(f"[OK] {page.url} -> {out_path}")
 
-    def get_variable(self, name: str):
-        # Sem napoj OSU_API, YOUTUBE_API, STEAM_API atd.
-        # Zatím jen prázdný string, aby Jinja nespadla na Undefined.
-        return ""
+    def load_jinja_values(self):
+        variabls = {}
+        for file in jinja_values_dir.iterdir():
+            if not file.is_file():
+                continue
+
+            if file.suffix == ".json":
+                data = json.loads(file.read_text(encoding="utf-8"))
+            elif file.suffix in (".yaml", ".yml"):
+                data = yaml.safe_load(file.read_text(encoding="utf-8"))
+            else:
+                continue
+
+            variabls[file.stem] = data
+
+        return {"data": variabls}
