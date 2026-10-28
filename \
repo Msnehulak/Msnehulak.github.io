@@ -1,0 +1,33 @@
+
+
+<nav class="bg-brand-600 text-white p-2 shadow-md">
+  <div class="container mx-auto flex justify-between items-center">
+    <a href="/" class="font-bold text-3xl hover:bg-brand-500 p-1 rounded-lg transition duration-300 ease-in-out">Snehulak</a>
+
+    <div class="flex items-center space-x-4">
+      <ul class="flex space-x-1">
+        <li><a href="{{ link(lang ~ "/")}}"
+               class="hover:bg-brand-500 p-3 rounded-lg transition duration-300 ease-in-out">
+          Home
+        </a></li>
+        <li><a href="{{ link(lang ~ "/about_me/")}} "
+               class="hover:bg-brand-500 p-3 rounded-lg transition duration-300 ease-in-out">
+          About me
+        </a></li>
+      </ul>
+
+      <ul class="mt-2 bg-brand rounded-md shadow-lg py-2">
+        {% for lang_ver in page.trans %}
+        {% if lang_ver.lang != page.lang %}
+          <li>
+            <a href="{{ link(lang_ver.path) }}" class="block px-5 py-2 text-sm hover:bg-sky-800 transition text-center">
+              {{ lang_ver.lang | upper }}
+            </a>
+          </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+
+    </div>
+  </div>
+</nav>
