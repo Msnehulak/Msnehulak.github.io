@@ -10,6 +10,11 @@ save_as: index
 
 Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 
+{{ tools.links("all", style="icon") }}
+{{ tools.links("code", style="text") }}
+{{ tools.links("packages", style="pill") }}
+
+
 ## >>> {{ hello }} <<<
 
 - Rychlé

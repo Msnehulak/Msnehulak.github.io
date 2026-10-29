@@ -1,4 +1,5 @@
 import json
+from functools import partial
 from pathlib import Path
 
 import markdown
@@ -7,6 +8,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sqlmodel import Session, create_engine, select
 
 from . import pages_db
+from .modules import social_link
 
 root_dir = Path(__file__).parent.parent.resolve()
 theme_dir = root_dir / "theme"
@@ -54,6 +56,9 @@ class PagesBuilder:
         jv_page = {
             **jv_global,
             "hello": "hi markdown",
+            "tools": {
+                "links": partial(social_link.get_social, lang=page.lang),
+            },
         }
         jv_html = {
             **jv_global,

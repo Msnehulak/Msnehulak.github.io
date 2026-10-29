@@ -6,11 +6,15 @@ lang:
 nav:
   - link: "/"
     trans:
-      cs: "domů"
-      en: "home"
+      cs: "Domů"
+      en: "Home"
   - link: "/about_me/"
     trans:
-      cs: "o mně"
-      en: "about me"
+      cs: "O mně"
+      en: "About me"
+  - link: "/link_tree/"
+    trans:
+      cs: "Strom stránek"
+      en: "Link Tree"
 
 
