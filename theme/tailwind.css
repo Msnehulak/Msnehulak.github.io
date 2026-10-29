@@ -32,11 +32,11 @@
   --color-dark-50: #f6f7f9;
   --color-dark-100: #e2e5eb;
   --color-dark-200: #c5cbd6;
-  --color-dark-300: #8893a7;
-  --color-dark-400: #586375;
-  --color-dark-500: #3e3e3e; /* Vaše původní nejsvětlejší šedá */
-  --color-dark-600: #2d2d2d; /* Vaše původní střední šedá */
-  --color-dark-700: #1e1e1e; /* Vaše původní nejtmavší šedá */
-  --color-dark-800: #141414;
-  --color-dark-900: #0a0a0a;
+  --color-dark-300: #5a5a5a; /* 90 */
+  --color-dark-400: #4b4b4b; /* 75 */
+  --color-dark-500: #3c3c3c; /* 60 */
+  --color-dark-600: #2d2d2d; /* 45 */
+  --color-dark-700: #1e1e1e; /* 30 */
+  --color-dark-800: #141414; /* 20 */
+  --color-dark-900: #0a0a0a; /* 10 */
 }

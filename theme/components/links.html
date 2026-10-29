@@ -23,32 +23,31 @@
 
   {%- elif style == "profile" -%}
     <a href="{{ url }}"
-       class="group flex flex-col md:flex-row items-stretch gap-4 p-4 rounded-2xl border-2 bg-dark-600 hover:bg-dark-500 transition duration-300 w-full"
+       class="group flex flex-row items-stretch gap-4 p-4 rounded-2xl bg-dark-500 hover:bg-dark-400 transition duration-300 w-full not-prose"
        data-icon="{{ icon }}">
 
-      <div class="flex-shrink-0 w-10 h-10 md:w-40 h-40 flex items-center justify-center rounded-xl border-2 border-[#f05454] bg-dark-700 p-4">
+      <div class="flex-shrink-0 w-40 h-40 flex items-center justify-center rounded-xl p-4">
         <img src="/static/img/icons/{{ icon }}.svg" alt="{{ label }}" class="w-full h-full object-contain">
       </div>
 
-      <div class="flex flex-col flex-grow gap-2">
+      <div class="flex flex-col flex-grow gap-2 no-underline!">
 
-        <div class="text-center py-2 rounded-lg border-2 font-bold text-2xl">
+        <div class="rounded-lg font-bold text-4xl">
           {{ label }}
         </div>
 
-        <div class="text-center text-sm py-1 rounded-lg border-2 truncate px-2">
+        <div class="text-sm rounded-lg truncate">
           {{ url | replace("https://", "") | replace("http://", "") }}
         </div>
 
-        <div class="relative flex-grow p-4 pb-12 rounded-lg border-2 min-h-[80px]">
-        <!-- Fallback pro popis, pokud v YAML není meta.description -->
+        <div class="relative flex-grow rounded-lg min-h-[80px] text-base">
           {%- if social.meta and social.meta.description -%}
-            {{ social.meta.description }}
+            {{ social.meta.description[lang] }}
           {%- else -%}
             Sleduj mě na {{ label }}!
           {%- endif -%}
 
-          <div class="absolute bottom-2 right-2 px-6 py-1 rounded-lg border-2 border-white text-white font-bold group-hover:bg-white group-hover:text-dark-700 transition duration-300">
+          <div class="absolute bottom-2 right-2 px-4 py-1 rounded-lg border-2 border-white text-white font-bold group-hover:bg-white group-hover:text-dark-700 transition duration-300">
             visit btn
           </div>
         </div>
@@ -82,7 +81,7 @@
 {%- macro render_links(socials, lang="en", style="full") -%}
   {# Pro profil použijeme flex-col, pro ostatní flex-wrap #}
   {%- if style == "profile" -%}
-    {%- set wrapper_class = "flex flex-col gap-6 w-full max-w-3xl mx-auto" -%}
+    {%- set wrapper_class = "grid grid-cols-[repeat(auto-fit,minmax(20rem,22rem))] gap-4 w-full" -%}
   {%- else -%}
     {%- set wrapper_class = "flex flex-wrap gap-2" -%}
   {%- endif -%}
