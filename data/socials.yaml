@@ -1,4 +1,6 @@
 
+
+
 socials:
   - name: YouTube
     link: 'https://youtube.com/@snehulaktv'
@@ -9,8 +11,8 @@ socials:
       en: YouTube
     meta:
       description: 
-        cs: "Share your videos with friends, family, and the world."
-        en: "Sdílejte svá videa s přáteli, rodinou a celým světem" 
+        cs: "Někdy nové video"
+        en: "Some times new video" 
 
   - name: Twitch
     link: 'https://www.twitch.tv/codesnehulak'
@@ -19,6 +21,10 @@ socials:
     trans:
       cs: Twitch
       en: Twitch
+    meta:
+      description: 
+        cs: "Nejsem živě"
+        en: "Not Live"
 
   - name: X (Twitter)
     link: 'https://x.com/SnehulakTV'
@@ -115,6 +121,9 @@ socials:
     trans:
       cs: osu!
       en: osu!
-
+    meta:
+      description: 
+        cs: "Tuhle hru miluju"
+        en: "I love this game" 
 
 

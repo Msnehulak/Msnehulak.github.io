@@ -21,37 +21,34 @@
       <span class="social-icon" data-icon="{{ icon }}"></span>
     </a>
 
+
   {%- elif style == "profile" -%}
     <a href="{{ url }}"
-       class="group flex flex-row items-stretch gap-4 p-4 rounded-2xl bg-dark-500 hover:bg-dark-400 transition duration-300 w-full not-prose"
+       class="group flex flex-row items-center gap-4 p-4 rounded-2xl bg-dark-500 hover:bg-dark-400 transition duration-300 w-full not-prose overflow-hidden"
        data-icon="{{ icon }}">
 
-      <div class="flex-shrink-0 w-40 h-40 flex items-center justify-center rounded-xl p-4">
+      <!-- Levá část: Ikona -->
+      <div class="flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-xl bg-dark-600 p-3">
         <img src="/static/img/icons/{{ icon }}.svg" alt="{{ label }}" class="w-full h-full object-contain">
       </div>
 
-      <div class="flex flex-col flex-grow gap-2 no-underline!">
-
-        <div class="rounded-lg font-bold text-4xl">
+      <!-- Pravá část: Obsah -->
+      <div class="flex-grow flex flex-col min-w-0 no-underline!">
+        <div class="font-bold text-2xl text-white">
           {{ label }}
         </div>
 
-        <div class="text-sm rounded-lg truncate">
+        <div class="text-xs text-gray-400 truncate">
           {{ url | replace("https://", "") | replace("http://", "") }}
         </div>
 
-        <div class="relative flex-grow rounded-lg min-h-[80px] text-base">
+        <div class="mt-2 text-sm text-gray-300">
           {%- if social.meta and social.meta.description -%}
             {{ social.meta.description[lang] }}
           {%- else -%}
             Sleduj mě na {{ label }}!
           {%- endif -%}
-
-          <div class="absolute bottom-2 right-2 px-4 py-1 rounded-lg border-2 border-white text-white font-bold group-hover:bg-white group-hover:text-dark-700 transition duration-300">
-            visit btn
-          </div>
         </div>
-
       </div>
 
     </a>  {%- elif style == "text" -%}
@@ -81,7 +78,7 @@
 {%- macro render_links(socials, lang="en", style="full") -%}
   {# Pro profil použijeme flex-col, pro ostatní flex-wrap #}
   {%- if style == "profile" -%}
-    {%- set wrapper_class = "grid grid-cols-[repeat(auto-fit,minmax(20rem,22rem))] gap-4 w-full" -%}
+    {%- set wrapper_class = "grid grid-cols-[repeat(auto-fit,minmax(clamp(13rem,100%,16.5rem),1fr))] gap-4 w-full" -%}
   {%- else -%}
     {%- set wrapper_class = "flex flex-wrap gap-2" -%}
   {%- endif -%}
