@@ -8,9 +8,11 @@ socials_file = root_dir / "data" / "socials.yaml"
 theme_dir = root_dir / "theme"
 
 with open(socials_file, "r", encoding="utf-8") as f:
-    _data = yaml.safe_load(f) or {}
+    data = yaml.safe_load(f) or {}
 
-SOCIALS = _data.get("socials", [])
+all_data = {"all_data": data}
+
+SOCIALS = data.get("socials", [])
 
 VALID_STYLES = {"full", "icon", "text", "pill", "profile"}
 
@@ -33,4 +35,9 @@ def get_social(tag: str = "all", lang: str = "en", style: str = "full") -> str:
         return ""
 
     template = _links_env.get_template("components/links.html")
-    return template.module.render_links(filtered, lang=lang, style=style)
+    return template.module.render_links(
+        filtered,
+        lang=lang,
+        style=style,
+        **all_data,
+    )

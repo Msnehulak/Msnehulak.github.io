@@ -7,14 +7,14 @@
 {%- macro _icon(social) -%}{{- social.icon or "" -}}{%- endmacro -%}
 
 {# --- jeden odkaz ve zvoleném stylu --- #}
-{%- macro render_link(social, lang="en", style="full") -%}
+{%- macro render_link(social, lang="en", style="full", all_data="") -%}
   {%- set url   = _url(social) -%}
   {%- set label = _label(social, lang) -%}
   {%- set icon  = _icon(social) -%}
 
   {%- if style == "icon" -%}
     <a href="{{ url }}"
-       class="social-link social-link--icon inline-flex items-center justify-center w-10 h-10 rounded-lg bg-dark-500 hover:bg-brand-500 transition"
+       class="social-link social-link--icon inline-flex p-1 items-center justify-center w-12 h-12 rounded-lg bg-dark-500 hover:bg-dark-400 transition"
        title="{{ label }}" aria-label="{{ label }}"
        data-icon="{{ icon }}">
       <img src="/static/img/icons/{{ icon }}.svg"></img>
@@ -24,6 +24,8 @@
 
   {%- elif style == "profile" -%}
     <a href="{{ url }}"
+       target="_blank"
+       rel="noopener noreferrer"
        class="group flex flex-row items-center gap-4 p-4 rounded-2xl bg-dark-500 hover:bg-dark-400 transition duration-300 w-full not-prose overflow-hidden"
        data-icon="{{ icon }}">
 
@@ -46,7 +48,7 @@
           {%- if social.meta and social.meta.description -%}
             {{ social.meta.description[lang] }}
           {%- else -%}
-            Sleduj mě na {{ label }}!
+            {{all_data.fall_over.folow_me[lang]}} {{ label }}!
           {%- endif -%}
         </div>
       </div>
@@ -75,7 +77,7 @@
 {%- endmacro -%}
 
 {# --- seznam odkazů --- #}
-{%- macro render_links(socials, lang="en", style="full") -%}
+{%- macro render_links(socials, lang="en", style="full", all_data="") -%}
   {# Pro profil použijeme flex-col, pro ostatní flex-wrap #}
   {%- if style == "profile" -%}
     {%- set wrapper_class = "grid grid-cols-[repeat(auto-fit,minmax(clamp(13rem,100%,16.5rem),1fr))] gap-4 w-full" -%}
@@ -85,7 +87,7 @@
 
   <div class="social-links social-links--{{ style }} {{ wrapper_class }}">
     {%- for s in socials -%}
-      {{- render_link(s, lang=lang, style=style) -}}
+      {{- render_link(s, lang=lang, style=style, all_data=all_data) -}}
     {%- endfor -%}
   </div>
 {%- endmacro -%}
