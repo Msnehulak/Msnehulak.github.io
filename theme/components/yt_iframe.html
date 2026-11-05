@@ -1,0 +1,16 @@
+
+{%- macro render_iframe(yt_id, thumbnail_url, lang="en", style="full")-%}
+
+  <div class="yt-video">
+    <div class="yt-thumbnail-wraper aspect-[16/9]">
+      <img class="w-[100%] h-[100%] overflow-clip"
+           src="{{ thumbnail_url }}"
+           referrerpolicy="no-referrer">
+      </img>
+    </div>
+
+  </div>
+
+  <a>{{yt_id}} {{lang}} {{style}} {{thumbnail_url}}</a>
+
+{%- endmacro -%}
