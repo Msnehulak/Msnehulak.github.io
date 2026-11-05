@@ -12,4 +12,5 @@ dependencies = [
     "sqlmodel",
     "jinja2",
     "python-dotenv",
+"google-api-python-client",
 ]   

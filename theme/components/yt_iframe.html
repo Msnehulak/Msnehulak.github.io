@@ -1,16 +1,24 @@
 
-{%- macro render_iframe(yt_id, thumbnail_url, lang="en", style="full")-%}
+{%- macro render_iframe(yt_id, thumbnail_url, md, lang="en", style="full")-%}
+  <div class="yt-video bg-dark-500 rounded-lg overflow-hidden" data-video-id="{{ yt_id }}">
+    <div class="yt-header p-4">
+      <h2 class="m-2 mt-2 mb-2 text-4xl">{{ md.creator.title }}</h2>
+      <img src="{{ md.creator.thumbnails.medium.url }}"></img>
 
-  <div class="yt-video">
-    <div class="yt-thumbnail-wraper aspect-[16/9]">
-      <img class="w-[100%] h-[100%] overflow-clip"
-           src="{{ thumbnail_url }}"
-           referrerpolicy="no-referrer">
-      </img>
     </div>
-
+    <div class="yt-thumbnail-wraper relative aspect-[16/9] cursor-pointer group">
+      <img class="block w-full h-full object-cover m-0 mt-0"
+           src="{{ thumbnail_url }}"
+           referrerpolicy="no-referrer"
+           alt="{{ title_text }}">
+      <!-- Play tlačítko uprostřed -->
+      <div class="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition">
+        <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition">
+          <svg class="w-8 h-8 text-white translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <a>{{yt_id}} {{lang}} {{style}} {{thumbnail_url}}</a>
-
 {%- endmacro -%}
