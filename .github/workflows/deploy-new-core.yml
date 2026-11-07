@@ -73,8 +73,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          uv venv
-          .venv/bin/uv pip install .
+          uv pip install .
 
       - name: Install Node dependencies
         run: npm install
@@ -92,7 +91,7 @@ jobs:
           STEAM_API: ${{ secrets.STEAM_API }}
           SITEURL: "" 
         run: |
-          .venv/bin/python build.py
+          uv run python build.py
 
 
       - name: Deploy to Cloudflare Pages via Wrangler
