@@ -724,6 +724,8 @@ dependencies = [
     { name = "minijinja" },
     { name = "python-dotenv" },
     { name = "python-frontmatter" },
+    { name = "pyyaml" },
+    { name = "requests" },
     { name = "sqlmodel" },
 ]
 
@@ -736,6 +738,8 @@ requires-dist = [
     { name = "minijinja" },
     { name = "python-dotenv" },
     { name = "python-frontmatter" },
+    { name = "pyyaml" },
+    { name = "requests" },
     { name = "sqlmodel" },
 ]
 

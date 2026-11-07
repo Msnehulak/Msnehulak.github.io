@@ -1,4 +1,4 @@
-name: Deploy Web & Redirects
+name: Build & Deploy
 
 on:
   push:
@@ -6,88 +6,128 @@ on:
     paths-ignore:
       - 'README.md'
       - 'doc/**'
-      - 'bash/**'
       - '.env.example'
-      - '.lighthouserc.json'
-      - '.github/.FUNDING.yml'
       - '.gitignore'
       - '.gitattributes'
+  pull_request:
+    branches: ['my-engine']
+    paths-ignore:
+      - 'README.md'
+      - 'doc/**'
+      - '.env.example'
+      - '.gitignore'
+      - '.gitattributes'
+  workflow_dispatch:
 
 permissions:
   contents: read
-  deployments: write
-  pull-requests: write
-  id-token: write
-  pages: write
 
 concurrency:
-  group: "pages"               # ← chybělo
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # U pull requestů může nový commit běh zrušit, u nasazení to nechceme.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PYTHON_VERSION: '3.14'
+  NODE_VERSION: '26'
+  SITEURL: ${{ vars.SITEURL || 'https://snehulak.dev' }}
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        uses: actions/checkout@v7
 
       # --- Python ---
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10
         with:
-          version: "0.14.0"
+          version: 'latest'
           enable-cache: true
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
-          python-version-file: ".python-version"   # ← správná syntaxe
+          python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Python dependencies
         run: uv sync --locked
 
       # --- Node ---
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '26'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install Node dependencies
         run: npm ci
 
       # --- Cache dat z buildu (YouTube API, stažené thumbnaily) ---
-      - name: Cache cache/ folder
-        uses: actions/cache@v4
+      - name: Cache build data
+        uses: actions/cache@v6
         with:
           path: cache
-          key: ${{ runner.os }}-custom-${{ hashFiles('data/socials.yaml', 'uv.lock', 'package-lock.json') }}
+          key: ${{ runner.os }}-build-cache-${{ hashFiles('data/socials.yaml', 'uv.lock', 'package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-custom-
+            ${{ runner.os }}-build-cache-
 
       # --- Build ---
-      - name: Build Web Site
+      - name: Build website
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
           OSU_CLIENT_SECRET: ${{ secrets.OSU_CLIENT_SECRET }}
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           STEAM_API: ${{ secrets.STEAM_API }}
-          SITEURL: "https://snehulak.dev"   # ← reálná doména, nebo úplně vynech
         run: uv run python build.py
 
-      # --- Deploy ---
-      - name: Deploy to Cloudflare Pages via Wrangler
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: website
+          path: output
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to Cloudflare Pages
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: website
+          path: output
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Deploy to Cloudflare Pages
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           npx wrangler pages deploy ./output \
-            --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} \
-            --branch=my-engine        
+            --project-name="${{ vars.CLOUDFLARE_PROJECT_NAME || secrets.CLOUDFLARE_PROJECT_NAME }}" \
+            --branch="${{ github.ref_name }}"

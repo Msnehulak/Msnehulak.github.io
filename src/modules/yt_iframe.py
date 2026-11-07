@@ -1,9 +1,8 @@
 from pathlib import Path
 
-import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .. import cache_manager, youtube_api
+from .. import youtube_api
 
 root_dir = Path(__file__).parent.parent.parent.resolve()
 theme_dir = root_dir / "theme"
@@ -23,11 +22,16 @@ def yt_iframe(
     lang: str = "en",
     style: str = "full",
 ) -> str:
-    """Vrátí HTML se seznamem sociálních odkazů vyfiltrovaných podle tagu."""
+    """Vrátí HTML s YouTube přehrávačem a metadaty videa."""
     if style not in VALID_STYLES:
         style = "full"
 
-    meta_data = youtube_api.get_video_with_creator(yt_id)
+    try:
+        meta_data = youtube_api.get_video_with_creator(yt_id)
+    except Exception as exc:
+        # Build nesmí spadnout kvůli chybějícímu API klíči, kvótě nebo výpadku API.
+        print(f"[yt_iframe] Metadata pro {yt_id} nejsou dostupná: {exc}")
+        meta_data = None
 
     template = _links_env.get_template("components/yt_iframe.html")
     return template.module.render_iframe(

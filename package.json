@@ -15,5 +15,10 @@
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.4"
+  },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "esbuild": true,
+    "workerd": true
   }
 }
