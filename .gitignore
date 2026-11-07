@@ -1,23 +1,25 @@
 /target
 
-node_modules/
 .pyc
 .env
 .gitingestignore
 ssg.db
+digest.txt
 
 src/*.egg-info
 
 **/__pycache__/
 *.egg-info
+__pycache__/
 
 .cache/
 web/
 output/
 redirect/
-digest.txt
 cache/
 testing/
 build/
-__pycache__/
+.wrangler/
+node_modules/
+
 

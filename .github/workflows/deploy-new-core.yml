@@ -2,8 +2,7 @@ name: Deploy Web & Redirects
 
 on:
   push:
-    branches:
-      - 'my-engine'
+    branches: ['my-engine']
     paths-ignore:
       - 'README.md'
       - 'doc/**'
@@ -13,15 +12,6 @@ on:
       - '.github/.FUNDING.yml'
       - '.gitignore'
       - '.gitattributes'
-#   schedule:
-#     - cron: '0 0 * * *'
-#   workflow_dispatch:
-#     inputs:
-#       is_production:
-#         description: 'Nasadit do PRODUKCE?'
-#         required: true
-#         type: boolean
-#         default: false 
 
 permissions:
   contents: read
@@ -31,7 +21,7 @@ permissions:
   pages: write
 
 concurrency:
-  group: "pages"
+  group: "pages"               # ← chybělo
   cancel-in-progress: false
 
 jobs:
@@ -44,44 +34,44 @@ jobs:
         with:
           fetch-depth: 0
 
+      # --- Python ---
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.14.0"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.14'
+          python-version-file: ".python-version"   # ← správná syntaxe
 
+      - name: Install Python dependencies
+        run: uv sync --locked
+
+      # --- Node ---
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '26'
           cache: 'npm'
 
+      - name: Install Node dependencies
+        run: npm ci
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-          cache-dependency-glob: "pyproject.toml"
-
-      - name: Cache cache/ folder 
-        id: cache-custom
+      # --- Cache dat z buildu (YouTube API, stažené thumbnaily) ---
+      - name: Cache cache/ folder
         uses: actions/cache@v4
         with:
           path: cache
-          key: ${{ runner.os }}-custom-${{ hashFiles('config.json') }}
+          key: ${{ runner.os }}-custom-${{ hashFiles('data/socials.yaml', 'uv.lock', 'package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-custom-
 
-      - name: Install Python dependencies
-        run: |
-          uv pip install .
-
-      - name: Install Node dependencies
-        run: npm install
-
-#       - name: Determine Environment
-#         id: env-spec
-#         run: |
-
+      # --- Build ---
       - name: Build Web Site
         env:
           OSU_CLIENT_ID: ${{ secrets.OSU_CLIENT_ID }}
@@ -89,16 +79,15 @@ jobs:
           GIT_HUB_TOKEN: ${{ secrets.GIT_HUB_TOKEN }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           STEAM_API: ${{ secrets.STEAM_API }}
-          SITEURL: "" 
-        run: |
-          uv run python build.py
+          SITEURL: "https://snehulak.dev"   # ← reálná doména, nebo úplně vynech
+        run: uv run python build.py
 
-
+      # --- Deploy ---
       - name: Deploy to Cloudflare Pages via Wrangler
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          npx wrangler pages deploy ./output --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=my-engine
-
-         
+          npx wrangler pages deploy ./output \
+            --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} \
+            --branch=my-engine        
