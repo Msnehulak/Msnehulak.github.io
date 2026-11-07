@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from .. import youtube_api
+from .. import cache_manager, youtube_api
 
 root_dir = Path(__file__).parent.parent.parent.resolve()
 theme_dir = root_dir / "theme"
@@ -28,8 +28,6 @@ def yt_iframe(
         style = "full"
 
     meta_data = youtube_api.get_video_with_creator(yt_id)
-    thumbnail_url = f"https://i.ytimg.com/vi/{yt_id}/hqdefault.jpg"
-    print(meta_data)
 
     template = _links_env.get_template("components/yt_iframe.html")
     return template.module.render_iframe(
@@ -37,5 +35,4 @@ def yt_iframe(
         md=meta_data,
         lang=lang,
         style=style,
-        thumbnail_url=thumbnail_url,
     )

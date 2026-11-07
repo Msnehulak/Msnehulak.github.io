@@ -14,6 +14,7 @@ Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 {{ tools.links("code", style="text") }}
 {{ tools.links("packages", style="pill") }}
 
+{{ yt.video(yt_id="iw9SZgyahqg")}}
 
 ## >>> {{ hello }} <<<
 
@@ -27,4 +28,6 @@ Tento text je napsaný v **Markdownu** a automaticky se převede na HTML.
 
 ```python
 i like code
+
+no i hate python
 ```

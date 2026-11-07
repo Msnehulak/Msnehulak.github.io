@@ -3,6 +3,12 @@ import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from . import cache_manager
+
+CACHE_TIMER = 1 * 60 * 60
+
+_MISSING = object()
+
 
 class YouTubeAPIWrapper:
     def __init__(self):
@@ -10,11 +16,17 @@ class YouTubeAPIWrapper:
         if not self.api_key:
             raise ValueError("Chybí YOUTUBE_API_KEY v proměnných prostředí (.env).")
 
+        self.cache = cache_manager.get_cache()
         self.youtube = build("youtube", "v3", developerKey=self.api_key)
 
     def get_channel_by_id(self, channel_id: str) -> dict | None:
         """Získá základní informace o kanálu podle jeho ID."""
         try:
+            cache_name = f"yt_api_chanel_{channel_id}"
+            cached = self.cache.get(cache_name, default=_MISSING)
+            if cached is not _MISSING:
+                return cached
+
             response = (
                 self.youtube.channels()
                 .list(part="snippet,statistics,brandingSettings", id=channel_id)
@@ -23,22 +35,32 @@ class YouTubeAPIWrapper:
 
             items = response.get("items", [])
             if not items:
+                self.cache.set(cache_name, None, expire=60 * 15)  # 15 min
                 return None
 
             channel = items[0]
             snippet = channel.get("snippet", {})
             statistics = channel.get("statistics", {})
 
-            return {
+            pp = snippet.get("thumbnails", {})
+            pp_download_url = pp["high"]["url"]
+            pp_url = cache_manager.download_img(
+                pp_download_url, f"yt_api_video_{channel_id}.jpeg"
+            )
+
+            ret = {
                 "channel_id": channel_id,
                 "title": snippet.get("title"),
                 "description": snippet.get("description"),
                 "custom_url": snippet.get("customUrl"),
                 "published_at": snippet.get("publishedAt"),
-                "thumbnails": snippet.get("thumbnails", {}),
+                "thumbnails": pp_url,
                 "subscriber_count": statistics.get("subscriberCount"),
                 "video_count": statistics.get("videoCount"),
             }
+            self.cache.set(cache_name, ret, expire=CACHE_TIMER)
+            return ret
+
         except HttpError as e:
             print(f"Chyba při komunikaci s YouTube API (Channel): {e}")
             return None
@@ -46,6 +68,11 @@ class YouTubeAPIWrapper:
     def get_video_by_id(self, video_id: str) -> dict | None:
         """Získá informace o videu podle jeho ID."""
         try:
+            cache_name = f"yt_api_video_{video_id}"
+            cached = self.cache.get(cache_name, default=_MISSING)
+            if cached is not _MISSING:
+                return cached
+
             response = (
                 self.youtube.videos()
                 .list(part="snippet,statistics,contentDetails", id=video_id)
@@ -54,24 +81,34 @@ class YouTubeAPIWrapper:
 
             items = response.get("items", [])
             if not items:
+                self.cache.set(cache_name, None, expire=60 * 15)  # 15 min
                 return None
 
             video = items[0]
             snippet = video.get("snippet", {})
             statistics = video.get("statistics", {})
 
-            return {
+            thumbnails = snippet.get("thumbnails", {})
+            thumbnail_download_url = thumbnails["high"]["url"]
+            thumbnail_utl = cache_manager.download_img(
+                thumbnail_download_url, f"yt_api_video_{video_id}.jpeg"
+            )
+
+            ret = {
                 "video_id": video_id,
                 "title": snippet.get("title"),
                 "description": snippet.get("description"),
                 "channel_id": snippet.get("channelId"),
                 "channel_title": snippet.get("channelTitle"),
                 "published_at": snippet.get("publishedAt"),
-                "thumbnails": snippet.get("thumbnails", {}),
+                "thumbnails": thumbnail_utl,
                 "view_count": statistics.get("viewCount"),
                 "like_count": statistics.get("likeCount"),
                 "comment_count": statistics.get("commentCount"),
             }
+            self.cache.set(cache_name, ret, expire=CACHE_TIMER)
+            return ret
+
         except HttpError as e:
             print(f"Chyba při komunikaci s YouTube API (Video): {e}")
             return None

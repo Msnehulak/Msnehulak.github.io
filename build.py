@@ -1,8 +1,22 @@
+import argparse
 import os
 import shutil
 from pathlib import Path
 
-from src import index_content, mearge_page, pages_bulder, pages_db, run_node
+from src import (
+    cache_manager,
+    index_content,
+    mearge_page,
+    pages_bulder,
+    pages_db,
+    run_node,
+)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--no-cache", action="store_true")
+args = parser.parse_args()
+if args.no_cache:
+    cache_manager.get_cache().clear()
 
 pages_db.init_sqlite_DB()
 
